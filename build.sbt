@@ -1,4 +1,4 @@
-organization := "org.kittens"
+organization := "org.kits"
 
 version := "0.1.0"
 
