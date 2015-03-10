@@ -3,7 +3,9 @@ package kits
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
-class FunctorSpec[F[_]](implicit F: Functor[F], arb: Arbitrary[F[AnyVal]]) extends Spec {
+trait FunctorSpec[F[_]] extends Spec[F[AnyVal]] {
+  implicit val F: Functor[F]
+  implicit val arb: Arbitrary[F[AnyVal]]
   describe("Functor") {
     it("identity") {
       check { fa: F[AnyVal] =>

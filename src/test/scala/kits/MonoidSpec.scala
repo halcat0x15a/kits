@@ -3,7 +3,8 @@ package kits
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
-abstract class MonoidSpec[A](implicit A: Monoid[A], arb: Arbitrary[A]) extends Spec {
+trait MonoidSpec[A] extends Spec[A] {
+  implicit val A: Monoid[A]
   describe("Monoid") {
     it("rightIdentity") {
       check { a: A =>

@@ -27,41 +27,44 @@ package object std {
     def zero: Unit = ()
     def append(x: Unit, y: Unit): Unit = ()
   }
-  implicit val list = new MonadPlus[List] with Traverse[List] {
+  implicit val list = new MonadicPlus[List] with Applicative[List] with Traverse[List] {
     def empty[A]: List[A] = Nil
-    def pure[A](a: A): List[A] = a :: Nil
     def plus[A](x: List[A], y: List[A]): List[A] = x ::: y
+    def pure[A](a: A): List[A] = a :: Nil
     override def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
     def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
+    def filter[A](fa: List[A])(f: A => Boolean): List[A] = fa.filter(f)
     def traverse[F[_], A, B](fa: List[A])(f: A => F[B])(implicit F: Applicative[F]): F[List[B]] =
       fa.foldRight(F.pure(empty[B]))((a, ga) => F(ga)(F.map(f(a))(b => b :: _)))
   }
-  implicit val vector = new MonadPlus[Vector] with Traverse[Vector] {
-    def empty[A]: Vector[A] = Vector.empty[A]
-    def pure[A](a: A): Vector[A] = Vector(a)
+  implicit val vector = new MonadicPlus[Vector] with Applicative[Vector] with Traverse[Vector] {
+    def empty[A]: Vector[A] = Vector.empty
     def plus[A](x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
+    def pure[A](a: A): Vector[A] = Vector(a)
     override def map[A, B](fa: Vector[A])(f: A => B): Vector[B] = fa.map(f)
     def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] = fa.flatMap(f)
+    def filter[A](fa: Vector[A])(f: A => Boolean): Vector[A] = fa.filter(f)
     def traverse[F[_], A, B](fa: Vector[A])(f: A => F[B])(implicit F: Applicative[F]): F[Vector[B]] =
       fa.foldLeft(F.pure(empty[B]))((ga, a) => F(ga)(F.map(f(a))(b => _ :+ b)))
   }
-  implicit val option = new MonadPlus[Option] with Traverse[Option] {
+  implicit val option = new MonadicPlus[Option] with Applicative[Option] with Traverse[Option] {
     def empty[A]: Option[A] = None
-    def pure[A](a: A): Option[A] = Some(a)
     def plus[A](x: Option[A], y: Option[A]): Option[A] = x.orElse(y)
+    def pure[A](a: A): Option[A] = Some(a)
     override def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
     def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa.flatMap(f)
+    def filter[A](fa: Option[A])(f: A => Boolean): Option[A] = fa.filter(f)
     def traverse[F[_], A, B](fa: Option[A])(f: A => F[B])(implicit F: Applicative[F]): F[Option[B]] =
       fa.fold(F.pure(empty[B]))(a => F.map(f(a))(pure))
   }
-  implicit def either[A] = new Monad[({ type F[B] = Either[A, B] })#F] with Traverse[({ type F[B] = Either[A, B] })#F] {
+  implicit def either[A] = new Monadic[({ type F[B] = Either[A, B] })#F] with Applicative[({ type F[B] = Either[A, B] })#F] with Traverse[({ type F[B] = Either[A, B] })#F] {
     def pure[B](b: B): Either[A, B] = Right(b)
-    def flatMap[B, C](fa: Either[A, B])(f: B => Either[A, C]): Either[A, C] = fa.right.flatMap(f)
     override def map[B, C](fa: Either[A, B])(f: B => C): Either[A, C] = fa.right.map(f)
+    def flatMap[B, C](fa: Either[A, B])(f: B => Either[A, C]): Either[A, C] = fa.right.flatMap(f)
     def traverse[F[_], B, C](fa: Either[A, B])(f: B => F[C])(implicit F: Applicative[F]): F[Either[A, C]] =
       fa.fold(a => F.pure(Left(a)), b => F.map(f(b))(pure))
   }
-  implicit def future(implicit executor: ExecutionContext) = new Monad[Future] {
+  implicit def future(implicit executor: ExecutionContext) = new Monadic[Future] with Applicative[Future] {
     def pure[A](a: A): Future[A] = Future.successful(a)
     override def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)
     def flatMap[A, B](fa: Future[A])(f: A => Future[B]): Future[B] = fa.flatMap(f)

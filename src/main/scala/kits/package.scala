@@ -1,6 +1,6 @@
 package object kits {
   type Id[A] = A
-  implicit val id = new Monad[Id] {
+  implicit val id = new Monadic[Id] with Applicative[Id] {
     def pure[A](a: A): Id[A] = a
     def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = f(fa)
   }

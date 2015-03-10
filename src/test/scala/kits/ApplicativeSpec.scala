@@ -3,7 +3,9 @@ package kits
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
-class ApplicativeSpec[F[_]](implicit F: Applicative[F], arb: Arbitrary[F[AnyVal]]) extends FunctorSpec[F] {
+trait ApplicativeSpec[F[_]] extends FunctorSpec[F] {
+  implicit val F: Applicative[F]
+  implicit val arb: Arbitrary[F[AnyVal]]
   describe("Applicative") {
     it("identity") { fa: F[AnyVal] =>
       F(fa)(F.pure((a: AnyVal) => a)) == fa
