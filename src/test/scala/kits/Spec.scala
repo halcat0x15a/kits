@@ -39,3 +39,7 @@ class EitherMonadSpec extends MonadicSpec[({ type F[A] = Either[AnyVal, A] })#F]
 class MapSpec extends MonadicPlusSpec[({ type F[A] = Map[AnyVal, A] })#F] {
   val F = std.map[AnyVal]
 }
+
+class SetSpec extends MonadicPlusSpec[Set] {
+  val F = std.set
+}

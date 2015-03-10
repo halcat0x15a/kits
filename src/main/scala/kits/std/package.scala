@@ -90,6 +90,16 @@ package object std {
         }
     }
   }
+  implicit val set = new MonadicPlus[Set] with Applicative[Set] with Traverse[Set] {
+    def empty[A]: Set[A] = Set.empty
+    def plus[A](x: Set[A], y: Set[A]): Set[A] = x ++ y
+    def pure[A](a: A): Set[A] = Set(a)
+    override def map[A, B](fa: Set[A])(f: A => B): Set[B] = fa.map(f)
+    def flatMap[A, B](fa: Set[A])(f: A => Set[B]): Set[B] = fa.flatMap(f)
+    def filter[A](fa: Set[A])(f: A => Boolean): Set[A] = fa.filter(f)
+    def traverse[F[_], A, B](fa: Set[A])(f: A => F[B])(implicit F: Applicative[F]): F[Set[B]] =
+      fa.foldLeft(F.pure(empty[B]))((ga, a) => F(ga)(F.map(f(a))(b => _ + b)))
+  }
   implicit def future(implicit executor: ExecutionContext) = new Monadic[Future] with Applicative[Future] {
     def pure[A](a: A): Future[A] = Future.successful(a)
     override def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)
