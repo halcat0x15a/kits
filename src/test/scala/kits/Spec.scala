@@ -35,3 +35,7 @@ class OptionSpec extends MonadicPlusSpec[Option] with ApplicativeSpec[Option] {
 class EitherMonadSpec extends MonadicSpec[({ type F[A] = Either[AnyVal, A] })#F] with ApplicativeSpec[({ type F[A] = Either[AnyVal, A] })#F] {
   val F = std.either[AnyVal]
 }
+
+class MapSpec extends MonadicPlusSpec[({ type F[A] = Map[AnyVal, A] })#F] {
+  val F = std.map[AnyVal]
+}

@@ -64,6 +64,15 @@ package object std {
     def traverse[F[_], B, C](fa: Either[A, B])(f: B => F[C])(implicit F: Applicative[F]): F[Either[A, C]] =
       fa.fold(a => F.pure(Left(a)), b => F.map(f(b))(pure))
   }
+  implicit def map[K] = new MonadicPlus[({ type F[A] = Map[K, A] })#F] with Traverse[({ type F[A] = Map[K, A] })#F] {
+    def empty[A]: Map[K, A] = Map.empty
+    def plus[A](x: Map[K, A], y: Map[K, A]): Map[K, A] = x ++ y
+    override def map[A, B](fa: Map[K, A])(f: A => B): Map[K, B] = fa.map { case (k, a) => k -> f(a) }
+    def flatMap[A, B](fa: Map[K, A])(f: A => Map[K, B]): Map[K, B] = fa.flatMap { case (_, a) => f(a) }
+    def filter[A](fa: Map[K, A])(f: A => Boolean): Map[K, A] = fa.filter { case (_, a) => f(a) }
+    def traverse[F[_], A, B](fa: Map[K, A])(f: A => F[B])(implicit F: Applicative[F]): F[Map[K, B]] =
+      fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F(ga)(F.map(f(a))(b => _ + (k -> b))) }
+  }
   implicit def future(implicit executor: ExecutionContext) = new Monadic[Future] with Applicative[Future] {
     def pure[A](a: A): Future[A] = Future.successful(a)
     override def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)
