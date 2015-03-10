@@ -12,5 +12,10 @@ trait MonadicSpec[F[_]] extends FunctorSpec[F] {
         F.flatMap(fa)(a => F.flatMap(f(a))(g)) == F.flatMap(F.flatMap(fa)(f))(g)
       }
     }
+    it("flatten") {
+      check { (fa: F[AnyVal], f: AnyVal => F[AnyVal]) =>
+        F.flatten(F.map(fa)(f)) == F.flatMap(fa)(f)
+      }
+    }
   }
 }

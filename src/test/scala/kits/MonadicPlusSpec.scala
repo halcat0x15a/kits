@@ -22,5 +22,15 @@ trait MonadicPlusSpec[F[_]] extends MonadicSpec[F] {
         F.filter(fa)(_ => false) == F.empty
       }
     }
+    it("leftZero") {
+      forAll { (f: AnyVal => F[AnyVal]) =>
+        F.flatMap(F.empty)(f) == F.empty
+      }
+    }
+    it("rightZero") {
+      forAll { fa: F[AnyVal] =>
+        F.flatMap(fa)(_ => F.empty[AnyVal]) == F.empty
+      }
+    }
   }
 }

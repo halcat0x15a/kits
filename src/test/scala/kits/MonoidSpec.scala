@@ -16,5 +16,10 @@ trait MonoidSpec[A] extends Spec[A] {
         A.append(A.zero, a) == a
       }
     }
+    it("associativity") {
+      forAll { (a: A, b: A, c: A) =>
+        A.append(A.append(a, b), c) == A.append(a, A.append(b, c))
+      }
+    }
   }
 }
