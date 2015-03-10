@@ -56,6 +56,16 @@ package object std {
     def filter[A](fa: Option[A])(f: A => Boolean): Option[A] = fa.filter(f)
     def traverse[F[_], A, B](fa: Option[A])(f: A => F[B])(implicit F: Applicative[F]): F[Option[B]] =
       fa.fold(F.pure(empty[B]))(a => F.map(f(a))(pure))
+    implicit def monoid[A](implicit A: Monoid[A]) = new Monoid[Option[A]] {
+      def zero: Option[A] = None
+      def append(x: Option[A], y: Option[A]) =
+        (x, y) match {
+          case (None, None) => None
+          case (_, None) => x
+          case (None, _) => y
+          case (Some(a), Some(b)) => Some(A.append(a, b))
+        }
+    }
   }
   implicit def either[A] = new Monadic[({ type F[B] = Either[A, B] })#F] with Applicative[({ type F[B] = Either[A, B] })#F] with Traverse[({ type F[B] = Either[A, B] })#F] {
     def pure[B](b: B): Either[A, B] = Right(b)
@@ -72,6 +82,13 @@ package object std {
     def filter[A](fa: Map[K, A])(f: A => Boolean): Map[K, A] = fa.filter { case (_, a) => f(a) }
     def traverse[F[_], A, B](fa: Map[K, A])(f: A => F[B])(implicit F: Applicative[F]): F[Map[K, B]] =
       fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F(ga)(F.map(f(a))(b => _ + (k -> b))) }
+    implicit def monoid[K, V](implicit V: Monoid[V]) = new Monoid[Map[K, V]] {
+      def zero: Map[K, V] = Map.empty
+      def append(x: Map[K, V], y: Map[K, V]): Map[K, V] =
+        x.foldLeft(y) {
+          case (a, (k, v)) => a.updated(k, a.get(k).fold(v)(V.append(_, v)))
+        }
+    }
   }
   implicit def future(implicit executor: ExecutionContext) = new Monadic[Future] with Applicative[Future] {
     def pure[A](a: A): Future[A] = Future.successful(a)
