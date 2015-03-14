@@ -1,5 +1,64 @@
 package kits
 
+import scala.concurrent.{Future, ExecutionContext}
+
 trait Functor[F[_]] {
   def map[A, B](fa: F[A])(f: A => B): F[B]
+}
+
+object Functor {
+  implicit val id = new Monad[Id] with Traverse[Id] {
+    def pure[A](a: A): Id[A] = a
+    override def map[A, B](fa: Id[A])(f: A => B): Id[B] = f(fa)
+    def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = f(fa)
+    def traverse[F[_]: Applicative, A, B](fa: Id[A])(f: A => F[B]): F[Id[B]] = f(fa)
+  }
+  implicit def const[A](implicit A: Monoid[A]) = new Applicative[({ type F[B] = Const[A, B] })#F] {
+    def pure[B](b: B): Const[A, B] = A.zero
+    def apply[B, C](fb: Const[A, B])(f: Const[A, B => C]): Const[A, C] = A.append(fb, f)
+  }
+  implicit val list = new Monad[List] with Traverse[List] {
+    def pure[A](a: A): List[A] = a :: Nil
+    override def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
+    def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
+    def traverse[F[_], A, B](fa: List[A])(f: A => F[B])(implicit F: Applicative[F]): F[List[B]] =
+      fa.foldRight(F.pure(Nil: List[B]))((a, ga) => F(ga)(F.map(f(a))(b => b :: _)))
+  }
+  implicit val vector = new Monad[Vector] with Traverse[Vector] {
+    def pure[A](a: A): Vector[A] = Vector(a)
+    override def map[A, B](fa: Vector[A])(f: A => B): Vector[B] = fa.map(f)
+    def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] = fa.flatMap(f)
+    def traverse[F[_], A, B](fa: Vector[A])(f: A => F[B])(implicit F: Applicative[F]): F[Vector[B]] =
+      fa.foldLeft(F.pure(Vector.empty[B]))((ga, a) => F(ga)(F.map(f(a))(b => _ :+ b)))
+  }
+  implicit val option = new Monad[Option] with Traverse[Option] {
+    def pure[A](a: A): Option[A] = Some(a)
+    override def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
+    def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa.flatMap(f)
+    def traverse[F[_], A, B](fa: Option[A])(f: A => F[B])(implicit F: Applicative[F]): F[Option[B]] =
+      fa.fold(F.pure(None: Option[B]))(a => F.map(f(a))(pure))
+  }
+  implicit def map[K] = new Traverse[({ type F[A] = Map[K, A] })#F] {
+    def traverse[F[_], A, B](fa: Map[K, A])(f: A => F[B])(implicit F: Applicative[F]): F[Map[K, B]] =
+      fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F(ga)(F.map(f(a))(b => _ + (k -> b))) }
+  }
+  implicit val set = new Monad[Set] with Traverse[Set] {
+    def pure[A](a: A): Set[A] = Set(a)
+    override def map[A, B](fa: Set[A])(f: A => B): Set[B] = fa.map(f)
+    def flatMap[A, B](fa: Set[A])(f: A => Set[B]): Set[B] = fa.flatMap(f)
+    def traverse[F[_], A, B](fa: Set[A])(f: A => F[B])(implicit F: Applicative[F]): F[Set[B]] =
+      fa.foldLeft(F.pure(Set.empty[B]))((ga, a) => F(ga)(F.map(f(a))(b => _ + b)))
+  }
+  implicit def right[A] = new Monad[({ type F[B] = Either[A, B] })#F] with Traverse[({ type F[B] = Either[A, B] })#F] {
+    def pure[B](b: B): Either[A, B] = Right(b)
+    override def map[B, C](fa: Either[A, B])(f: B => C): Either[A, C] = fa.right.map(f)
+    def flatMap[B, C](fa: Either[A, B])(f: B => Either[A, C]): Either[A, C] = fa.right.flatMap(f)
+    def traverse[F[_], B, C](fa: Either[A, B])(f: B => F[C])(implicit F: Applicative[F]): F[Either[A, C]] =
+      fa.fold(a => F.pure(Left(a)), b => F.map(f(b))(pure))
+  }
+  implicit def future(implicit executor: ExecutionContext) = new Monad[Future] {
+    def pure[A](a: A): Future[A] = Future.successful(a)
+    override def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)
+    def flatMap[A, B](fa: Future[A])(f: A => Future[B]): Future[B] = fa.flatMap(f)
+  }
 }
