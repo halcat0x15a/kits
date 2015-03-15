@@ -30,6 +30,14 @@ object Monoid {
     def zero: Unit = ()
     def append(x: Unit, y: Unit): Unit = ()
   }
+  implicit def list[A] = new Monoid[List[A]] {
+    def zero: List[A] = Nil
+    def append(x: List[A], y: List[A]): List[A] = x ::: y
+  }
+  implicit def vector[A] = new Monoid[Vector[A]] {
+    def zero: Vector[A] = Vector.empty
+    def append(x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
+  }
   implicit def option[A](implicit A: Monoid[A]) = new Monoid[Option[A]] {
     def zero: Option[A] = None
     def append(x: Option[A], y: Option[A]) =
@@ -47,12 +55,12 @@ object Monoid {
         case (a, (k, v)) => a.updated(k, a.get(k).fold(v)(V.append(_, v)))
       }
   }
+  implicit def set[A] = new Monoid[Set[A]] {
+    def zero: Set[A] = Set.empty
+    def append(x: Set[A], y: Set[A]): Set[A] = x | y
+  }
   implicit def endo[A] = new Monoid[A => A] {
     def zero: A => A = identity
     def append(f: A => A, g: A => A): A => A = f.andThen(g)
-  }
-  implicit def plus[F[_], A](implicit F: Plus[F]) = new Monoid[F[A]] {
-    def zero: F[A] = F.empty
-    def append(x: F[A], y: F[A]): F[A] = F.plus(x, y)
   }
 }

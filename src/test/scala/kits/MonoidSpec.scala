@@ -3,8 +3,10 @@ package kits
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
-trait MonoidSpec[A] extends Spec[A] {
-  implicit val A: Monoid[A]
+import org.scalatest.FunSpec
+import org.scalatest.prop.Checkers
+
+abstract class MonoidSpec[A](implicit A: Monoid[A], arb: Arbitrary[A]) extends FunSpec with Checkers {
   describe("Monoid") {
     it("rightIdentity") {
       check { a: A =>
@@ -23,3 +25,17 @@ trait MonoidSpec[A] extends Spec[A] {
     }
   }
 }
+
+class StringMonoidSpec extends MonoidSpec[String]
+
+class UnitMonoidSpec extends MonoidSpec[Unit]
+
+class ListMonoidSpec extends MonoidSpec[List[AnyVal]]
+
+class VectorMonoidSpec extends MonoidSpec[Vector[AnyVal]]
+
+class OptionMonoidSpec extends MonoidSpec[Option[String]]
+
+class MapMonoidSpec extends MonoidSpec[Map[AnyVal, String]]
+
+class SetMonoidSpec extends MonoidSpec[Set[AnyVal]]

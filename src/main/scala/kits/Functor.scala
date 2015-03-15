@@ -56,6 +56,13 @@ object Functor {
     def traverse[F[_], B, C](fa: Either[A, B])(f: B => F[C])(implicit F: Applicative[F]): F[Either[A, C]] =
       fa.fold(a => F.pure(Left(a)), b => F.map(f(b))(pure))
   }
+  implicit def left[B] = new Monad[({ type F[A] = Either[A, B] })#F] with Traverse[({ type F[A] = Either[A, B] })#F] {
+    def pure[A](a: A): Either[A, B] = Left(a)
+    override def map[A, C](fa: Either[A, B])(f: A => C): Either[C, B] = fa.left.map(f)
+    def flatMap[A, C](fa: Either[A, B])(f: A => Either[C, B]): Either[C, B] = fa.left.flatMap(f)
+    def traverse[F[_], A, C](fa: Either[A, B])(f: A => F[C])(implicit F: Applicative[F]): F[Either[C, B]] =
+      fa.fold(a => F.map(f(a))(pure), b => F.pure(Right(b)))
+  }
   implicit def future(implicit executor: ExecutionContext) = new Monad[Future] {
     def pure[A](a: A): Future[A] = Future.successful(a)
     override def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)

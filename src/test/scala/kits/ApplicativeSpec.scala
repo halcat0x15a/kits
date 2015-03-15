@@ -3,9 +3,9 @@ package kits
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
-trait ApplicativeSpec[F[_]] extends FunctorSpec[F] {
-  implicit val F: Applicative[F]
-  implicit val arb: Arbitrary[F[AnyVal]]
+abstract class ApplicativeSpec[F[_]](implicit F: Applicative[F], arb: Arbitrary[F[AnyVal]]) extends FunctorSpec[F] {
+  implicit def arbFunctor[F[_], A](implicit F: Functor[F], arb: Arbitrary[F[A]]): Arbitrary[F[A => A]] =
+    Arbitrary(arb.arbitrary.map(fa => F.map(fa)(a => _ => a)))
   describe("Applicative") {
     it("identity") { fa: F[AnyVal] =>
       F(fa)(F.pure((a: AnyVal) => a)) == fa
@@ -27,3 +27,5 @@ trait ApplicativeSpec[F[_]] extends FunctorSpec[F] {
     }
   }
 }
+
+class ConstApplicativeSpec extends ApplicativeSpec[({ type F[A] = Const[String, A] })#F]

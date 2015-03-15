@@ -3,9 +3,7 @@ package kits
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
-trait MonadSpec[F[_]] extends ApplicativeSpec[F] {
-  implicit val F: Monad[F]
-  implicit val arb: Arbitrary[F[AnyVal]]
+abstract class MonadSpec[F[_]](implicit F: Monad[F], arb: Arbitrary[F[AnyVal]]) extends ApplicativeSpec[F] {
   describe("Monad") {
     it("composition") {
       check { (fa: F[AnyVal], f: AnyVal => F[AnyVal], g: AnyVal => F[AnyVal]) =>
@@ -24,3 +22,17 @@ trait MonadSpec[F[_]] extends ApplicativeSpec[F] {
     }
   }
 }
+
+class IdMonadSpec extends MonadSpec[Id]
+
+class ListMonadSpec extends MonadSpec[List]
+
+class VectorMonadSpec extends MonadSpec[Vector]
+
+class OptionMonadSpec extends MonadSpec[Option]
+
+class RightMonadSpec extends MonadSpec[({ type F[A] = Either[AnyVal, A] })#F]
+
+class LeftMonadSpec extends MonadSpec[({ type F[A] = Either[A, AnyVal] })#F]
+
+class SetMonadSpec extends MonadSpec[Set]
