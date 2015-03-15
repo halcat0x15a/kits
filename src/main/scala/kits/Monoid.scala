@@ -48,6 +48,14 @@ object Monoid {
         case (Some(a), Some(b)) => Some(A.append(a, b))
       }
   }
+  implicit def first[A] = new Monoid[Option[A]] {
+    def zero: Option[A] = None
+    def append(x: Option[A], y: Option[A]) = x.orElse(y)
+  }
+  implicit def last[A] = new Monoid[Option[A]] {
+    def zero: Option[A] = None
+    def append(x: Option[A], y: Option[A]) = y.orElse(x)
+  }
   implicit def map[K, V](implicit V: Monoid[V]) = new Monoid[Map[K, V]] {
     def zero: Map[K, V] = Map.empty
     def append(x: Map[K, V], y: Map[K, V]): Map[K, V] =

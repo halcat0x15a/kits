@@ -6,7 +6,7 @@ import org.scalacheck.Prop.forAll
 import org.scalatest.FunSpec
 import org.scalatest.prop.Checkers
 
-abstract class MonoidSpec[A](implicit A: Monoid[A], arb: Arbitrary[A]) extends FunSpec with Checkers {
+abstract class MonoidSpec[A](A: Monoid[A])(implicit arb: Arbitrary[A]) extends FunSpec with Checkers {
   describe("Monoid") {
     it("rightIdentity") {
       check { a: A =>
@@ -26,16 +26,28 @@ abstract class MonoidSpec[A](implicit A: Monoid[A], arb: Arbitrary[A]) extends F
   }
 }
 
-class StringMonoidSpec extends MonoidSpec[String]
+class SumMonoidSpec extends MonoidSpec[Int](Monoid.sum)
 
-class UnitMonoidSpec extends MonoidSpec[Unit]
+class ProductMonoidSpec extends MonoidSpec[Int](Monoid.product)
 
-class ListMonoidSpec extends MonoidSpec[List[AnyVal]]
+class AllMonoidSpec extends MonoidSpec[Boolean](Monoid.all)
 
-class VectorMonoidSpec extends MonoidSpec[Vector[AnyVal]]
+class AnyMonoidSpec extends MonoidSpec[Boolean](Monoid.any)
 
-class OptionMonoidSpec extends MonoidSpec[Option[String]]
+class StringMonoidSpec extends MonoidSpec[String](Monoid.string)
 
-class MapMonoidSpec extends MonoidSpec[Map[AnyVal, String]]
+class UnitMonoidSpec extends MonoidSpec[Unit](Monoid.unit)
 
-class SetMonoidSpec extends MonoidSpec[Set[AnyVal]]
+class ListMonoidSpec extends MonoidSpec[List[AnyVal]](Monoid.list)
+
+class VectorMonoidSpec extends MonoidSpec[Vector[AnyVal]](Monoid.vector)
+
+class OptionMonoidSpec extends MonoidSpec[Option[String]](Monoid.option)
+
+class FirstMonoidSpec extends MonoidSpec[Option[AnyVal]](Monoid.first)
+
+class LastMonoidSpec extends MonoidSpec[Option[AnyVal]](Monoid.last)
+
+class MapMonoidSpec extends MonoidSpec[Map[AnyVal, String]](Monoid.map)
+
+class SetMonoidSpec extends MonoidSpec[Set[AnyVal]](Monoid.set)
