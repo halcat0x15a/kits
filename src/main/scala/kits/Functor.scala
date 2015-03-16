@@ -17,6 +17,10 @@ object Functor {
     def pure[B](b: B): Const[A, B] = A.zero
     def apply[B, C](fb: Const[A, B])(f: Const[A, B => C]): Const[A, C] = A.append(fb, f)
   }
+  implicit def comp[F[_], G[_]](implicit F: Applicative[F], G: Applicative[G]) = new Applicative[({ type H[A] = Comp[F, G, A] })#H] {
+    def pure[A](a: A): Comp[F, G, A] = F.pure(G.pure(a))
+    def apply[A, B](fga: Comp[F, G, A])(f: Comp[F, G, A => B]): Comp[F, G, B] = F(fga)(F.map(f)(g => G(_)(g)))
+  }
   implicit val list = new Monad[List] with Traverse[List] {
     def pure[A](a: A): List[A] = a :: Nil
     override def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
