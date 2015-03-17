@@ -2,7 +2,7 @@ package kits
 
 trait Traverse[F[_]] extends Functor[F] { F =>
   def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
-  def map[A, B](fa: F[A])(f: A => B): F[B] = traverse[Id, A, B](fa)(f)
+  def map[A, B](fa: F[A])(f: A => B): F[B] = traverse[Identity, A, B](fa)(f)
   def compose[G[_]](implicit G: Traverse[G]) = new Traverse[({ type H[A] = F[G[A]] })#H] {
     def traverse[H[_]: Applicative, A, B](fga: F[G[A]])(f: A => H[B]): H[F[G[B]]] =
       F.traverse(fga)(G.traverse(_)(f))

@@ -1,3 +1,3 @@
 package object kits {
-  type Id[A] = A
+  type Identity[A] = A
 }

@@ -23,7 +23,7 @@ abstract class MonadSuite[F[_], A](implicit F: Monad[F], FA: Arbitrary[F[A]], A:
   }
 }
 
-class IdMonadSuite extends MonadSuite[Id, AnyVal]
+class IdentityMonadSuite extends MonadSuite[Identity, AnyVal]
 
 class ListMonadSuite extends MonadSuite[List, AnyVal]
 

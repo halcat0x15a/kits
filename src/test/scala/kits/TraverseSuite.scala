@@ -8,7 +8,7 @@ import org.scalatest.prop.Checkers
 abstract class TraverseSuite[F[_], G[_], A](implicit F: Traverse[F], G: Applicative[G], FA: Arbitrary[F[A]], GA: Arbitrary[G[A]]) extends FunSuite with Checkers {
   test("identity") {
     check { fa: F[A] =>
-      F.traverse[Id, A, A](fa)(identity) == fa
+      F.traverse[Identity, A, A](fa)(identity) == fa
     }
   }
   test("composition") {
@@ -18,7 +18,7 @@ abstract class TraverseSuite[F[_], G[_], A](implicit F: Traverse[F], G: Applicat
   }
 }
 
-class IdTraverseSuite extends TraverseSuite[Id, Option, AnyVal]
+class IdentityTraverseSuite extends TraverseSuite[Identity, Option, AnyVal]
 
 class ListTraverseSuite extends TraverseSuite[List, Option, AnyVal]
 

@@ -18,7 +18,7 @@ abstract class FunctorSuite[F[_], A](implicit F: Functor[F], FA: Arbitrary[F[A]]
   }
 }
 
-class IdFunctorSuite extends FunctorSuite[Id, AnyVal]
+class IdentityFunctorSuite extends FunctorSuite[Identity, AnyVal]
 
 class ListFunctorSuite extends FunctorSuite[List, AnyVal]
 

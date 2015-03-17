@@ -29,7 +29,7 @@ abstract class ApplicativeSuite[F[_], A](implicit F: Applicative[F], FA: Arbitra
   }
 }
 
-class IdApplicativeSuite extends ApplicativeSuite[Id, AnyVal]
+class IdentityApplicativeSuite extends ApplicativeSuite[Identity, AnyVal]
 
 class ListApplicativeSuite extends ApplicativeSuite[List, AnyVal]
 
