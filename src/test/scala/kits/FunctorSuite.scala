@@ -20,8 +20,6 @@ abstract class FunctorSuite[F[_], A](implicit F: Functor[F], FA: Arbitrary[F[A]]
 
 class IdFunctorSuite extends FunctorSuite[Id, AnyVal]
 
-class ConstFunctorSuite extends FunctorSuite[({ type F[A] = Const[String, A] })#F, AnyVal]
-
 class ListFunctorSuite extends FunctorSuite[List, AnyVal]
 
 class VectorFunctorSuite extends FunctorSuite[Vector, AnyVal]

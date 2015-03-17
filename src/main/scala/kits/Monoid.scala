@@ -1,8 +1,12 @@
 package kits
 
-trait Monoid[A] {
+trait Monoid[A] { A =>
   def zero: A
   def append(x: A, y: A): A
+  def applicative = new Applicative[({ type F[B] = A })#F] {
+    def pure[B](b: B): A = A.zero
+    def apply[B, C](fb: A)(f: A): A = A.append(fb, f)
+  }
 }
 
 object Monoid {

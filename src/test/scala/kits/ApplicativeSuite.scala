@@ -31,8 +31,6 @@ abstract class ApplicativeSuite[F[_], A](implicit F: Applicative[F], FA: Arbitra
 
 class IdApplicativeSuite extends ApplicativeSuite[Id, AnyVal]
 
-class ConstApplicativeSuite extends ApplicativeSuite[({ type F[A] = Const[String, A] })#F, AnyVal]
-
 class ListApplicativeSuite extends ApplicativeSuite[List, AnyVal]
 
 class VectorApplicativeSuite extends ApplicativeSuite[Vector, AnyVal]
