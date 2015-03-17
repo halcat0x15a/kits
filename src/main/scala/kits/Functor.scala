@@ -2,8 +2,11 @@ package kits
 
 import scala.concurrent.{Future, ExecutionContext}
 
-trait Functor[F[_]] {
+trait Functor[F[_]] { F =>
   def map[A, B](fa: F[A])(f: A => B): F[B]
+  def compose[G[_]](implicit G: Functor[G]) = new Functor[({ type H[A] = F[G[A]] })#H] {
+    def map[A, B](fga: F[G[A]])(f: A => B): F[G[B]] = F.map(fga)(G.map(_)(f))
+  }
 }
 
 object Functor {
@@ -16,10 +19,6 @@ object Functor {
   implicit def const[A](implicit A: Monoid[A]) = new Applicative[({ type F[B] = Const[A, B] })#F] {
     def pure[B](b: B): Const[A, B] = A.zero
     def apply[B, C](fb: Const[A, B])(f: Const[A, B => C]): Const[A, C] = A.append(fb, f)
-  }
-  implicit def comp[F[_], G[_]](implicit F: Applicative[F], G: Applicative[G]) = new Applicative[({ type H[A] = Comp[F, G, A] })#H] {
-    def pure[A](a: A): Comp[F, G, A] = F.pure(G.pure(a))
-    def apply[A, B](fga: Comp[F, G, A])(f: Comp[F, G, A => B]): Comp[F, G, B] = F(fga)(F.map(f)(g => G(_)(g)))
   }
   implicit val list = new Monad[List] with Traverse[List] {
     def pure[A](a: A): List[A] = a :: Nil

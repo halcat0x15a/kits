@@ -1,9 +1,13 @@
 package kits
 
-trait Applicative[F[_]] extends Functor[F] {
+trait Applicative[F[_]] extends Functor[F] { F =>
   def pure[A](a: A): F[A]
   def apply[A, B](fa: F[A])(f: F[A => B]): F[B]
   def map[A, B](fa: F[A])(f: A => B): F[B] = apply(fa)(pure(f))
+  def compose[G[_]](implicit G: Applicative[G]) = new Applicative[({ type H[A] = F[G[A]] })#H] {
+    def pure[A](a: A): F[G[A]] = F.pure(G.pure(a))
+    def apply[A, B](fga: F[G[A]])(f: F[G[A => B]]): F[G[B]] = F(fga)(F.map(f)(g => G(_)(g)))
+  }
 }
 
 object Applicative {

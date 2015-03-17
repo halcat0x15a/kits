@@ -13,7 +13,7 @@ abstract class TraverseSuite[F[_], G[_], A](implicit F: Traverse[F], G: Applicat
   }
   test("composition") {
     check { (fa: F[A], f: A => G[A], g: A => G[A]) =>
-      F.traverse[({ type H[A] = Comp[G, G, A] })#H, A, A](fa)(f.andThen(G.map(_)(g))) == G.map(F.traverse(fa)(f))(F.traverse(_)(g))
+      F.traverse[({ type H[A] = G[G[A]] })#H, A, A](fa)(f.andThen(G.map(_)(g)))(G.compose(G)) == G.map(F.traverse(fa)(f))(F.traverse(_)(g))
     }
   }
 }
