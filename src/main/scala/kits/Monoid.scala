@@ -10,6 +10,11 @@ trait Monoid[A] { A =>
 }
 
 object Monoid {
+  @annotation.tailrec
+  def multiply[A](a: A, n: Int)(implicit A: Monoid[A]): A =
+    if (n <= 0) A.zero
+    else if (n == 1) a
+    else multiply(A.append(a, a), n - 1)
   implicit def sum[A](implicit A: Numeric[A]) = new Monoid[A] {
     def zero: A = A.zero
     def append(x: A, y: A): A = A.plus(x, y)
