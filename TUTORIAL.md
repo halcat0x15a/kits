@@ -1,6 +1,6 @@
 # Kits
 
-`kits`はScalaにおける関数プログラミングを便利にするためのライブラリである.
+kitsはScalaの関数プログラミングを支援するライブラリである.
 
 このライブラリを通してScalaには標準で存在しない抽象概念について学ぶ.
 
@@ -85,5 +85,85 @@ Intのインスタンスは2通り実装されており`import`により実装�
 モノイドの応用は`Traverse`に関する解説で紹介する.
 
 ## Applicative
+
+`Functor`は関数を`F`に写し適用する`map`をもつ.
+
+```scala
+trait Functor[F[_]] {
+  def map[A, B](fa: F[A])(f: A => B): F[B]
+}
+```
+
+これは`List`や`Option`, `Future`などがもつ`map`に関して抽象化した型クラスである.
+
+`Applicative`は`Functor`を継承する.
+
+```scala
+trait Applicative[F[_]] extends Functor[F] {
+  def pure[A](a: A): F[A]
+  def apply[A, B](fa: F[A])(f: F[A => B]): F[B]
+  def map[A, B](fa: F[A])(f: A => B): F[B] = apply(fa)(pure(f))
+}
+```
+
+* `pure`は値を`F`に写す.
+* `apply`は`F`について順次評価し関数を適用する.
+
+`Applicative`は任意の関数を`F`の文脈で適用することを可能にする.
+
+```scala
+def map2[F[_], A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C)(implicit F: Applicative[F]): F[C] =
+  F.apply(fb)(F.map(fa)(a => f(a, _)))
+
+def map3[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] =
+  F.apply(fc)(map2(fa, fb)((a, b) => f(a, b, _)))
+```
+
+多くの場合に`Applicative`は`Monad`により定義される.
+
+```scala
+trait Monad[F[_]] extends Applicative[F] {
+  def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
+  def apply[A, B](fa: F[A])(f: F[A => B]): F[B] = flatMap(f)(map(fa))
+  override def map[A, B](fa: F[A])(f: A => B): F[B] = flatMap(fa)(a => pure(f(a)))
+}
+```
+
+`List`や`Option`はモナドであり, インスタンスは次のように定義できる.
+
+```scala
+implicit val listMonad = new Monad[List] {
+  def pure[A](a: A): List[A] = a :: Nil
+  def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
+}
+
+implicit val optionMonad = new Monad[Option] {
+  def pure[A](a: A): Option[A] = Some(a)
+  def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa.flatMap(f)
+}
+```
+
+`Applicative`は`Monad`より軽量な記述を可能にする.
+
+```scala
+case class User(id: Int, name: String)
+
+assert((for (id <- Option(346); name <- Option("halcat")) yield User(id, name)) == Some(User(346, "halcat")))
+
+assert(map2(Option(346), Option("halcat"))(User) == Some(User(346, "halcat")))
+```
+
+kitsでは`kits.Functor`, `kits.Applicative`, `kits.Monad`が定義され, それらのインスタンスは`kits.Functor`に定義される.
+
+これは`implicit value`の探索がスーパークラスのコンパニオンオブジェクトに対しても行われるためである.
+
+`kits.Applicative`は次のように使える.
+
+```scala
+assert(kits.Applicative.map(List(1, 2), List(3))(_ + _) == List(4, 5))
+
+type Result[A] = Either[String, A]
+assert(kits.Applicative.map(Right(2): Result[Int], Right(3): Result[Int], Left("hoge"): Result[Int])(_ + _ + _) == Left("hoge"))
+```
 
 ## Traverse
