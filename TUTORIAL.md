@@ -86,7 +86,7 @@ Intのインスタンスは2通り実装されており`import`により実装�
 
 ## Applicative
 
-`Functor`は関数を`F`に写し適用する`map`をもつ.
+まずは`Functor`の定義を示す.
 
 ```scala
 trait Functor[F[_]] {
@@ -94,9 +94,11 @@ trait Functor[F[_]] {
 }
 ```
 
+`map`は関数を`F`に写し適用する.
+
 これは`List`や`Option`, `Future`などがもつ`map`に関して抽象化した型クラスである.
 
-`Applicative`は`Functor`を継承する.
+そして`Applicative`は`Functor`を継承する.
 
 ```scala
 trait Applicative[F[_]] extends Functor[F] {
@@ -109,7 +111,7 @@ trait Applicative[F[_]] extends Functor[F] {
 * `pure`は値を`F`に写す.
 * `apply`は`F`について順次評価し関数を適用する.
 
-`Applicative`は任意の関数を`F`の文脈で適用することを可能にする.
+これらは任意の関数を`F`の文脈で適用することを可能にする.
 
 ```scala
 def map2[F[_], A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C)(implicit F: Applicative[F]): F[C] =
@@ -167,3 +169,54 @@ assert(kits.Applicative.map(Right(2): Result[Int], Right(3): Result[Int], Left("
 ```
 
 ## Traverse
+
+`Traverse`の定義を示す.
+
+```scala
+trait Traverse[F[_]] extends Functor[F] {
+  def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
+  def map[A, B](fa: F[A])(f: A => B): F[B] = traverse[Identity, A, B](fa)(f)
+}
+```
+
+`traverse`は`F`の各要素を`G`に写し結果を`F`に集める.
+
+`Identity`の文脈では`traverse`は`map`と同じ結果が得られる.
+
+```scala
+type Identity[A] = A
+
+val identityApplicative = new Applicative[Identity] {
+  def pure[A](a: A): Identity[A] = a
+  def apply[A, B](fa: Identity[A])(f: Identity[A => B]): Identity[B] = f(fa)
+}
+```
+
+`List`は`Traverse`のインスタンスである.
+
+```scala
+implicit val listTraverse = new Traverse[List] {
+  def traverse[F[_], A, B](fa: List[A])(f: A => F[B])(implicit F: Applicative[F]): F[List[B]] =
+    fa.foldRight(F.pure(Nil: List[B]))((a, ga) => F(ga)(F.map(f(a))(b => b :: _)))
+}
+```
+
+`sequence`は`F`と`G`を入れ替える.
+
+```scala
+def sequence[F[_]: Traverse, G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] = traverse(fga)(identity)
+
+assert(sequence(List(Option(1), Option(2), Option(3))) == Some(List(1, 2, 3)))
+
+assert(sequence(List(Some(1), None, Some(3))) == None)
+```
+
+`foldMap`は`Monoid`を使って畳み込む.
+
+```scala
+def foldMap[F[_]: Traverse, A, B: Monoid](fa: F[A])(f: A => B)(implicit F: Traverse[F], B: Monoid[B]): B = traverse[F, ({ type G[A] = B })#G, A, B](fa)(f)(F, B.applicative)
+
+assert(foldMap(List("hello", "world"))(identity) == "helloworld")
+
+assert(foldMap(List("hello", "world"))(_.size) == 10)
+```
