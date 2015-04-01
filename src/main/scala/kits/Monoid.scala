@@ -81,4 +81,12 @@ object Monoid {
     def empty: A => A = identity
     def append(f: A => A, g: A => A): A => A = f.andThen(g)
   }
+  implicit def pair[A, B](implicit A: Monoid[A], B: Monoid[B]) = new Monoid[(A, B)] {
+    def empty: (A, B) = (A.empty, B.empty)
+    def append(x: (A, B), y: (A, B)): (A, B) = (A.append(x._1, y._1), B.append(x._2, y._2))
+  }
+  implicit def triple[A, B, C](implicit A: Monoid[A], B: Monoid[B], C: Monoid[C]) = new Monoid[(A, B, C)] {
+    def empty: (A, B, C) = (A.empty, B.empty, C.empty)
+    def append(x: (A, B, C), y: (A, B, C)): (A, B, C) = (A.append(x._1, y._1), B.append(x._2, y._2), C.append(x._3, y._3))
+  }
 }

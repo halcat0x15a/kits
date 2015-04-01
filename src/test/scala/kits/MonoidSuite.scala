@@ -48,3 +48,7 @@ class LastMonoidSuite extends MonoidSuite[Option[AnyVal]](Monoid.last)
 class MapMonoidSuite extends MonoidSuite[Map[AnyVal, String]](Monoid.map)
 
 class SetMonoidSuite extends MonoidSuite[Set[AnyVal]](Monoid.set)
+
+class PairMonoidSuite extends MonoidSuite[(String, String)](Monoid.pair)
+
+class TripleMonoidSuite extends MonoidSuite[(String, String, String)](Monoid.triple)
