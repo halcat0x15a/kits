@@ -68,7 +68,7 @@ object Functor {
     override def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)
     def flatMap[A, B](fa: Future[A])(f: A => Future[B]): Future[B] = fa.flatMap(f)
   }
-  implicit def `try` = new Monad[Try] {
+  implicit val `try` = new Monad[Try] {
     def pure[A](a: A): Try[A] = Try(a)
     override def map[A, B](fa: Try[A])(f: A => B): Try[B] = fa.map(f)
     def flatMap[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
