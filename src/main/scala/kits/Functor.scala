@@ -11,10 +11,10 @@ trait Functor[F[_]] { F =>
 
 object Functor {
   implicit val identity = new Monad[Identity] with Traverse[Identity] {
-    def pure[A](a: A): Identity[A] = a
-    override def map[A, B](fa: Identity[A])(f: A => B): Identity[B] = f(fa)
-    def flatMap[A, B](fa: Identity[A])(f: A => Identity[B]): Identity[B] = f(fa)
-    def traverse[F[_]: Applicative, A, B](fa: Identity[A])(f: A => F[B]): F[Identity[B]] = f(fa)
+    def pure[A](a: A): A = a
+    override def map[A, B](fa: A)(f: A => B): B = f(fa)
+    def flatMap[A, B](fa: A)(f: A => B): B = f(fa)
+    def traverse[F[_]: Applicative, A, B](fa: A)(f: A => F[B]): F[B] = f(fa)
   }
   implicit val list = new Monad[List] with Traverse[List] {
     def pure[A](a: A): List[A] = a :: Nil
