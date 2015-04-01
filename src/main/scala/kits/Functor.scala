@@ -1,6 +1,7 @@
 package kits
 
 import scala.concurrent.{Future, ExecutionContext}
+import scala.util.Try
 
 trait Functor[F[_]] { F =>
   def map[A, B](fa: F[A])(f: A => B): F[B]
@@ -66,5 +67,10 @@ object Functor {
     def pure[A](a: A): Future[A] = Future.successful(a)
     override def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)
     def flatMap[A, B](fa: Future[A])(f: A => Future[B]): Future[B] = fa.flatMap(f)
+  }
+  implicit def `try` = new Monad[Try] {
+    def pure[A](a: A): Try[A] = Try(a)
+    override def map[A, B](fa: Try[A])(f: A => B): Try[B] = fa.map(f)
+    def flatMap[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
   }
 }
