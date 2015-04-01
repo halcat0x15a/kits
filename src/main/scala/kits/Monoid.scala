@@ -1,10 +1,10 @@
 package kits
 
 trait Monoid[A] { A =>
-  def zero: A
+  def empty: A
   def append(x: A, y: A): A
   def applicative = new Applicative[({ type F[B] = A })#F] {
-    def pure[B](b: B): A = A.zero
+    def pure[B](b: B): A = A.empty
     def apply[B, C](fb: A)(f: A): A = A.append(fb, f)
   }
 }
@@ -13,43 +13,43 @@ object Monoid {
   def append[A](x: A, y: A)(implicit A: Monoid[A]): A = A.append(x, y)
   @annotation.tailrec
   def multiply[A](a: A, n: Int)(implicit A: Monoid[A]): A =
-    if (n <= 0) A.zero
+    if (n <= 0) A.empty
     else if (n == 1) a
     else multiply(A.append(a, a), n - 1)
   implicit def sum[A](implicit A: Numeric[A]) = new Monoid[A] {
-    def zero: A = A.zero
+    def empty: A = A.zero
     def append(x: A, y: A): A = A.plus(x, y)
   }
   implicit def product[A](implicit A: Numeric[A]) = new Monoid[A] {
-    def zero: A = A.one
+    def empty: A = A.one
     def append(x: A, y: A): A = A.times(x, y)
   }
   implicit val all = new Monoid[Boolean] {
-    def zero: Boolean = true
+    def empty: Boolean = true
     def append(x: Boolean, y: Boolean): Boolean = x && y
   }
   implicit val any = new Monoid[Boolean] {
-    def zero: Boolean = false
+    def empty: Boolean = false
     def append(x: Boolean, y: Boolean): Boolean = x || y
   }
   implicit val string = new Monoid[String] {
-    def zero: String = ""
+    def empty: String = ""
     def append(x: String, y: String): String = x + y
   }
   implicit val unit = new Monoid[Unit] {
-    def zero: Unit = ()
+    def empty: Unit = ()
     def append(x: Unit, y: Unit): Unit = ()
   }
   implicit def list[A] = new Monoid[List[A]] {
-    def zero: List[A] = Nil
+    def empty: List[A] = Nil
     def append(x: List[A], y: List[A]): List[A] = x ::: y
   }
   implicit def vector[A] = new Monoid[Vector[A]] {
-    def zero: Vector[A] = Vector.empty
+    def empty: Vector[A] = Vector.empty
     def append(x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
   }
   implicit def option[A](implicit A: Monoid[A]) = new Monoid[Option[A]] {
-    def zero: Option[A] = None
+    def empty: Option[A] = None
     def append(x: Option[A], y: Option[A]) =
       (x, y) match {
         case (None, None) => None
@@ -59,26 +59,26 @@ object Monoid {
       }
   }
   implicit def first[A] = new Monoid[Option[A]] {
-    def zero: Option[A] = None
+    def empty: Option[A] = None
     def append(x: Option[A], y: Option[A]) = x.orElse(y)
   }
   implicit def last[A] = new Monoid[Option[A]] {
-    def zero: Option[A] = None
+    def empty: Option[A] = None
     def append(x: Option[A], y: Option[A]) = y.orElse(x)
   }
   implicit def map[K, V](implicit V: Monoid[V]) = new Monoid[Map[K, V]] {
-    def zero: Map[K, V] = Map.empty
+    def empty: Map[K, V] = Map.empty
     def append(x: Map[K, V], y: Map[K, V]): Map[K, V] =
       x.foldLeft(y) {
         case (a, (k, v)) => a.updated(k, a.get(k).fold(v)(V.append(_, v)))
       }
   }
   implicit def set[A] = new Monoid[Set[A]] {
-    def zero: Set[A] = Set.empty
+    def empty: Set[A] = Set.empty
     def append(x: Set[A], y: Set[A]): Set[A] = x | y
   }
   implicit def endo[A] = new Monoid[A => A] {
-    def zero: A => A = identity
+    def empty: A => A = identity
     def append(f: A => A, g: A => A): A => A = f.andThen(g)
   }
 }

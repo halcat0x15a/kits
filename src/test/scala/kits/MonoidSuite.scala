@@ -8,12 +8,12 @@ import org.scalatest.prop.Checkers
 abstract class MonoidSuite[A: Arbitrary](A: Monoid[A]) extends FunSuite with Checkers {
   test("rightIdentity") {
     check { a: A =>
-      A.append(a, A.zero) == a
+      A.append(a, A.empty) == a
     }
   }
   test("leftIdentity") {
     check { a: A =>
-      A.append(A.zero, a) == a
+      A.append(A.empty, a) == a
     }
   }
   test("associativity") {
