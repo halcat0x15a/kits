@@ -51,10 +51,10 @@ object Functor {
   }
   implicit def right[A] = new Monad[({ type F[B] = Either[A, B] })#F] with Traverse[({ type F[B] = Either[A, B] })#F] {
     def pure[B](b: B): Either[A, B] = Right(b)
-    override def map[B, C](fa: Either[A, B])(f: B => C): Either[A, C] = fa.right.map(f)
-    def flatMap[B, C](fa: Either[A, B])(f: B => Either[A, C]): Either[A, C] = fa.right.flatMap(f)
-    def traverse[F[_], B, C](fa: Either[A, B])(f: B => F[C])(implicit F: Applicative[F]): F[Either[A, C]] =
-      fa.fold(a => F.pure(Left(a)), b => F.map(f(b))(pure))
+    override def map[B, C](fb: Either[A, B])(f: B => C): Either[A, C] = fb.right.map(f)
+    def flatMap[B, C](fb: Either[A, B])(f: B => Either[A, C]): Either[A, C] = fb.right.flatMap(f)
+    def traverse[F[_], B, C](fb: Either[A, B])(f: B => F[C])(implicit F: Applicative[F]): F[Either[A, C]] =
+      fb.fold(a => F.pure(Left(a)), b => F.map(f(b))(pure))
   }
   implicit def left[B] = new Monad[({ type F[A] = Either[A, B] })#F] with Traverse[({ type F[A] = Either[A, B] })#F] {
     def pure[A](a: A): Either[A, B] = Left(a)
