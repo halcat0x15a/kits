@@ -5,6 +5,8 @@ import org.scalacheck.Arbitrary
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
 
+import Applicative.{left, right}
+
 abstract class ApplicativeSuite[F[_], A](implicit F: Applicative[F], FA: Arbitrary[F[A]], A: Arbitrary[A]) extends FunSuite with Checkers {
   implicit def pure[A](implicit A: Arbitrary[A]): Arbitrary[F[A]] = Arbitrary(A.arbitrary.map(F.pure))
   test("identity") {
@@ -39,6 +41,6 @@ class OptionApplicativeSuite extends ApplicativeSuite[Option, AnyVal]
 
 class SetApplicativeSuite extends ApplicativeSuite[Set, AnyVal]
 
-class RightApplicativeSuite extends ApplicativeSuite[({ type F[A] = Either[AnyVal, A] })#F, AnyVal]
+class RightApplicativeSuite extends ApplicativeSuite[({ type F[A] = Either[String, A] })#F, AnyVal]
 
-class LeftApplicativeSuite extends ApplicativeSuite[({ type F[A] = Either[A, AnyVal] })#F, AnyVal]
+class LeftApplicativeSuite extends ApplicativeSuite[({ type F[A] = Either[A, String] })#F, AnyVal]
