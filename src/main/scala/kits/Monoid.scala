@@ -89,4 +89,16 @@ object Monoid {
     def empty: (A, B, C) = (A.empty, B.empty, C.empty)
     def append(x: (A, B, C), y: (A, B, C)): (A, B, C) = (A.append(x._1, y._1), B.append(x._2, y._2), C.append(x._3, y._3))
   }
+  implicit def ordering[A] = new Monoid[Ordering[A]] {
+    def empty = new Ordering[A] {
+      def compare(a: A, b: A): Int = 0
+    }
+    def append(x: Ordering[A], y: Ordering[A]) = new Ordering[A] {
+      def compare(a: A, b: A): Int =
+        x.compare(a, b) match {
+          case 0 => y.compare(a, b)
+          case n => n
+        }
+    }
+  }
 }
