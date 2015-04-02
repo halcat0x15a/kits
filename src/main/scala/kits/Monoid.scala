@@ -10,7 +10,7 @@ trait Monoid[A] { A =>
 }
 
 object Monoid {
-  def append[A](x: A, y: A)(implicit A: Monoid[A]): A = A.append(x, y)
+  def append[A](xs: A*)(implicit A: Monoid[A]): A = xs.foldLeft(A.empty)(A.append)
   @annotation.tailrec
   def multiply[A](a: A, n: Int)(implicit A: Monoid[A]): A =
     if (n <= 0) A.empty
