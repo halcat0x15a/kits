@@ -2,7 +2,7 @@
 
 kitsはScalaの関数プログラミングを支援するライブラリである.
 
-このライブラリを通してScalaには標準で存在しない抽象概念について学ぶ.
+このライブラリを通してScalaに標準で存在しない抽象概念について紹介する.
 
 ## Monoid
 
@@ -32,7 +32,7 @@ implicit val intMonoid = new Monoid[Int] {
 
 特に`def`は`type parameter`と`implicit parameter`をとることができる.
 
-`Monoid`を使った関数を定義する.
+次に`Monoid`を使った関数を定義する.
 
 ```scala
 def double[A](a: A)(implicit A: Monoid[A]): A = A.append(a, a)
@@ -43,7 +43,7 @@ assert(double(3) == 6)
 
 関数は型クラスを`implicit parameter`としてとることでインスタンスを明示する必要がなくなる.
 
-`String`に対する`Monoid`のインスタンスを定義する.
+`String`は単位元が空文字列, 結合演算が文字列連結のモノイドである.
 
 ```scala
 implicit val stringMonoid = new Monoid[String] {
@@ -60,39 +60,36 @@ assert(double("fuga") == "fugafuga")
 kitsではモノイドが`kits.Monoid`に定義され, そのインスタンスはコンパニオンオブジェクトに定義される.
 
 ```scala
-kits.Monoid.append("foo", "bar", "baz") == "foobarbaz"
-kits.Monoid.multiply(List("hoge"), 3) == List("hoge", "hoge", "hoge")
+assert(kits.Monoid.append("foo", "bar", "baz") == "foobarbaz")
+
+assert(kits.Monoid.multiply("hoge", 3) == "hogehogehoge")
 ```
 
 `implicit value`は現在のスコープ以外にもデータ型や型クラスのコンパニオンオブジェクトから探索される.
 
-Intのインスタンスは2通り実装されており`import`により実装を選択する.
+数値のインスタンスは2通り実装されており`import`により実装を選択する.
 
 ```scala
 {
   import kits.Monoid.sum
-  assert(kits.Monoid.multiply(3, 2) == 6)
+  assert(kits.Monoid.append(2, 3) == 5)
 }
 
 {
   import kits.Monoid.product
-  assert(kits.Monoid.multiply(3, 2) == 9)
+  assert(kits.Monoid.append(2, 3) == 6)
 }
 ```
 
-モノイドの応用は`Traverse`に関する解説で紹介する.
-
 ## Applicative
 
-まずは`Functor`の定義を示す.
+最初に`Functor`の定義を示す.
 
 ```scala
 trait Functor[F[_]] {
   def map[A, B](fa: F[A])(f: A => B): F[B]
 }
 ```
-
-`map`は関数を`F`に写し適用する.
 
 これは`List`や`Option`, `Future`などがもつ`map`に関して抽象化した型クラスである.
 
@@ -107,7 +104,7 @@ trait Applicative[F[_]] extends Functor[F] {
 ```
 
 * `pure`は値を`F`に写す.
-* `apply`は`F`について順次評価し関数を適用する.
+* `apply`は`F`の文脈で引数を順次評価し関数を適用する.
 
 これらは任意の関数を`F`の文脈で適用することを可能にする.
 
@@ -163,10 +160,23 @@ kitsでは`kits.Functor`, `kits.Applicative`, `kits.Monad`が定義され, そ�
 assert(kits.Applicative.map(List(1, 2), List(3))(_ + _) == List(4, 5))
 
 type Result[A] = Either[String, A]
-assert(kits.Applicative.map(Right(2): Result[Int], Right(3): Result[Int], Left("hoge"): Result[Int])(_ + _ + _) == Left("hoge"))
+
+{
+  import kits.Functor.right
+  assert(kits.Applicative.map(Left("foo"): Result[Int], Right(1): Result[Int], Left("bar"): Result[Int])(_ + _ + _) == Left("foo"))
+}
+
+{
+  import kits.Applicative.right
+  assert(kits.Applicative.map(Left("foo"): Result[Int], Right(1): Result[Int], Left("bar"): Result[Int])(_ + _ + _) == Left("foobar"))
+}
 ```
 
-Scalaでは高階型の単一化が弱いので`Either`などには別名を付ける必要が有る.
+Scalaは高階型の単一化が弱いので`Either`などには別名を付ける必要がある.
+
+`Either`には2つの`Applicative`が定義される.
+
+`kits.Functor.right`は最初の`Left`の値を返し, `kits.Applicative.right`は`Left`の値を`Monoid`により結合する.
 
 ## Traverse
 
@@ -179,14 +189,14 @@ trait Traverse[F[_]] extends Functor[F] {
 }
 ```
 
-`traverse`は`F`の各要素を`G`に写し結果を`F`に集める.
+`traverse`は`fa`の各要素を`f`に適用し結果を`G`の文脈で`F`に収集する.
 
-`Identity`の文脈では`traverse`は`map`と同じ結果が得られる.
+`Identity`の文脈で`traverse`は`map`と同じ結果が得られる.
 
 ```scala
 type Identity[A] = A
 
-val identityApplicative = new Applicative[Identity] {
+implicit val identityApplicative = new Applicative[Identity] {
   def pure[A](a: A): Identity[A] = a
   def apply[A, B](fa: Identity[A])(f: Identity[A => B]): Identity[B] = f(fa)
 }
@@ -194,7 +204,7 @@ val identityApplicative = new Applicative[Identity] {
 
 `Identity`は自身に写すため, `Applicative`は単なる関数適用として作用する.
 
-次に`List`に対する`Traverse`のインスタンスを示す.
+`List`に対する`Traverse`のインスタンスは次のようになる.
 
 ```scala
 implicit val listTraverse = new Traverse[List] {
@@ -205,22 +215,32 @@ implicit val listTraverse = new Traverse[List] {
 
 `Traverse`はいくつかの有用なたたみ込み関数を提供する.
 
-`sequence`は`Traverse`と`Applicative`を入れ替える.
+`sequence`はデータ構造と計算コンテナを入れ替える関数である.
 
 ```scala
-def sequence[F[_]: Traverse, G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] = traverse(fga)(identity)
+def sequence[F[_], G[_], A](fga: F[G[A]])(implicit F: Traverse[F], G: Applicative[G]): G[F[A]] = F.traverse(fga)(identity)
 
 assert(sequence(List(Option(1), Option(2), Option(3))) == Some(List(1, 2, 3)))
 
 assert(sequence(List(Some(1), None, Some(3))) == None)
 ```
 
-`foldMap`は`Monoid`を使って`Traverse`を畳み込む.
+`foldMap`は`Monoid`を使って`Traverse`を畳み込む関数である.
+
+定義には`Monoid`からなる`Applicative`を利用する.
 
 ```scala
-def foldMap[F[_]: Traverse, A, B: Monoid](fa: F[A])(f: A => B)(implicit F: Traverse[F], B: Monoid[B]): B = traverse[F, ({ type G[A] = B })#G, A, B](fa)(f)(F, B.applicative)
+def monoidApplicative[A](A: Monoid[A]) = new Applicative[({ type F[B] = A })#F] {
+  def pure[B](b: B) = A.empty
+  def apply[B, C](fa: A)(f: A) = A.append(f, fa)
+}
+
+def foldMap[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Traverse[F], B: Monoid[B]): B = F.traverse[({ type G[A] = B })#G, A, B](fa)(f)(monoidApplicative(B))
 
 assert(foldMap(List("hello", "world"))(identity) == "helloworld")
 
-assert(foldMap(List("hello", "world"))(_.size) == 10)
+{
+  import kits.Monoid.sum
+  assert(foldMap(List("hello", "world"))(_.size) == 10)
+}
 ```
