@@ -5,7 +5,7 @@ trait Monoid[A] { A =>
   def append(x: A, y: A): A
   def applicative = new Applicative[({ type F[B] = A })#F] {
     def pure[B](b: B): A = A.empty
-    def apply[B, C](fb: A)(f: A): A = A.append(fb, f)
+    def apply[B, C](fb: A)(f: A): A = A.append(f, fb)
   }
 }
 
