@@ -46,7 +46,7 @@ object Monoid {
   }
   implicit def option[A](implicit A: Monoid[A]) = new Monoid[Option[A]] {
     def empty: Option[A] = None
-    def append(x: Option[A], y: Option[A]) =
+    def append(x: Option[A], y: Option[A]): Option[A] =
       (x, y) match {
         case (None, None) => None
         case (_, None) => x
@@ -56,11 +56,11 @@ object Monoid {
   }
   implicit def first[A] = new Monoid[Option[A]] {
     def empty: Option[A] = None
-    def append(x: Option[A], y: Option[A]) = x.orElse(y)
+    def append(x: Option[A], y: Option[A]): Option[A] = x.orElse(y)
   }
   implicit def last[A] = new Monoid[Option[A]] {
     def empty: Option[A] = None
-    def append(x: Option[A], y: Option[A]) = y.orElse(x)
+    def append(x: Option[A], y: Option[A]): Option[A] = y.orElse(x)
   }
   implicit def map[K, V](implicit V: Monoid[V]) = new Monoid[Map[K, V]] {
     def empty: Map[K, V] = Map.empty

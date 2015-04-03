@@ -12,6 +12,6 @@ trait Traverse[F[_]] extends Functor[F] { F =>
 object Traverse {
   def traverse[F[_], G[_], A, B](fa: F[A])(f: A => G[B])(implicit F: Traverse[F], G: Applicative[G]): G[F[B]] = F.traverse(fa)(f)
   def sequence[F[_]: Traverse, G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] = traverse(fga)(identity)
-  def foldMap[F[_]: Traverse, A, B: Monoid](fa: F[A])(f: A => B)(implicit F: Traverse[F], B: Monoid[B]): B = traverse[F, ({ type G[A] = B })#G, A, B](fa)(f)(F, B.applicative)
+  def foldMap[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Traverse[F], B: Monoid[B]): B = F.traverse[({ type G[A] = B })#G, A, B](fa)(f)(B.applicative)
   def fold[F[_]: Traverse, A: Monoid](fa: F[A]): A = foldMap(fa)(identity)
 }
