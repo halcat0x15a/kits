@@ -11,11 +11,7 @@ trait Monoid[A] { A =>
 
 object Monoid {
   def append[A](xs: A*)(implicit A: Monoid[A]): A = xs.foldLeft(A.empty)(A.append)
-  @annotation.tailrec
-  def multiply[A](a: A, n: Int)(implicit A: Monoid[A]): A =
-    if (n <= 0) A.empty
-    else if (n == 1) a
-    else multiply(A.append(a, a), n - 1)
+  def multiply[A: Monoid](a: A, n: Int): A = append(Seq.fill(n)(a): _*)
   implicit def sum[A](implicit A: Numeric[A]) = new Monoid[A] {
     def empty: A = A.zero
     def append(x: A, y: A): A = A.plus(x, y)
