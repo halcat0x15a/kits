@@ -9,3 +9,8 @@ Kits is a library for functional programming in Scala.
 ```scala
 libraryDependencies += "org.halcat" %% "kits" % "0.3.0"
 ```
+
+## Resouces
+
+* [ScalaDoc](https://halcat0x15a.github.com/kits/api/index.html)
+* [Tutorial](https://github.com/halcat0x15a/kits/blob/document/TUTORIAL.md)
