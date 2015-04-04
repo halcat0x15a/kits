@@ -19,8 +19,8 @@ object Applicative {
     def pure[B](b: B): Either[A, B] = Right(b)
     override def map[B, C](fb: Either[A, B])(f: B => C): Either[A, C] = fb.right.map(f)
     def apply[B, C](fb: Either[A, B])(f: Either[A, B => C]): Either[A, C] =
-      (fb, f) match {
-        case (Right(b), Right(f)) => Right(f(b))
+      (f, fb) match {
+        case (Right(f), Right(b)) => Right(f(b))
         case (Right(_), Left(a)) => Left(a)
         case (Left(a), Right(_)) => Left(a)
         case (Left(x), Left(y)) => Left(A.append(x, y))
@@ -30,8 +30,8 @@ object Applicative {
     def pure[A](a: A): Either[A, B] = Left(a)
     override def map[A, C](fa: Either[A, B])(f: A => C): Either[C, B] = fa.left.map(f)
     def apply[A, C](fa: Either[A, B])(f: Either[A => C, B]): Either[C, B] =
-      (fa, f) match {
-        case (Left(a), Left(f)) => Left(f(a))
+      (f, fa) match {
+        case (Left(f), Left(a)) => Left(f(a))
         case (Left(_), Right(b)) => Right(b)
         case (Right(b), Left(_)) => Right(b)
         case (Right(x), Right(y)) => Right(B.append(x, y))
