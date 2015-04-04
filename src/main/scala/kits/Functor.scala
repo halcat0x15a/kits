@@ -29,7 +29,7 @@ object Functor {
     override def map[A, B](fa: Vector[A])(f: A => B): Vector[B] = fa.map(f)
     def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] = fa.flatMap(f)
     def traverse[F[_], A, B](fa: Vector[A])(f: A => F[B])(implicit F: Applicative[F]): F[Vector[B]] =
-      fa.foldLeft(F.pure(Vector.empty[B]))((ga, a) => F(ga)(F.map(f(a))(b => _ :+ b)))
+      fa.foldLeft(F.pure(Vector.empty[B]))((ga, a) => F(f(a))(F.map(ga)(a => a :+ _)))
   }
   implicit val option = new Monad[Option] with Traverse[Option] {
     def pure[A](a: A): Option[A] = Some(a)
@@ -40,14 +40,14 @@ object Functor {
   }
   implicit def map[K] = new Traverse[({ type F[A] = Map[K, A] })#F] {
     def traverse[F[_], A, B](fa: Map[K, A])(f: A => F[B])(implicit F: Applicative[F]): F[Map[K, B]] =
-      fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F(ga)(F.map(f(a))(b => _ + (k -> b))) }
+      fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F(f(a))(F.map(ga)(a => b => a + (k -> b))) }
   }
   implicit val set = new Monad[Set] with Traverse[Set] {
     def pure[A](a: A): Set[A] = Set(a)
     override def map[A, B](fa: Set[A])(f: A => B): Set[B] = fa.map(f)
     def flatMap[A, B](fa: Set[A])(f: A => Set[B]): Set[B] = fa.flatMap(f)
     def traverse[F[_], A, B](fa: Set[A])(f: A => F[B])(implicit F: Applicative[F]): F[Set[B]] =
-      fa.foldLeft(F.pure(Set.empty[B]))((ga, a) => F(ga)(F.map(f(a))(b => _ + b)))
+      fa.foldLeft(F.pure(Set.empty[B]))((ga, a) => F(f(a))(F.map(ga)(a => a + _)))
   }
   implicit def right[A] = new Monad[({ type F[B] = Either[A, B] })#F] with Traverse[({ type F[B] = Either[A, B] })#F] {
     def pure[B](b: B): Either[A, B] = Right(b)
