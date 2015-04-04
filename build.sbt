@@ -13,6 +13,8 @@ libraryDependencies ++= Seq(
 
 scalacOptions ++= Seq("-feature", "-language:higherKinds")
 
+target in Compile in doc := baseDirectory.value / "api"
+
 publishMavenStyle := true
 
 publishTo := {
