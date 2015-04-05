@@ -67,7 +67,7 @@ assert(kits.Monoid.multiply("hoge", 3) == "hogehogehoge")
 
 `implicit value`は現在のスコープ以外にもデータ型や型クラスのコンパニオンオブジェクトから探索される.
 
-数値のインスタンスは2通り実装されており`import`により実装を選択する.
+数値は2種類のインスタンスが実装されており`import`により実装を選択する.
 
 ```scala
 {
@@ -81,15 +81,48 @@ assert(kits.Monoid.multiply("hoge", 3) == "hogehogehoge")
 }
 ```
 
+`Boolean`も同様に2種類のインスタンスが存在する.
+
+```scala
+{
+  import kits.Monoid.all
+  assert(kits.Monoid.append(false, true) == false)
+}
+
+{
+  import kits.Monoid.any
+  assert(kits.Monoid.append(false, true) == true)
+}
+```
+
+半群に単位元を加えることでモノイドをなす例として`Option`や`Map`が存在する.
+
+```scala
+{
+  import kits.Monoid.option
+  assert(kits.Monoid.append(Some("foo"), None, Some("bar")) == Some("foobar"))
+}
+
+assert(kits.Monoid.append(Map('a -> "foo", 'b -> "bar"), Map('a -> "bar", 'c -> "baz")) == Map('a -> "foobar", 'b -> "bar", 'c -> "baz"))
+```
+
+自己準同型はモノイドである.
+
+```scala
+assert(kits.Monoid.multiply((_: Int) * 2, 5).apply(1) == 32)
+```
+
 ## Applicative
 
-最初に`Functor`の定義を示す.
+まず最初に`Functor`の定義を示す.
 
 ```scala
 trait Functor[F[_]] {
   def map[A, B](fa: F[A])(f: A => B): F[B]
 }
 ```
+
+`map`は関数をコンテナに持ち上げ, 適用する.
 
 これは`List`や`Option`, `Future`などがもつ`map`に関して抽象化した型クラスである.
 
@@ -103,10 +136,10 @@ trait Applicative[F[_]] extends Functor[F] {
 }
 ```
 
-* `pure`は値を`F`に写す.
-* `apply`は`F`の文脈で引数を順次評価し関数を適用する.
+* `pure`は値をコンテナに持ち上げる.
+* `apply`はコンテナに包まれた値にコンテナに包まれた関数を適用する.
 
-これらは任意の関数を`F`の文脈で適用することを可能にする.
+これらは任意のアリティの関数をコンテナに持ち上げることを可能にする.
 
 ```scala
 def map2[F[_], A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C)(implicit F: Applicative[F]): F[C] =
@@ -126,7 +159,7 @@ trait Monad[F[_]] extends Applicative[F] {
 }
 ```
 
-`List`や`Option`はモナドであり, インスタンスは次のように定義できる.
+`List`や`Option`はモナドであり, インスタンスは次のように定義される.
 
 ```scala
 implicit val listMonad = new Monad[List] {
@@ -159,6 +192,14 @@ kitsでは`kits.Functor`, `kits.Applicative`, `kits.Monad`が定義され, そ�
 ```scala
 assert(kits.Applicative.map(List(1, 2), List(3))(_ + _) == List(4, 5))
 
+assert(kits.Applicative.map(Some("foo"), None, Some("bar"))(_ + _ + _) == None)
+```
+
+`Either`には2つの`Applicative`が定義される.
+
+Scalaは種(kind)が異なる型の単一化ができないので別名を付ける必要がある.
+
+```scala
 type Result[A] = Either[String, A]
 
 {
@@ -171,10 +212,6 @@ type Result[A] = Either[String, A]
   assert(kits.Applicative.map(Left("foo"): Result[Int], Right(1): Result[Int], Left("bar"): Result[Int])(_ + _ + _) == Left("foobar"))
 }
 ```
-
-Scalaは高階型の単一化が弱いので`Either`などには別名を付ける必要がある.
-
-`Either`には2つの`Applicative`が定義される.
 
 `kits.Functor.right`は最初の`Left`の値を返し, `kits.Applicative.right`は`Left`の値を`Monoid`により結合する.
 
@@ -189,7 +226,7 @@ trait Traverse[F[_]] extends Functor[F] {
 }
 ```
 
-`traverse`は`fa`の各要素を`f`に適用し結果を`G`の文脈で`F`に収集する.
+`traverse`は各要素に関数を適用し結果を収集する.
 
 `Identity`の文脈で`traverse`は`map`と同じ結果が得られる.
 
@@ -213,7 +250,7 @@ implicit val listTraverse = new Traverse[List] {
 }
 ```
 
-`Traverse`はいくつかの有用なたたみ込み関数を提供する.
+`Traverse`はいくつかの有用な畳み込み関数を提供する.
 
 `sequence`はデータ構造と計算コンテナを入れ替える関数である.
 
@@ -229,6 +266,8 @@ assert(sequence(List(Some(1), None, Some(3))) == None)
 
 定義には`Monoid`からなる`Applicative`を利用する.
 
+これは`empty`を`pure`に, `append`に`apply`を対応させたものである.
+
 ```scala
 def monoidApplicative[A](A: Monoid[A]) = new Applicative[({ type F[B] = A })#F] {
   def pure[B](b: B) = A.empty
@@ -239,8 +278,11 @@ def foldMap[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Traverse[F], B: Monoid[
 
 assert(foldMap(List("hello", "world"))(identity) == "helloworld")
 
-{
-  import kits.Monoid.sum
-  assert(foldMap(List("hello", "world"))(_.size) == 10)
-}
+assert(foldMap(List("hello", "world"))(_.size) == 10)
+```
+
+kitsでは要素を畳み込む関数をfoldとして提供する.
+
+```scala
+assert(kits.Traverse.fold(List("foo", "bar", "baz")) == "foobarbaz")
 ```
