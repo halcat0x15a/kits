@@ -3,7 +3,7 @@ package kits
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.Try
 
-trait Functor[F[_]] { F =>
+trait Functor[F[_]] extends Any { F =>
   def map[A, B](fa: F[A])(f: A => B): F[B]
   def compose[G[_]](implicit G: Functor[G]) = new Functor[({ type H[A] = F[G[A]] })#H] {
     def map[A, B](fga: F[G[A]])(f: A => B): F[G[B]] = F.map(fga)(G.map(_)(f))

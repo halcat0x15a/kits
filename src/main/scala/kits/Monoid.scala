@@ -1,6 +1,6 @@
 package kits
 
-trait Monoid[A] { A =>
+trait Monoid[A] extends Any { A =>
   def empty: A
   def append(x: A, y: A): A
   def applicative = new Applicative[({ type F[B] = A })#F] {
