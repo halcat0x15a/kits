@@ -66,7 +66,7 @@ object Monoid {
     def empty: Map[K, V] = Map.empty
     def append(x: Map[K, V], y: Map[K, V]): Map[K, V] =
       x.foldLeft(y) {
-        case (a, (k, v)) => a.updated(k, a.get(k).fold(v)(V.append(_, v)))
+        case (a, (k, v)) => a.updated(k, a.get(k).fold(v)(V.append(v, _)))
       }
   }
   implicit def set[A] = new Monoid[Set[A]] {
