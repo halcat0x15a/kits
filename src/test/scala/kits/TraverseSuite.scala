@@ -6,6 +6,12 @@ import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
 
 abstract class TraverseSuite[F[_], G[_], A](implicit F: Traverse[F], G: Applicative[G], FA: Arbitrary[F[A]], GA: Arbitrary[G[A]]) extends FunSuite with Checkers {
+  def t[A](ga: G[A]): G[A] = ga
+  test("naturality") {
+    check { (fa: F[A], f: A => G[A]) =>
+      F.traverse(fa)(a => t(f(a))) == t(F.traverse(fa)(f))
+    }
+  }
   test("identity") {
     check { fa: F[A] =>
       F.traverse[Identity, A, A](fa)(identity) == fa
