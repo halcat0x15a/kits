@@ -7,11 +7,12 @@ scalaVersion := "2.11.6"
 crossScalaVersions := Seq("2.10.5", "2.11.6")
 
 libraryDependencies ++= Seq(
+  "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test",
   "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
 )
 
-scalacOptions ++= Seq("-feature", "-language:higherKinds")
+scalacOptions ++= Seq("-feature", "-unchecked", "-language:higherKinds")
 
 target in Compile in doc := baseDirectory.value / "api"
 
