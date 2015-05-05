@@ -9,7 +9,7 @@ trait Monoid[A] extends Any { A =>
   }
 }
 
-object Monoid {
+object Monoid extends LowPriorityMonoidImplicits {
   def append[A](xs: A*)(implicit A: Monoid[A]): A = xs.foldLeft(A.empty)(A.append)
   def multiply[A: Monoid](a: A, n: Int): A = append(Seq.fill(n)(a): _*)
   implicit def sum[A](implicit A: Numeric[A]) = new Monoid[A] {
@@ -96,5 +96,12 @@ object Monoid {
           case n => n
         }
     }
+  }
+}
+
+private[kits] trait LowPriorityMonoidImplicits {
+  implicit def generic[T, R](implicit T: Generic[T] { type Rep = R }, R: Monoid[R]) = new Monoid[T] {
+    def empty = T.to(R.empty)
+    def append(x: T, y: T) = T.to(R.append(T.from(x), T.from(y)))
   }
 }
