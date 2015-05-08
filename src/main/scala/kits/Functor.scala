@@ -10,7 +10,7 @@ trait Functor[F[_]] extends Any { F =>
   }
 }
 
-object Functor {
+object Functor extends LowPriorityFunctorImplicits {
   implicit val identity = new Monad[Identity] with Traverse[Identity] {
     def pure[A](a: A): A = a
     override def map[A, B](fa: A)(f: A => B): B = f(fa)
@@ -72,5 +72,12 @@ object Functor {
     def pure[A](a: A): Try[A] = Try(a)
     override def map[A, B](fa: Try[A])(f: A => B): Try[B] = fa.map(f)
     def flatMap[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
+  }
+}
+
+private[kits] trait LowPriorityFunctorImplicits {
+  implicit def generic[F[_], A0, T](implicit F: Generic[F[A0]] { type Rep = T }, T: Unapply[Functor, T]) = new Functor[F] {
+    def map[A, B](fa: F[A])(f: A => B) =
+      F.to(T.T.map(T(F.from(fa.asInstanceOf[F[A0]])))(a => f(a.asInstanceOf[A])).asInstanceOf[T]).asInstanceOf[F[B]]
   }
 }
