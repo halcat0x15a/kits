@@ -4,22 +4,24 @@ import scala.language.experimental.macros
 
 sealed trait U
 case object U extends U {
-  implicit def functor[A0] = new Unapply[Functor, U] {
+  implicit def traverse[A0] = new Unapply[Traverse, U] {
     type F[_] = U
     type A = A0
     def apply(fa: U) = U
-    val T = new Functor[F] {
-      def map[A, B](fa: U)(f: A => B) = U
+    val T = new Traverse[F] {
+      override def map[A, B](fa: F[A])(f: A => B) = U
+      def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]) = G.pure(U)
     }
   }
 }
 
 case class V[A](a: A)
 object V {
-  implicit val functor = new Functor[V] {
-    def map[A, B](fa: V[A])(f: A => B) = fa match {
+  implicit val traverse = new Traverse[V] {
+    override def map[A, B](fa: V[A])(f: A => B): V[B] = fa match {
       case V(a) => V(f(a))
     }
+    def traverse[F[_], A, B](fa: V[A])(f: A => F[B])(implicit F: Applicative[F]): F[V[B]] = F.map(f(fa.a))(V.apply)
   }
 }
 
@@ -35,6 +37,18 @@ object :*: {
     val T = new Functor[F] {
       def map[A, B](fa: FA.F[A] :*: GA.F[A])(f: A => B) = fa match {
         case a :*: b => :*:(FA.T.map(a)(f), GA.T.map(b)(f))
+      }
+    }
+  }
+  implicit def traverse[FA, GA, A0](implicit FA: Unapply[Traverse, FA] { type A = A0 }, GA: Unapply[Traverse, GA] { type A = A0 }) = new Unapply[Traverse, FA :*: GA] {
+    type F[A] = FA.F[A] :*: GA.F[A]
+    type A = A0
+    def apply(fa: FA :*: GA) = fa match {
+      case a :*: b => :*:(FA(a), GA(b))
+    }
+    val T = new Traverse[F] {
+      def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]) = fa match {
+        case a :*: b => G(GA.T.traverse(b)(f))(G.map(FA.T.traverse(a)(f))(a => :*:(a, _)))
       }
     }
   }
@@ -56,6 +70,20 @@ object :+: {
       def map[A, B](fa: FA.F[A] :+: GA.F[A])(f: A => B) = fa match {
         case L(a) => L(FA.T.map(a)(f))
         case R(b) => R(GA.T.map(b)(f))
+      }
+    }
+  }
+  implicit def traverse[FA, GA, A0](implicit FA: Unapply[Traverse, FA] { type A = A0 }, GA: Unapply[Traverse, GA] { type A = A0 }) = new Unapply[Traverse, FA :+: GA] {
+    type F[A] = FA.F[A] :+: GA.F[A]
+    type A = A0
+    def apply(fa: FA :+: GA) = fa match {
+      case L(a) => L(FA(a))
+      case R(b) => R(GA(b))
+    }
+    val T = new Traverse[F] {
+      def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]) = fa match {
+        case L(a) => G.map(FA.T.traverse(a)(f))(L.apply)
+        case R(b) => G.map(GA.T.traverse(b)(f))(R.apply)
       }
     }
   }
