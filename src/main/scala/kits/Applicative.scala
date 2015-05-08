@@ -12,7 +12,7 @@ trait Applicative[F[_]] extends Any with Functor[F] { F =>
 
 object Applicative {
   def apply[F[_], A, B](fa: F[A])(f: F[A => B])(implicit F: Applicative[F]): F[B] = F(fa)(f)
-  def map[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Applicative[F]): F[B] = F.map(fa)(f)
+  def map[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Functor[F]): F[B] = F.map(fa)(f)
   def map[F[_]: Applicative, A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = apply(fb)(map(fa)(a => f(a, _)))
   def map[F[_]: Applicative, A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = apply(fc)(map(fa, fb)((a, b) => f(a, b, _)))
   implicit def right[A](implicit A: Monoid[A]) = new Applicative[({ type F[B] = Either[A, B] })#F] {
