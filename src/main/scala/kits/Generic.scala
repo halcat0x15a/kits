@@ -158,7 +158,7 @@ object :+: {
 
 }
 
-trait Generic[A] {
+trait Generic[A] extends Any {
 
   type Rep
 
