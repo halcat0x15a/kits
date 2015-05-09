@@ -6,6 +6,14 @@ sealed trait U
 
 case object U extends U {
 
+  implicit val monoid = new Monoid[U] {
+
+    def empty: U = U
+
+    def append(x: U, y: U): U = U
+
+  }
+
   implicit val traverse = new Traverse[({ type F[_] = U })#F] {
 
     override def map[A, B](fa: U)(f: A => B): U = U
@@ -19,6 +27,16 @@ case object U extends U {
 case class Par[A](a: A)
 
 object Par {
+
+  implicit def monoid[A](implicit A: Monoid[A]) = new Monoid[Par[A]] {
+
+    def empty: Par[A] = Par(A.empty)
+
+    def append(x: Par[A], y: Par[A]): Par[A] = (x, y) match {
+      case (Par(x), Par(y)) => Par(A.append(x, y))
+    }
+
+  }
 
   implicit val traverse = new Traverse[Par] {
 
@@ -35,6 +53,16 @@ object Par {
 case class :*:[A, B](a: A, b: B)
 
 object :*: {
+
+  implicit def monoid[A, B](implicit A: Monoid[A], B: Monoid[B]) = new Monoid[A :*: B] {
+
+    def empty: A :*: B = :*:(A.empty, B.empty)
+
+    def append(x: A :*: B, y: A :*: B): A :*: B = (x, y) match {
+      case (ax :*: bx, ay :*: by) => :*:(A.append(ax, ay), B.append(bx, by))
+    }
+
+  }
 
   implicit def functor[FA, GA, A0](implicit FA: Unapply[Functor, FA] { type A = A0 }, GA: Unapply[Functor, GA] { type A = A0 }) = new Unapply[Functor, FA :*: GA] {
 
