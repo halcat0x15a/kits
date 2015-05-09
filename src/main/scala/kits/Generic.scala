@@ -45,7 +45,10 @@ object Generic {
       val ctor = c.primaryConstructor
       if (ctor.isMethod)
         for (param <- ctor.asMethod.paramLists.head) yield
-          param.asTerm.name -> param.info.substituteTypes(c.typeParams, t.typeArgs.map(appliedType(symbolOf[Par[_]], _)))
+          if (c.typeParams.exists(param.info.contains))
+            param.asTerm.name -> appliedType(symbolOf[Par[_]], param.info.substituteTypes(c.typeParams, t.typeArgs))
+          else
+            param.asTerm.name -> param.info
       else
         Nil
     }
@@ -140,6 +143,8 @@ object Generic {
     }
 
   }
+
+  trait Rec
 
   case class :*:[A, B](a: A, b: B)
 
