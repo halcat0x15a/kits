@@ -141,14 +141,14 @@ private[kits] trait FunctorImplicits extends LowPriorityFunctorImplicits {
 
 private[kits] trait LowPriorityFunctorImplicits {
 
-  implicit def genericFunctor[F[_], T, R](implicit F: Generic[F[T]] { type Rep = R }, R: Instance[Functor, R]) = new Functor[F] {
+  implicit def functor[F[_], T, R](implicit F: Generic[F[T]] { type Rep = R }, R: Instance[Functor, R]) = new Functor[F] {
 
     def map[A, B](fa: F[A])(f: A => B): F[B] =
       F.to(R.T.map(R(F.from(fa.asInstanceOf[F[T]])))(a => f(a.asInstanceOf[A])).asInstanceOf[R]).asInstanceOf[F[B]]
 
   }
 
-  implicit def genericTraverse[F[_], T, R](implicit F: Generic[F[T]] { type Rep = R }, R: Instance[Traverse, R]) = new Traverse[F] {
+  implicit def traverse[F[_], T, R](implicit F: Generic[F[T]] { type Rep = R }, R: Instance[Traverse, R]) = new Traverse[F] {
 
     def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]): G[F[B]] =
       G.map(R.T.traverse(R(F.from(fa.asInstanceOf[F[T]])))(a => f(a.asInstanceOf[A])))(r => F.to(r.asInstanceOf[R]).asInstanceOf[F[B]])
