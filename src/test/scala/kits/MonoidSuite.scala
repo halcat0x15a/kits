@@ -2,25 +2,26 @@ package kits
 
 import org.scalacheck.Arbitrary
 
-import org.scalatest.FunSuite
-import org.scalatest.prop.Checkers
+abstract class MonoidSuite[A: Arbitrary](A: Monoid[A]) extends Suite {
 
-abstract class MonoidSuite[A: Arbitrary](A: Monoid[A]) extends FunSuite with Checkers {
   test("rightIdentity") {
     check { a: A =>
       A.append(a, A.empty) == a
     }
   }
+
   test("leftIdentity") {
     check { a: A =>
       A.append(A.empty, a) == a
     }
   }
+
   test("associativity") {
     check { (a: A, b: A, c: A) =>
       A.append(A.append(a, b), c) == A.append(a, A.append(b, c))
     }
   }
+
 }
 
 class SumMonoidSuite extends MonoidSuite[Int](Monoid.sum)
