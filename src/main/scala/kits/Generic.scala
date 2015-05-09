@@ -3,19 +3,16 @@ package kits
 import scala.language.experimental.macros
 
 sealed trait U
+
 case object U extends U {
-  implicit def traverse[A0] = new Unapply[Traverse, U] {
-    type F[_] = U
-    type A = A0
-    def apply(fa: U) = U
-    val T = new Traverse[F] {
-      override def map[A, B](fa: F[A])(f: A => B) = U
-      def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]) = G.pure(U)
-    }
+  implicit val traverse = new Traverse[({ type F[_] = U })#F] {
+    override def map[A, B](fa: U)(f: A => B) = U
+    def traverse[G[_], A, B](fa: U)(f: A => G[B])(implicit G: Applicative[G]) = G.pure(U)
   }
 }
 
 case class V[A](a: A)
+
 object V {
   implicit val traverse = new Traverse[V] {
     override def map[A, B](fa: V[A])(f: A => B): V[B] = fa match {
@@ -35,7 +32,7 @@ object :*: {
       case a :*: b => :*:(FA(a), GA(b))
     }
     val T = new Functor[F] {
-      def map[A, B](fa: FA.F[A] :*: GA.F[A])(f: A => B) = fa match {
+      def map[A, B](fa: F[A])(f: A => B) = fa match {
         case a :*: b => :*:(FA.T.map(a)(f), GA.T.map(b)(f))
       }
     }
