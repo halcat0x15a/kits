@@ -64,7 +64,7 @@ object :*: {
 
   }
 
-  implicit def functor[LA0, RA0, A0](implicit LA0: Unapply[Functor, LA0] { type A = A0 }, RA0: Unapply[Functor, RA0] { type A = A0 }) = new ProductUnapply[Functor, LA0, RA0] {
+  implicit def functor[LA0, RA0, A0](implicit LA0: Instance[Functor, LA0] { type A = A0 }, RA0: Instance[Functor, RA0] { type A = A0 }) = new ProductInstance[Functor, LA0, RA0] {
 
     type A = A0
 
@@ -82,7 +82,7 @@ object :*: {
 
   }
 
-  implicit def traverse[LA0, RA0, A0](implicit LA0: Unapply[Traverse, LA0] { type A = A0 }, RA0: Unapply[Traverse, RA0] { type A = A0 }) = new ProductUnapply[Traverse, LA0, RA0] {
+  implicit def traverse[LA0, RA0, A0](implicit LA0: Instance[Traverse, LA0] { type A = A0 }, RA0: Instance[Traverse, RA0] { type A = A0 }) = new ProductInstance[Traverse, LA0, RA0] {
 
     type A = A0
 
@@ -100,13 +100,13 @@ object :*: {
 
   }
 
-  trait ProductUnapply[T[_[_]], LA, RA] extends Unapply[T, LA :*: RA] { self =>
+  trait ProductInstance[T[_[_]], LA, RA] extends Instance[T, LA :*: RA] { self =>
 
     type F[A] = LA.F[A] :*: RA.F[A]
 
-    val LA: Unapply[T, LA] { type A = self.A }
+    val LA: Instance[T, LA] { type A = self.A }
 
-    val RA: Unapply[T, RA] { type A = self.A }
+    val RA: Instance[T, RA] { type A = self.A }
 
     def apply(fa: LA :*: RA): F[A] = fa match {
       case a :*: b => :*:(LA(a), RA(b))
@@ -124,7 +124,7 @@ case class R[B](b: B) extends (Nothing :+: B)
 
 object :+: {
 
-  implicit def functor[LA0, RA0, A0](implicit LA0: Unapply[Functor, LA0] { type A = A0 }, RA0: Unapply[Functor, RA0] { type A = A0 }) = new SumUnapply[Functor, LA0, RA0] {
+  implicit def functor[LA0, RA0, A0](implicit LA0: Instance[Functor, LA0] { type A = A0 }, RA0: Instance[Functor, RA0] { type A = A0 }) = new SumInstance[Functor, LA0, RA0] {
 
     type A = A0
 
@@ -143,7 +143,7 @@ object :+: {
 
   }
   
-  implicit def traverse[LA0, RA0, A0](implicit LA0: Unapply[Traverse, LA0] { type A = A0 }, RA0: Unapply[Traverse, RA0] { type A = A0 }) = new SumUnapply[Traverse, LA0, RA0] {
+  implicit def traverse[LA0, RA0, A0](implicit LA0: Instance[Traverse, LA0] { type A = A0 }, RA0: Instance[Traverse, RA0] { type A = A0 }) = new SumInstance[Traverse, LA0, RA0] {
 
     type A = A0
 
@@ -162,13 +162,13 @@ object :+: {
 
   }
 
-  trait SumUnapply[T[_[_]], LA, RA] extends Unapply[T, LA :+: RA] { self =>
+  trait SumInstance[T[_[_]], LA, RA] extends Instance[T, LA :+: RA] { self =>
 
     type F[A] = LA.F[A] :+: RA.F[A]
 
-    val LA: Unapply[T, LA] { type A = self.A }
+    val LA: Instance[T, LA] { type A = self.A }
 
-    val RA: Unapply[T, RA] { type A = self.A }
+    val RA: Instance[T, RA] { type A = self.A }
 
     def apply(fa: LA :+: RA): F[A] = fa match {
       case L(a) => L(LA(a))
