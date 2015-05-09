@@ -64,40 +64,52 @@ object :*: {
 
   }
 
-  implicit def functor[FA, GA, A0](implicit FA: Unapply[Functor, FA] { type A = A0 }, GA: Unapply[Functor, GA] { type A = A0 }) = new Unapply[Functor, FA :*: GA] {
-
-    type F[A] = FA.F[A] :*: GA.F[A]
+  implicit def functor[LA0, RA0, A0](implicit LA0: Unapply[Functor, LA0] { type A = A0 }, RA0: Unapply[Functor, RA0] { type A = A0 }) = new ProductUnapply[Functor, LA0, RA0] {
 
     type A = A0
 
-    def apply(fa: FA :*: GA): F[A] = fa match {
-      case a :*: b => :*:(FA(a), GA(b))
-    }
+    val LA = LA0
+
+    val RA = RA0
 
     val T = new Functor[F] {
 
       def map[A, B](fa: F[A])(f: A => B): F[B] = fa match {
-        case a :*: b => :*:(FA.T.map(a)(f), GA.T.map(b)(f))
+        case a :*: b => :*:(LA.T.map(a)(f), RA.T.map(b)(f))
       }
 
     }
 
   }
 
-  implicit def traverse[FA, GA, A0](implicit FA: Unapply[Traverse, FA] { type A = A0 }, GA: Unapply[Traverse, GA] { type A = A0 }) = new Unapply[Traverse, FA :*: GA] {
-
-    type F[A] = FA.F[A] :*: GA.F[A]
+  implicit def traverse[LA0, RA0, A0](implicit LA0: Unapply[Traverse, LA0] { type A = A0 }, RA0: Unapply[Traverse, RA0] { type A = A0 }) = new ProductUnapply[Traverse, LA0, RA0] {
 
     type A = A0
 
-    def apply(fa: FA :*: GA): F[A] = fa match {
-      case a :*: b => :*:(FA(a), GA(b))
-    }
+    val LA = LA0
+
+    val RA = RA0
 
     val T = new Traverse[F] {
+
       def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]): G[F[B]] = fa match {
-        case a :*: b => G(GA.T.traverse(b)(f))(G.map(FA.T.traverse(a)(f))(a => :*:(a, _)))
+        case a :*: b => G(RA.T.traverse(b)(f))(G.map(LA.T.traverse(a)(f))(a => :*:(a, _)))
       }
+
+    }
+
+  }
+
+  trait ProductUnapply[T[_[_]], LA, RA] extends Unapply[T, LA :*: RA] { self =>
+
+    type F[A] = LA.F[A] :*: RA.F[A]
+
+    val LA: Unapply[T, LA] { type A = self.A }
+
+    val RA: Unapply[T, RA] { type A = self.A }
+
+    def apply(fa: LA :*: RA): F[A] = fa match {
+      case a :*: b => :*:(LA(a), RA(b))
     }
 
   }
@@ -112,46 +124,55 @@ case class R[B](b: B) extends (Nothing :+: B)
 
 object :+: {
 
-  implicit def functor[FA, GA, A0](implicit FA: Unapply[Functor, FA] { type A = A0 }, GA: Unapply[Functor, GA] { type A = A0 }) = new Unapply[Functor, FA :+: GA] {
-
-    type F[A] = FA.F[A] :+: GA.F[A]
+  implicit def functor[LA0, RA0, A0](implicit LA0: Unapply[Functor, LA0] { type A = A0 }, RA0: Unapply[Functor, RA0] { type A = A0 }) = new SumUnapply[Functor, LA0, RA0] {
 
     type A = A0
 
-    def apply(fa: FA :+: GA): F[A] = fa match {
-      case L(a) => L(FA(a))
-      case R(b) => R(GA(b))
-    }
+    val LA = LA0
+
+    val RA = RA0
 
     val T = new Functor[F] {
 
-      def map[A, B](fa: FA.F[A] :+: GA.F[A])(f: A => B): F[B] = fa match {
-        case L(a) => L(FA.T.map(a)(f))
-        case R(b) => R(GA.T.map(b)(f))
+      def map[A, B](fa: F[A])(f: A => B): F[B] = fa match {
+        case L(a) => L(LA.T.map(a)(f))
+        case R(b) => R(RA.T.map(b)(f))
       }
 
     }
 
   }
-
-  implicit def traverse[FA, GA, A0](implicit FA: Unapply[Traverse, FA] { type A = A0 }, GA: Unapply[Traverse, GA] { type A = A0 }) = new Unapply[Traverse, FA :+: GA] {
-
-    type F[A] = FA.F[A] :+: GA.F[A]
+  
+  implicit def traverse[LA0, RA0, A0](implicit LA0: Unapply[Traverse, LA0] { type A = A0 }, RA0: Unapply[Traverse, RA0] { type A = A0 }) = new SumUnapply[Traverse, LA0, RA0] {
 
     type A = A0
 
-    def apply(fa: FA :+: GA): F[A] = fa match {
-      case L(a) => L(FA(a))
-      case R(b) => R(GA(b))
-    }
+    val LA = LA0
+
+    val RA = RA0
 
     val T = new Traverse[F] {
 
       def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]): G[F[B]] = fa match {
-        case L(a) => G.map(FA.T.traverse(a)(f))(L.apply)
-        case R(b) => G.map(GA.T.traverse(b)(f))(R.apply)
+        case L(a) => G.map(LA.T.traverse(a)(f))(L.apply)
+        case R(b) => G.map(RA.T.traverse(b)(f))(R.apply)
       }
+      
+    }
 
+  }
+
+  trait SumUnapply[T[_[_]], LA, RA] extends Unapply[T, LA :+: RA] { self =>
+
+    type F[A] = LA.F[A] :+: RA.F[A]
+
+    val LA: Unapply[T, LA] { type A = self.A }
+
+    val RA: Unapply[T, RA] { type A = self.A }
+
+    def apply(fa: LA :+: RA): F[A] = fa match {
+      case L(a) => L(LA(a))
+      case R(b) => R(RA(b))
     }
 
   }
