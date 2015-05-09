@@ -11,14 +11,14 @@ case object U extends U {
   }
 }
 
-case class V[A](a: A)
+case class Par[A](a: A)
 
-object V {
-  implicit val traverse = new Traverse[V] {
-    override def map[A, B](fa: V[A])(f: A => B): V[B] = fa match {
-      case V(a) => V(f(a))
+object Par {
+  implicit val traverse = new Traverse[Par] {
+    override def map[A, B](fa: Par[A])(f: A => B): Par[B] = fa match {
+      case Par(a) => Par(f(a))
     }
-    def traverse[F[_], A, B](fa: V[A])(f: A => F[B])(implicit F: Applicative[F]): F[V[B]] = F.map(f(fa.a))(V.apply)
+    def traverse[F[_], A, B](fa: Par[A])(f: A => F[B])(implicit F: Applicative[F]): F[Par[B]] = F.map(f(fa.a))(Par.apply)
   }
 }
 
@@ -119,7 +119,7 @@ object Generic {
       val ctor = c.primaryConstructor
       if (ctor.isMethod)
         for (param <- ctor.asMethod.paramLists.head) yield
-          param.asTerm.name -> param.info.substituteTypes(c.typeParams, t.typeArgs.map(appliedType(typeOf[V[_]], _)))
+          param.asTerm.name -> param.info.substituteTypes(c.typeParams, t.typeArgs.map(appliedType(typeOf[Par[_]], _)))
       else
         Nil
     }
@@ -138,7 +138,7 @@ object Generic {
         else
           q"${c.companion}(..${params(c, t).map(_._1)})"
       ).zip(ctors(t.typeSymbol).map(c => params(c, t).map {
-        case (term, tpe) if tpe <:< typeOf[V[_]] => q"V($term)"
+        case (term, tpe) if tpe <:< typeOf[Par[_]] => q"Par($term)"
         case (term, _) => q"$term"
       } match {
         case Nil => q"U"
