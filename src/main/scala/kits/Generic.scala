@@ -4,9 +4,7 @@ import scala.language.experimental.macros
 
 import generic._
 
-case class Meta[T, A](a: A) {
-  def tag = null.asInstanceOf[T]
-}
+case class Meta[T, A](a: A) extends AnyVal
 
 trait Generic[A] {
   type Rep
