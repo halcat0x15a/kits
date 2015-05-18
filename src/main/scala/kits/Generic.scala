@@ -1,26 +1,8 @@
-package kits.generic
+package kits
 
 import scala.language.experimental.macros
 
-sealed trait Product
-
-case class :*:[A, B <: Product](a: A, b: B) extends Product
-
-sealed trait Unit extends Product
-
-case object Unit extends Unit
-
-sealed trait Sum
-
-sealed trait :+:[A, B <: Sum] extends Sum
-
-case class Left[A, B <: Sum](a: A) extends (A :+: B)
-
-case class Right[A, B <: Sum](b: B) extends (A :+: B)
-
-sealed trait Void extends Sum
-
-case object Void extends Void
+import generic._
 
 case class Meta[T, A](a: A) {
   def tag = null.asInstanceOf[T]
