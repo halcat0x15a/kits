@@ -56,7 +56,7 @@ new ${symbolOf[Generic[_]]}[$tpe] {
     parameters(sym).map(param => metaType(param, param.info.substituteTypes(sym.typeParams, tpe.typeArgs)))
 
   def metaType(sym: Symbol, tpe: Type): Type =
-    appliedType(typeOf[Meta[_, _]], constantType(Constant(sym.name.toString)), tpe)
+    appliedType(typeOf[Meta[_, _]], constantType(Constant(sym.name.decodedName.toString)), tpe)
 
   def sumTree(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
     constructors(sym).foldRight(List(q"${symbolOf[Void]}"))((a, b) => q"$left(${productTree(a, isExpr)})" :: b.map(x => q"$right($x)")).map(metaTree)
