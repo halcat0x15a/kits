@@ -4,8 +4,6 @@ import scala.language.experimental.macros
 
 import generic._
 
-case class Meta[T, A](value: A)(implicit val tag: scala.reflect.ClassTag[T])
-
 trait Generic[A] {
   type Rep
   def from(a: A): Rep
