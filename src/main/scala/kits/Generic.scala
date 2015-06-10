@@ -16,7 +16,7 @@ object Generic {
 
 private class GenericMacros(val c: scala.reflect.macros.whitebox.Context) {
 
-  import c.universe._, internal._
+  import c.universe._
 
   def apply[A: c.WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[A]
@@ -28,7 +28,7 @@ private class GenericMacros(val c: scala.reflect.macros.whitebox.Context) {
 new ${symbolOf[Generic[_]]}[$tpe] {
   type Rep = $rep
   def from(a: $tpe): Rep = a match { case ..$from }
-  def to(r: Rep): $tpe = r match { case ..$to }
+  def to(r: Rep): $tpe = (r: @${typeOf[unchecked]}) match { case ..$to }
 }
 """
   }
@@ -41,22 +41,20 @@ new ${symbolOf[Generic[_]]}[$tpe] {
         cq"$a => $r"
 
   def sum(sym: ClassSymbol, tpe: Type): Type =
-    meta(tpe, constructors(sym).map(product(_, tpe)).foldRight(typeOf[Void])(appliedType(typeOf[:+:[_, _]], _, _)))
+    constructors(sym).map(product(_, tpe)).foldRight(typeOf[Void])(appliedType(typeOf[:+:[_, _]], _, _))
 
   def sum(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
-    constructors(sym).foldRight(List(q"${symbolOf[Void].companion}"))((a, b) => q"${symbolOf[Left[_, _]].companion}(${product(a, isExpr)})" :: b.map(x => q"${symbolOf[Right[_, _]].companion}($x)")).map(meta)
+    constructors(sym).foldRight(List(q"${symbolOf[Void].companion}")) { (a, b) =>
+      q"${symbolOf[Left[_, _]].companion}(${product(a, isExpr)})" :: b.map(x => q"${symbolOf[Right[_, _]].companion}($x)")
+    }
 
   def product(sym: ClassSymbol, tpe: Type): Type =
-    meta(sym.selfType.substituteTypes(sym.typeParams, tpe.typeArgs), parameters(sym).map(_.info.substituteTypes(sym.typeParams, tpe.typeArgs)).foldRight(typeOf[Unit])(appliedType(typeOf[:*:[_, _]], _, _)))
+    parameters(sym).map(_.info.substituteTypes(sym.typeParams, tpe.typeArgs)).foldRight(typeOf[Unit])(appliedType(typeOf[:*:[_, _]], _, _))
 
   def product(sym: ClassSymbol, isExpr: Boolean): Tree =
-    meta(parameter(sym, isExpr).foldRight(q"${symbolOf[Unit].companion}")((a, b) => q"${symbolOf[:*:[_, _]].companion}($a, $b)"))
-
-  def meta(tag: Type, value: Type): Type =
-    appliedType(typeOf[Meta[_, _]], tag, value)
-
-  def meta(tree: Tree): Tree =
-    q"${symbolOf[Meta[_, _]].companion}($tree)"
+    parameter(sym, isExpr).foldRight(q"${symbolOf[Unit].companion}") { (a, b) =>
+      q"${symbolOf[:*:[_, _]].companion}($a, $b)"
+    }
 
   def constructor(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
     for (ctor <- constructors(sym)) yield
