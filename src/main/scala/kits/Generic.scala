@@ -5,13 +5,19 @@ import scala.language.experimental.macros
 import generic._
 
 trait Generic[A] {
+
   type Rep
+
   def from(a: A): Rep
+
   def to(r: Rep): A
+
 }
 
 object Generic {
+
   def apply[A]: Generic[A] = macro GenericMacros.apply[A]
+
 }
 
 private class GenericMacros(val c: scala.reflect.macros.whitebox.Context) {
