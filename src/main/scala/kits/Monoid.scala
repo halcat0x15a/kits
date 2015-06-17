@@ -1,6 +1,6 @@
 package kits
 
-trait Monoid[A] extends Any { A =>
+trait Monoid[A] { A =>
 
   def empty: A
 

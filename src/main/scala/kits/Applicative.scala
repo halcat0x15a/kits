@@ -1,6 +1,6 @@
 package kits
 
-trait Applicative[F[_]] extends Any with Functor[F] { F =>
+trait Applicative[F[_]] extends Functor[F] { F =>
 
   def pure[A](a: A): F[A]
 

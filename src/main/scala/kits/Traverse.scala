@@ -1,6 +1,6 @@
 package kits
 
-trait Traverse[F[_]] extends Any with Functor[F] { F =>
+trait Traverse[F[_]] extends Functor[F] { F =>
 
   def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
 
