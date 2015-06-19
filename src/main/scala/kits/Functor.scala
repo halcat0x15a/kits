@@ -87,4 +87,12 @@ object Functor {
     def flatMap[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
   }
 
+  implicit def state[S] = new Monad[({ type F[A] = State[S, A] })#F] {
+    def pure[A](a: A): State[S, A] = s => (s, a)
+    def flatMap[A, B](fa: State[S, A])(f: A => State[S, B]): State[S, B] =
+      s => fa(s) match {
+        case (s, a) => f(a)(s)
+      }
+  }
+
 }
