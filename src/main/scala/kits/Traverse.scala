@@ -6,10 +6,11 @@ trait Traverse[F[_]] extends Functor[F] { F =>
 
   def map[A, B](fa: F[A])(f: A => B): F[B] = traverse[Identity, A, B](fa)(f)
 
-  def compose[G[_]](implicit G: Traverse[G]) = new Traverse[({ type H[A] = F[G[A]] })#H] {
-    def traverse[H[_]: Applicative, A, B](fga: F[G[A]])(f: A => H[B]): H[F[G[B]]] =
-      F.traverse(fga)(G.traverse(_)(f))
-  }
+  def compose[G[_]](implicit G: Traverse[G]): Traverse[({ type H[A] = F[G[A]] })#H] =
+    new Traverse[({ type H[A] = F[G[A]] })#H] {
+      def traverse[H[_]: Applicative, A, B](fga: F[G[A]])(f: A => H[B]): H[F[G[B]]] =
+        F.traverse(fga)(G.traverse(_)(f))
+    }
 
 }
 
