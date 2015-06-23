@@ -9,7 +9,7 @@ trait Monoid[A] { A =>
   def applicative: Applicative[({ type F[B] = A })#F] =
     new Applicative[({ type F[B] = A })#F] {
       def pure[B](b: B): A = A.empty
-      def apply[B, C](fb: A)(f: A): A = A.append(f, fb)
+      def ap[B, C](fb: A)(f: A): A = A.append(f, fb)
     }
 
 }

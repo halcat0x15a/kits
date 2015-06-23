@@ -11,22 +11,22 @@ abstract class ApplicativeSuite[F[_], A](implicit F: Applicative[F], FA: Arbitra
   implicit def pure[A](implicit A: Arbitrary[A]): Arbitrary[F[A]] = Arbitrary(A.arbitrary.map(F.pure))
   test("identity") {
     check { fa: F[A] =>
-      F(fa)(F.pure((a: A) => a)) == fa
+      F.ap(fa)(F.pure((a: A) => a)) == fa
     }
   }
   test("composition") {
     check { (fa: F[A], f: F[A => A], g: F[A => A]) =>
-      F(fa)(F(f)(F(g)(F.pure((f: A => A) => (g: A => A) => f.compose(g))))) == F(F(fa)(f))(g)
+      F.ap(fa)(F.ap(f)(F.ap(g)(F.pure((f: A => A) => (g: A => A) => f.compose(g))))) == F.ap(F.ap(fa)(f))(g)
     }
   }
   test("homomorphism") {
     check { (a: A, f: A => A) =>
-      F(F.pure(a))(F.pure(f)) == F.pure(f(a))
+      F.ap(F.pure(a))(F.pure(f)) == F.pure(f(a))
     }
   }
   test("interchange") {
     check { (a: A, f: F[A => A]) =>
-      F(F.pure(a))(f) == F(f)(F.pure((_: A => A)(a)))
+      F.ap(F.pure(a))(f) == F.ap(f)(F.pure((_: A => A)(a)))
     }
   }
 }
