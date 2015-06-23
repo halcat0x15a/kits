@@ -30,7 +30,7 @@ object Functor {
       override def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
       def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: List[A])(f: A => F[B])(implicit F: Applicative[F]): F[List[B]] =
-        fa.foldRight(F.pure(Nil: List[B]))((a, ga) => F.ap(ga)(F.map(f(a))(b => b :: _)))
+        fa.foldRight(F.pure(Nil: List[B]))((a, ga) => F.map(f(a), ga)(_ :: _))
     }
 
   implicit val vector: Monad[Vector] with Traverse[Vector] =
@@ -39,7 +39,7 @@ object Functor {
       override def map[A, B](fa: Vector[A])(f: A => B): Vector[B] = fa.map(f)
       def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: Vector[A])(f: A => F[B])(implicit F: Applicative[F]): F[Vector[B]] =
-        fa.foldLeft(F.pure(Vector.empty[B]))((ga, a) => F.ap(f(a))(F.map(ga)(a => a :+ _)))
+        fa.foldLeft(F.pure(Vector.empty[B]))((ga, a) => F.map(ga, f(a))(_ :+ _))
     }
 
   implicit val option: Monad[Option] with Traverse[Option] =
@@ -54,7 +54,7 @@ object Functor {
   implicit def map[K]: Traverse[({ type F[A] = Map[K, A] })#F] =
     new Traverse[({ type F[A] = Map[K, A] })#F] {
       def traverse[F[_], A, B](fa: Map[K, A])(f: A => F[B])(implicit F: Applicative[F]): F[Map[K, B]] =
-        fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F.ap(f(a))(F.map(ga)(a => b => a + (k -> b))) }
+        fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F.map(ga, f(a))((a, b) => a + (k -> b)) }
     }
 
   implicit val set: Monad[Set] with Traverse[Set] =
@@ -63,7 +63,7 @@ object Functor {
       override def map[A, B](fa: Set[A])(f: A => B): Set[B] = fa.map(f)
       def flatMap[A, B](fa: Set[A])(f: A => Set[B]): Set[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: Set[A])(f: A => F[B])(implicit F: Applicative[F]): F[Set[B]] =
-        fa.foldLeft(F.pure(Set.empty[B]))((ga, a) => F.ap(f(a))(F.map(ga)(a => a + _)))
+        fa.foldLeft(F.pure(Set.empty[B]))((ga, a) => F.map(ga, f(a))(_ + _))
     }
 
   implicit def right[A]: Monad[({ type F[B] = Either[A, B] })#F] with Traverse[({ type F[B] = Either[A, B] })#F] =
