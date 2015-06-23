@@ -14,7 +14,7 @@ trait Applicative[F[_]] extends Functor[F] { F =>
       def apply[A, B](fga: F[G[A]])(f: F[G[A => B]]): F[G[B]] = F(fga)(F.map(f)(g => G(_)(g)))
     }
 
-  def flip: Applicative[F] =
+  def dual: Applicative[F] =
     new Applicative[F] {
       def pure[A](a: A): F[A] = F.pure(a)
       def apply[A, B](fa: F[A])(f: F[A => B]): F[B] = F(f)(F.map(fa)(a => f => f(a)))

@@ -28,6 +28,6 @@ object Traverse {
     traverse[F, ({ type G[A] = State[S, A] })#G, A, B](fa)(a => s => f(s, a)).apply(s)
 
   def mapAccumR[F[_], S, A, B](fa: F[A], s: S)(f: (S, A) => (S, B))(implicit F: Traverse[F]): (S, F[B]) =
-    F.traverse[({ type G[A] = State[S, A] })#G, A, B](fa)(a => s => f(s, a))(Functor.state[S].flip)(s)
+    F.traverse[({ type G[A] = State[S, A] })#G, A, B](fa)(a => s => f(s, a))(Functor.state[S].dual)(s)
 
 }
