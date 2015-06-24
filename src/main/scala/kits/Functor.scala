@@ -98,6 +98,24 @@ object Functor {
       def flatMap[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
     }
 
+  implicit def reader[R]: Monad[({ type F[A] = Reader[R, A] })#F] =
+    new Monad[({ type F[A] = Reader[R, A] })#F] {
+      def pure[A](a: A): Reader[R, A] = _ => a
+      def flatMap[A, B](fa: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] =
+        r => f(fa(r))(r)
+    }
+
+  implicit def writer[W](implicit W: Monoid[W]): Monad[({ type F[A] = Writer[W, A] })#F] =
+    new Monad[({ type F[A] = Writer[W, A] })#F] {
+      def pure[A](a: A): Writer[W, A] = (W.empty, a)
+      def flatMap[A, B](fa: Writer[W, A])(f: A => Writer[W, B]): Writer[W, B] =
+        fa match {
+          case (x, a) => f(a) match {
+            case (y, b) => (W.append(x, y), b)
+          }
+        }
+    }
+
   implicit def state[S]: Monad[({ type F[A] = State[S, A] })#F] =
     new Monad[({ type F[A] = State[S, A] })#F] {
       def pure[A](a: A): State[S, A] = s => (s, a)
