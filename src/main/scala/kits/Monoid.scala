@@ -12,6 +12,12 @@ trait Monoid[A] { A =>
       def ap[B, C](fb: A)(f: A): A = A.append(f, fb)
     }
 
+  def dual: Monoid[A] =
+    new Monoid[A] {
+      def empty: A = A.empty
+      def append(x: A, y: A) = A.append(y, x)
+    }
+
 }
 
 object Monoid {
