@@ -24,10 +24,10 @@ object Traverse {
 
   def fold[F[_]: Traverse, A: Monoid](fa: F[A]): A = foldMap(fa)(identity)
 
-  def mapAccumL[F[_]: Traverse, S, A, B](fa: F[A], s: S)(f: (S, A) => (S, B)): (S, F[B]) =
+  def mapAccumL[F[_]: Traverse, S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B)): (S, F[B]) =
     traverse[F, ({ type G[A] = State[S, A] })#G, A, B](fa)(a => s => f(s, a)).apply(s)
 
-  def mapAccumR[F[_], S, A, B](fa: F[A], s: S)(f: (S, A) => (S, B))(implicit F: Traverse[F]): (S, F[B]) =
+  def mapAccumR[F[_], S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B))(implicit F: Traverse[F]): (S, F[B]) =
     F.traverse[({ type G[A] = State[S, A] })#G, A, B](fa)(a => s => f(s, a))(Functor.state[S].dual)(s)
 
 }
