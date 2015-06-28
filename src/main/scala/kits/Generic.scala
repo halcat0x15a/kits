@@ -27,7 +27,7 @@ private class GenericMacros(val c: scala.reflect.macros.whitebox.Context) {
   def apply[A: c.WeakTypeTag]: Tree = {
     val tpe = weakTypeOf[A]
     val sym = tpe.typeSymbol.asClass
-    val rep = sum(sym, tpe)
+    val rep = sumType(sym, tpe)
     val from = cases(sym, false)
     val to = cases(sym, true)
     q"""
@@ -40,36 +40,36 @@ new ${symbolOf[Generic[_]]}[$tpe] {
   }
 
   def cases(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
-    for ((a, r) <- constructor(sym, isExpr).zip(sum(sym, !isExpr))) yield
+    for ((a, r) <- constructorTree(sym, isExpr).zip(sumTree(sym, !isExpr))) yield
       if (isExpr)
         cq"$r => $a"
       else
         cq"$a => $r"
 
-  def sum(sym: ClassSymbol, tpe: Type): Type =
-    constructors(sym).map(product(_, tpe)).foldRight(typeOf[Void])(appliedType(typeOf[:+:[_, _]], _, _))
+  def sumType(sym: ClassSymbol, tpe: Type): Type =
+    constructors(sym).map(productType(_, tpe)).foldRight(typeOf[Void])(appliedType(typeOf[:+:[_, _]], _, _))
 
-  def sum(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
+  def sumTree(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
     constructors(sym).foldRight(List(q"${symbolOf[Void].companion}")) { (a, b) =>
-      q"${symbolOf[Left[_, _]].companion}(${product(a, isExpr)})" :: b.map(x => q"${symbolOf[Right[_, _]].companion}($x)")
+      q"${symbolOf[Left[_, _]].companion}(${productTree(a, isExpr)})" :: b.map(x => q"${symbolOf[Right[_, _]].companion}($x)")
     }
 
-  def product(sym: ClassSymbol, tpe: Type): Type =
+  def productType(sym: ClassSymbol, tpe: Type): Type =
     parameters(sym).map(_.info.substituteTypes(sym.typeParams, tpe.typeArgs)).foldRight(typeOf[Unit])(appliedType(typeOf[:*:[_, _]], _, _))
 
-  def product(sym: ClassSymbol, isExpr: Boolean): Tree =
-    parameter(sym, isExpr).foldRight(q"${symbolOf[Unit].companion}") { (a, b) =>
+  def productTree(sym: ClassSymbol, isExpr: Boolean): Tree =
+    parameterTree(sym, isExpr).foldRight(q"${symbolOf[Unit].companion}") { (a, b) =>
       q"${symbolOf[:*:[_, _]].companion}($a, $b)"
     }
 
-  def constructor(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
+  def constructorTree(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
     for (ctor <- constructors(sym)) yield
       if (ctor.isModuleClass)
         q"${ctor.module}"
       else
-        q"${ctor.companion}(..${parameter(ctor, isExpr)})"
+        q"${ctor.companion}(..${parameterTree(ctor, isExpr)})"
 
-  def parameter(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
+  def parameterTree(sym: ClassSymbol, isExpr: Boolean): List[Tree] =
     for {
       param <- parameters(sym)
       name = param.asTerm.name
