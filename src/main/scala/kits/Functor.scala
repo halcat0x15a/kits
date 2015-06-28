@@ -16,6 +16,8 @@ trait Functor[F[_]] { F =>
 
 object Functor {
 
+  def apply[F[_]](implicit F: Functor[F]): Functor[F] = F
+
   implicit val identity: Monad[Identity] with Traverse[Identity] =
     new Monad[Identity] with Traverse[Identity] {
       def pure[A](a: A): A = a

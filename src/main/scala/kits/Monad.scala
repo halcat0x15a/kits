@@ -9,3 +9,9 @@ trait Monad[F[_]] extends Applicative[F] {
   override def map[A, B](fa: F[A])(f: A => B): F[B] = flatMap(fa)(a => pure(f(a)))
 
 }
+
+object Monad {
+
+  def apply[F[_]](implicit F: Monad[F]): Monad[F] = F
+
+}

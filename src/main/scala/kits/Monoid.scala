@@ -22,6 +22,8 @@ trait Monoid[A] { A =>
 
 object Monoid {
 
+  def apply[A](implicit A: Monoid[A]): Monoid[A] = A
+
   def append[A](xs: A*)(implicit A: Monoid[A]): A = xs.foldLeft(A.empty)(A.append)
 
   def multiply[A: Monoid](a: A, n: Int): A = append(Seq.fill(n)(a): _*)

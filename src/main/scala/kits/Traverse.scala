@@ -16,6 +16,8 @@ trait Traverse[F[_]] extends Functor[F] { F =>
 
 object Traverse {
 
+  def apply[F[_]](implicit F: Traverse[F]): Traverse[F] = F
+
   def traverse[F[_], G[_], A, B](fa: F[A])(f: A => G[B])(implicit F: Traverse[F], G: Applicative[G]): G[F[B]] = F.traverse(fa)(f)
 
   def sequence[F[_]: Traverse, G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] = traverse(fga)(identity)
