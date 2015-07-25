@@ -28,28 +28,28 @@ object Monoid {
 
   def multiply[A: Monoid](a: A, n: Int): A = append(Seq.fill(n)(a): _*)
 
-  implicit def sum[A](implicit A: Numeric[A]): Monoid[A] =
-    new Monoid[A] {
-      def empty: A = A.zero
-      def append(x: A, y: A): A = A.plus(x, y)
+  implicit def sum[A](implicit A: Numeric[A]): Monoid[Sum[A]] =
+    new Monoid[Sum[A]] {
+      def empty: Sum[A] = Sum(A.zero)
+      def append(x: Sum[A], y: Sum[A]): Sum[A] = Sum(A.plus(x.value, y.value))
     }
 
-  implicit def product[A](implicit A: Numeric[A]): Monoid[A] =
-    new Monoid[A] {
-      def empty: A = A.one
-      def append(x: A, y: A): A = A.times(x, y)
+  implicit def product[A](implicit A: Numeric[A]): Monoid[Product[A]] =
+    new Monoid[Product[A]] {
+      def empty: Product[A] = Product(A.one)
+      def append(x: Product[A], y: Product[A]): Product[A] = Product(A.times(x.value, y.value))
     }
 
-  implicit val all: Monoid[Boolean] =
-    new Monoid[Boolean] {
-      def empty: Boolean = true
-      def append(x: Boolean, y: Boolean): Boolean = x && y
+  implicit val all: Monoid[All] =
+    new Monoid[All] {
+      def empty: All = All(true)
+      def append(x: All, y: All): All = All(x.value && y.value)
     }
 
-  implicit val any: Monoid[Boolean] =
-    new Monoid[Boolean] {
-      def empty: Boolean = false
-      def append(x: Boolean, y: Boolean): Boolean = x || y
+  implicit val any: Monoid[Any] =
+    new Monoid[Any] {
+      def empty: Any = Any(false)
+      def append(x: Any, y: Any): Any = Any(x.value || y.value)
     }
 
   implicit val string: Monoid[String] =
@@ -88,16 +88,16 @@ object Monoid {
         }
     }
 
-  implicit def first[A]: Monoid[Option[A]] =
-    new Monoid[Option[A]] {
-      def empty: Option[A] = None
-      def append(x: Option[A], y: Option[A]): Option[A] = x.orElse(y)
+  implicit def first[A]: Monoid[First[A]] =
+    new Monoid[First[A]] {
+      def empty: First[A] = First(None)
+      def append(x: First[A], y: First[A]): First[A] = First(x.value.orElse(y.value))
     }
 
-  implicit def last[A]: Monoid[Option[A]] =
-    new Monoid[Option[A]] {
-      def empty: Option[A] = None
-      def append(x: Option[A], y: Option[A]): Option[A] = y.orElse(x)
+  implicit def last[A]: Monoid[Last[A]] =
+    new Monoid[Last[A]] {
+      def empty: Last[A] = Last(None)
+      def append(x: Last[A], y: Last[A]): Last[A] = Last(y.value.orElse(x.value))
     }
 
   implicit def map[K, V](implicit V: Monoid[V]): Monoid[Map[K, V]] =
@@ -115,10 +115,10 @@ object Monoid {
       def append(x: Set[A], y: Set[A]): Set[A] = x | y
     }
 
-  implicit def endo[A]: Monoid[A => A] =
-    new Monoid[A => A] {
-      def empty: A => A = identity
-      def append(f: A => A, g: A => A): A => A = f.andThen(g)
+  implicit def endo[A]: Monoid[Endo[A]] =
+    new Monoid[Endo[A]] {
+      def empty: Endo[A] = Endo(identity)
+      def append(f: Endo[A], g: Endo[A]): Endo[A] = Endo(f.value.andThen(g.value))
     }
 
   implicit def pair[A, B](implicit A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
@@ -154,5 +154,19 @@ object Monoid {
             }
         }
     }
+
+  case class Sum[A](value: A) extends AnyVal
+
+  case class Product[A](value: A) extends AnyVal
+
+  case class All(value: Boolean) extends AnyVal
+
+  case class Any(value: Boolean) extends AnyVal
+
+  case class First[A](value: Option[A]) extends AnyVal
+
+  case class Last[A](value: Option[A]) extends AnyVal
+
+  case class Endo[A](value: A => A) extends AnyVal
 
 }
