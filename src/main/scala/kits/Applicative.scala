@@ -38,6 +38,12 @@ object Applicative {
 
   def map[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] = F.map(fa, fb, fc)(f)
 
+  def map[F[_, _], A, B, X](fa: F[X, A])(f: A => B)(implicit F: Functor[({ type G[A] = F[X, A] })#G], dummy: DummyImplicit): F[X, B] = F.map(fa)(f)
+
+  def map[F[_, _], A, B, C, X](fa: F[X, A], fb: F[X, B])(f: (A, B) => C)(implicit F: Applicative[({ type G[A] = F[X, A] })#G], dummy: DummyImplicit): F[X, C] = F.map(fa, fb)(f)
+
+  def map[F[_, _], A, B, C, D, X](fa: F[X, A], fb: F[X, B], fc: F[X, C])(f: (A, B, C) => D)(implicit F: Applicative[({ type G[A] = F[X, A] })#G], dummy: DummyImplicit): F[X, D] = F.map(fa, fb, fc)(f)
+
   implicit def validation[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Validation[E, A] })#F] =
     new Applicative[({ type F[A] = Validation[E, A] })#F] {
       def pure[A](a: A): Validation[E, A] = Validation(Right(a))
