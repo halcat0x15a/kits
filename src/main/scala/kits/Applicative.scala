@@ -38,17 +38,19 @@ object Applicative {
 
   def map[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] = F.map(fa, fb, fc)(f)
 
-  implicit def either[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Either[E, A] })#F] =
-    new Applicative[({ type F[A] = Either[E, A] })#F] {
-      def pure[A](a: A): Either[E, A] = Right(a)
-      override def map[A, B](fa: Either[E, A])(f: A => B): Either[E, B] = fa.right.map(f)
-      def ap[A, B](fa: Either[E, A])(f: Either[E, A => B]): Either[E, B] =
-        (f, fa) match {
-          case (Right(f), Right(a)) => Right(f(a))
-          case (Right(_), Left(e)) => Left(e)
-          case (Left(e), Right(_)) => Left(e)
-          case (Left(x), Left(y)) => Left(E.append(x, y))
+  implicit def validation[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Validation[E, A] })#F] =
+    new Applicative[({ type F[A] = Validation[E, A] })#F] {
+      def pure[A](a: A): Validation[E, A] = Validation(Right(a))
+      override def map[A, B](fa: Validation[E, A])(f: A => B): Validation[E, B] = Validation(fa.value.right.map(f))
+      def ap[A, B](fa: Validation[E, A])(f: Validation[E, A => B]): Validation[E, B] =
+        (f.value, fa.value) match {
+          case (Right(f), Right(a)) => Validation(Right(f(a)))
+          case (Right(_), Left(e)) => Validation(Left(e))
+          case (Left(e), Right(_)) => Validation(Left(e))
+          case (Left(x), Left(y)) => Validation(Left(E.append(x, y)))
         }
     }
+
+  case class Validation[E, A](value: Either[E, A]) extends AnyVal
 
 }
