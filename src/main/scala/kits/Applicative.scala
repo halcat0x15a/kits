@@ -38,29 +38,16 @@ object Applicative {
 
   def map[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] = F.map(fa, fb, fc)(f)
 
-  implicit def right[A](implicit A: Monoid[A]): Applicative[({ type F[B] = Either[A, B] })#F] =
-    new Applicative[({ type F[B] = Either[A, B] })#F] {
-      def pure[B](b: B): Either[A, B] = Right(b)
-      override def map[B, C](fb: Either[A, B])(f: B => C): Either[A, C] = fb.right.map(f)
-      def ap[B, C](fb: Either[A, B])(f: Either[A, B => C]): Either[A, C] =
-        (f, fb) match {
-          case (Right(f), Right(b)) => Right(f(b))
-          case (Right(_), Left(a)) => Left(a)
-          case (Left(a), Right(_)) => Left(a)
-          case (Left(x), Left(y)) => Left(A.append(x, y))
-        }
-    }
-
-  implicit def left[B](implicit B: Monoid[B]): Applicative[({ type F[A] = Either[A, B] })#F] =
-    new Applicative[({ type F[A] = Either[A, B] })#F] {
-      def pure[A](a: A): Either[A, B] = Left(a)
-      override def map[A, C](fa: Either[A, B])(f: A => C): Either[C, B] = fa.left.map(f)
-      def ap[A, C](fa: Either[A, B])(f: Either[A => C, B]): Either[C, B] =
+  implicit def either[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Either[E, A] })#F] =
+    new Applicative[({ type F[A] = Either[E, A] })#F] {
+      def pure[A](a: A): Either[E, A] = Right(a)
+      override def map[A, B](fa: Either[E, A])(f: A => B): Either[E, B] = fa.right.map(f)
+      def ap[A, B](fa: Either[E, A])(f: Either[E, A => B]): Either[E, B] =
         (f, fa) match {
-          case (Left(f), Left(a)) => Left(f(a))
-          case (Left(_), Right(b)) => Right(b)
-          case (Right(b), Left(_)) => Right(b)
-          case (Right(x), Right(y)) => Right(B.append(x, y))
+          case (Right(f), Right(a)) => Right(f(a))
+          case (Right(_), Left(e)) => Left(e)
+          case (Left(e), Right(_)) => Left(e)
+          case (Left(x), Left(y)) => Left(E.append(x, y))
         }
     }
 

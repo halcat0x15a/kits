@@ -68,22 +68,13 @@ object Functor {
         fa.foldLeft(F.pure(Set.empty[B]))((ga, a) => F.map(ga, f(a))(_ + _))
     }
 
-  implicit def right[A]: Monad[({ type F[B] = Either[A, B] })#F] with Traverse[({ type F[B] = Either[A, B] })#F] =
-    new Monad[({ type F[B] = Either[A, B] })#F] with Traverse[({ type F[B] = Either[A, B] })#F] {
-      def pure[B](b: B): Either[A, B] = Right(b)
-      override def map[B, C](fb: Either[A, B])(f: B => C): Either[A, C] = fb.right.map(f)
-      def flatMap[B, C](fb: Either[A, B])(f: B => Either[A, C]): Either[A, C] = fb.right.flatMap(f)
-      def traverse[F[_], B, C](fb: Either[A, B])(f: B => F[C])(implicit F: Applicative[F]): F[Either[A, C]] =
-        fb.fold(a => F.pure(Left(a)), b => F.map(f(b))(pure))
-    }
-
-  implicit def left[B]: Monad[({ type F[A] = Either[A, B] })#F] with Traverse[({ type F[A] = Either[A, B] })#F] =
-    new Monad[({ type F[A] = Either[A, B] })#F] with Traverse[({ type F[A] = Either[A, B] })#F] {
-      def pure[A](a: A): Either[A, B] = Left(a)
-      override def map[A, C](fa: Either[A, B])(f: A => C): Either[C, B] = fa.left.map(f)
-      def flatMap[A, C](fa: Either[A, B])(f: A => Either[C, B]): Either[C, B] = fa.left.flatMap(f)
-      def traverse[F[_], A, C](fa: Either[A, B])(f: A => F[C])(implicit F: Applicative[F]): F[Either[C, B]] =
-        fa.fold(a => F.map(f(a))(pure), b => F.pure(Right(b)))
+  implicit def either[E]: Monad[({ type F[A] = Either[E, A] })#F] with Traverse[({ type F[A] = Either[E, A] })#F] =
+    new Monad[({ type F[A] = Either[E, A] })#F] with Traverse[({ type F[A] = Either[E, A] })#F] {
+      def pure[A](a: A): Either[E, A] = Right(a)
+      override def map[A, B](fa: Either[E, A])(f: A => B): Either[E, B] = fa.right.map(f)
+      def flatMap[A, B](fa: Either[E, A])(f: A => Either[E, B]): Either[E, B] = fa.right.flatMap(f)
+      def traverse[F[_], A, B](fa: Either[E, A])(f: A => F[B])(implicit F: Applicative[F]): F[Either[E, B]] =
+        fa.fold(e => F.pure(Left(e)), a => F.map(f(a))(pure))
     }
 
   implicit def future(implicit executor: ExecutionContext): Monad[Future] =
