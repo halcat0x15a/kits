@@ -98,7 +98,21 @@ object Functor {
   implicit val tailrec: Monad[TailRec] =
     new Monad[TailRec] {
       def pure[A](a: A): TailRec[A] = done(a)
+      override def map[A, B](fa: TailRec[A])(f: A => B): TailRec[B] = fa.map(f)
       def flatMap[A, B](fa: TailRec[A])(f: A => TailRec[B]): TailRec[B] = tailcall(fa.flatMap(f))
+    }
+
+  implicit def validation[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Validation[E, A] })#F] =
+    new Applicative[({ type F[A] = Validation[E, A] })#F] {
+      def pure[A](a: A): Validation[E, A] = Validation(Right(a))
+      override def map[A, B](fa: Validation[E, A])(f: A => B): Validation[E, B] = Validation(fa.value.right.map(f))
+      def ap[A, B](fa: Validation[E, A])(f: Validation[E, A => B]): Validation[E, B] =
+        (f.value, fa.value) match {
+          case (Right(f), Right(a)) => Validation(Right(f(a)))
+          case (Right(_), Left(e)) => Validation(Left(e))
+          case (Left(e), Right(_)) => Validation(Left(e))
+          case (Left(x), Left(y)) => Validation(Left(E.append(x, y)))
+        }
     }
 
   implicit def reader[F[_], R](implicit F: Monad[F]): Monad[({ type G[A] = Reader[F, R, A] })#G] =
@@ -120,19 +134,6 @@ object Functor {
       def pure[A](a: A): State[F, S, A] = State(s => F.pure((s, a)))
       def flatMap[A, B](fa: State[F, S, A])(f: A => State[F, S, B]): State[F, S, B] =
         State(s => F.flatMap(fa.value(s)) { case (s, a) => f(a).value(s) })
-    }
-
-  implicit def validation[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Validation[E, A] })#F] =
-    new Applicative[({ type F[A] = Validation[E, A] })#F] {
-      def pure[A](a: A): Validation[E, A] = Validation(Right(a))
-      override def map[A, B](fa: Validation[E, A])(f: A => B): Validation[E, B] = Validation(fa.value.right.map(f))
-      def ap[A, B](fa: Validation[E, A])(f: Validation[E, A => B]): Validation[E, B] =
-        (f.value, fa.value) match {
-          case (Right(f), Right(a)) => Validation(Right(f(a)))
-          case (Right(_), Left(e)) => Validation(Left(e))
-          case (Left(e), Right(_)) => Validation(Left(e))
-          case (Left(x), Left(y)) => Validation(Left(E.append(x, y)))
-        }
     }
 
 }
