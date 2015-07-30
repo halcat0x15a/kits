@@ -1,5 +1,7 @@
 package kits
 
+import scala.util.control.TailCalls._
+
 trait Traverse[F[_]] extends Functor[F] { F =>
 
   def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
@@ -26,10 +28,10 @@ object Traverse {
 
   def fold[F[_]: Traverse, A: Monoid](fa: F[A]): A = foldMap(fa)(identity)
 
-  def mapAccumL[F[_]: Traverse, S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B)): (S, F[B]) =
-    traverse[F, ({ type G[A] = State[S, A] })#G, A, B](fa)(a => s => f(s, a)).apply(s)
+  def mapAccumL[F[_], S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B))(implicit F: Traverse[F]): (S, F[B]) =
+    F.traverse[({ type G[A] = Functor.State[TailRec, S, A] })#G, A, B](fa)(a => Functor.State(s => done(f(s, a)))).value(s).result
 
   def mapAccumR[F[_], S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B))(implicit F: Traverse[F]): (S, F[B]) =
-    F.traverse[({ type G[A] = State[S, A] })#G, A, B](fa)(a => s => f(s, a))(Functor.state[S].dual)(s)
+    F.traverse[({ type G[A] = Functor.State[TailRec, S, A] })#G, A, B](fa)(a => Functor.State(s => done(f(s, a))))(Functor.state[TailRec, S].dual).value(s).result
 
 }

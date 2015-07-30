@@ -2,6 +2,7 @@ package kits
 
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.Try
+import scala.util.control.TailCalls._
 
 trait Functor[F[_]] { F =>
 
@@ -91,6 +92,12 @@ object Functor {
       def flatMap[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
     }
 
+  implicit val tailrec: Monad[TailRec] =
+    new Monad[TailRec] {
+      def pure[A](a: A): TailRec[A] = done(a)
+      def flatMap[A, B](fa: TailRec[A])(f: A => TailRec[B]): TailRec[B] = tailcall(fa.flatMap(f))
+    }
+
   implicit def reader[R]: Monad[({ type F[A] = Reader[R, A] })#F] =
     new Monad[({ type F[A] = Reader[R, A] })#F] {
       def pure[A](a: A): Reader[R, A] = _ => a
@@ -109,13 +116,13 @@ object Functor {
         }
     }
 
-  implicit def state[S]: Monad[({ type F[A] = State[S, A] })#F] =
-    new Monad[({ type F[A] = State[S, A] })#F] {
-      def pure[A](a: A): State[S, A] = s => (s, a)
-      def flatMap[A, B](fa: State[S, A])(f: A => State[S, B]): State[S, B] =
-        s => fa(s) match {
-          case (s, a) => f(a)(s)
-        }
+  implicit def state[F[_], S](implicit F: Monad[F]): Monad[({ type G[A] = State[F, S, A] })#G] =
+    new Monad[({ type G[A] = State[F, S, A] })#G] {
+      def pure[A](a: A): State[F, S, A] = State(s => F.pure((s, a)))
+      def flatMap[A, B](fa: State[F, S, A])(f: A => State[F, S, B]): State[F, S, B] =
+        State(s => F.flatMap(fa.value(s)) { case (s, a) => f(a).value(s) })
     }
+
+  case class State[F[_], S, A](value: S => F[(S, A)]) extends AnyVal
 
 }
