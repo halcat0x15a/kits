@@ -1,27 +1,26 @@
 package kits
 
+package test
+
 import org.scalacheck.Arbitrary
 
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
 
 abstract class TraverseSuite[F[_], G[_], A](implicit F: Traverse[F], G: Applicative[G], FA: Arbitrary[F[A]], GA: Arbitrary[G[A]]) extends FunSuite with Checkers {
-  def t[A](ga: G[A]): G[A] = ga
-  test("naturality") {
-    check { (fa: F[A], f: A => G[A]) =>
-      F.traverse(fa)(a => t(f(a))) == t(F.traverse(fa)(f))
-    }
-  }
+
   test("identity") {
     check { fa: F[A] =>
       F.traverse[Identity, A, A](fa)(identity) == fa
     }
   }
+
   test("composition") {
     check { (fa: F[A], f: A => G[A], g: A => G[A]) =>
       F.traverse[({ type H[A] = G[G[A]] })#H, A, A](fa)(f.andThen(G.map(_)(g)))(G.compose(G)) == G.map(F.traverse(fa)(f))(F.traverse(_)(g))
     }
   }
+
 }
 
 class IdentityTraverseSuite extends TraverseSuite[Identity, Option, AnyVal]
@@ -36,6 +35,4 @@ class MapTraverseSuite extends TraverseSuite[({ type F[A] = Map[AnyVal, A] })#F,
 
 class SetTraverseSuite extends TraverseSuite[Set, Option, AnyVal]
 
-class RightTraverseSuite extends TraverseSuite[({ type F[A] = Either[AnyVal, A] })#F, Option, AnyVal]
-
-class LeftTraverseSuite extends TraverseSuite[({ type F[A] = Either[A, AnyVal] })#F, Option, AnyVal]
+class EitherTraverseSuite extends TraverseSuite[({ type F[A] = Either[AnyVal, A] })#F, Option, AnyVal]

@@ -1,21 +1,26 @@
 package kits
 
+package test
+
 import org.scalacheck.Arbitrary
 
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
 
 abstract class FunctorSuite[F[_], A](implicit F: Functor[F], FA: Arbitrary[F[A]], A: Arbitrary[A]) extends FunSuite with Checkers {
+
   test("identity") {
     check { fa: F[A] =>
       F.map(fa)(identity) == fa
     }
   }
+
   test("composition") {
     check { (fa: F[A], f: A => A, g: A => A) =>
       F.map(F.map(fa)(f))(g) == F.map(fa)(f.andThen(g))
     }
   }
+
 }
 
 class IdentityFunctorSuite extends FunctorSuite[Identity, AnyVal]
@@ -30,6 +35,6 @@ class MapFunctorSuite extends FunctorSuite[({ type F[A] = Map[AnyVal, A] })#F, A
 
 class SetFunctorSuite extends FunctorSuite[Set, AnyVal]
 
-class RightFunctorSuite extends FunctorSuite[({ type F[A] = Either[AnyVal, A] })#F, AnyVal]
+class EitherFunctorSuite extends FunctorSuite[({ type F[A] = Either[AnyVal, A] })#F, AnyVal]
 
-class LeftFunctorSuite extends FunctorSuite[({ type F[A] = Either[A, AnyVal] })#F, AnyVal]
+class ValidationFunctorSuite extends FunctorSuite[({ type F[A] = Applicative.Validation[String, A] })#F, AnyVal]
