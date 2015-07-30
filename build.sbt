@@ -1,14 +1,12 @@
 organization := "org.halcat"
 
-version := "0.4.0"
+version := "0.5.0"
 
-scalaVersion := "2.11.6"
-
-crossScalaVersions := Seq("2.10.5", "2.11.6")
+scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
+  "org.scalatest" %% "scalatest" % "2.2.5" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 )
 
 scalacOptions ++= Seq("-feature", "-language:higherKinds")
