@@ -102,16 +102,13 @@ object Functor {
       def flatMap[A, B](fa: TailRec[A])(f: A => TailRec[B]): TailRec[B] = tailcall(fa.flatMap(f))
     }
 
-  implicit def validation[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Validation[E, A] })#F] =
-    new Applicative[({ type F[A] = Validation[E, A] })#F] {
-      def pure[A](a: A): Validation[E, A] = Validation(Right(a))
+  implicit def validation[E]: Traverse[({ type F[A] = Validation[E, A] })#F] =
+    new Traverse[({ type F[A] = Validation[E, A] })#F] {
       override def map[A, B](fa: Validation[E, A])(f: A => B): Validation[E, B] = Validation(fa.value.right.map(f))
-      def ap[A, B](fa: Validation[E, A])(f: Validation[E, A => B]): Validation[E, B] =
-        (f.value, fa.value) match {
-          case (Right(f), Right(a)) => Validation(Right(f(a)))
-          case (Right(_), Left(e)) => Validation(Left(e))
-          case (Left(e), Right(_)) => Validation(Left(e))
-          case (Left(x), Left(y)) => Validation(Left(E.append(x, y)))
+      def traverse[F[_], A, B](fa: Validation[E, A])(f: A => F[B])(implicit F: Applicative[F]): F[Validation[E, B]] =
+        fa.value match {
+          case Left(e) => F.pure(Validation(Left(e)))
+          case Right(a) => F.map(f(a))(b => Validation(Right(b)))
         }
     }
 
@@ -122,11 +119,10 @@ object Functor {
         Reader(r => F.flatMap(fa.value(r))(a => f(a).value(r)))
     }
 
-  implicit def writer[F[_], W](implicit F: Monad[F], W: Monoid[W]): Monad[({ type G[A] = Writer[F, W, A] })#G] =
-    new Monad[({ type G[A] = Writer[F, W, A] })#G] {
-      def pure[A](a: A): Writer[F, W, A] = Writer(F.pure((W.empty, a)))
-      def flatMap[A, B](fa: Writer[F, W, A])(f: A => Writer[F, W, B]): Writer[F, W, B] =
-        Writer(F.flatMap(fa.value) { case (x, a) => F.map(f(a).value) { case (y, b) => (W.append(x, y), b) } })
+  implicit def writer[F[_], W](implicit F: Traverse[F]): Traverse[({ type G[A] = Writer[F, W, A] })#G] =
+    new Traverse[({ type G[A] = Writer[F, W, A] })#G] {
+      def traverse[G[_], A, B](fa: Writer[F, W, A])(f: A => G[B])(implicit G: Applicative[G]): G[Writer[F, W, B]] =
+        G.map(F.traverse(fa.value) { case (w, a) => G.map(f(a))(b => (w, b)) })(Writer(_))
     }
 
   implicit def state[F[_], S](implicit F: Monad[F]): Monad[({ type G[A] = State[F, S, A] })#G] =
