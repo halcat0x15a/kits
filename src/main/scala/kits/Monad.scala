@@ -14,4 +14,10 @@ object Monad {
 
   def apply[F[_]](implicit F: Monad[F]): Monad[F] = F
 
+  case class Reader[F[_], R, A](value: R => F[A]) extends AnyVal
+
+  case class Writer[F[_], W, A](value: F[(W, A)]) extends AnyVal
+
+  case class State[F[_], S, A](value: S => F[(S, A)]) extends AnyVal
+
 }
