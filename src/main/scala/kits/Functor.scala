@@ -56,6 +56,7 @@ object Functor {
 
   implicit def map[K]: Traverse[({ type F[A] = Map[K, A] })#F] =
     new Traverse[({ type F[A] = Map[K, A] })#F] {
+      override def map[A, B](fa: Map[K, A])(f: A => B): Map[K, B] = fa.mapValues(f)
       def traverse[F[_], A, B](fa: Map[K, A])(f: A => F[B])(implicit F: Applicative[F]): F[Map[K, B]] =
         fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F.map(ga, f(a))((a, b) => a + (k -> b)) }
     }

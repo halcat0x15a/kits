@@ -17,6 +17,7 @@ object Monad {
   implicit def reader[F[_], R](implicit F: Monad[F]): Monad[({ type G[A] = Reader[F, R, A] })#G] =
     new Monad[({ type G[A] = Reader[F, R, A] })#G] {
       def pure[A](a: A): Reader[F, R, A] = Reader(_ => F.pure(a))
+      override def map[A, B](fa: Reader[F, R, A])(f: A => B): Reader[F, R, B] = fa.map(f)
       def flatMap[A, B](fa: Reader[F, R, A])(f: A => Reader[F, R, B]): Reader[F, R, B] = fa.flatMap(f)
     }
 
