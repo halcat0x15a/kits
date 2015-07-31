@@ -4,9 +4,6 @@ import scala.concurrent.{Future, ExecutionContext}
 import scala.util.Try
 import scala.util.control.TailCalls._
 
-import Applicative.Validation
-import Monad.{Reader, Writer, State}
-
 trait Functor[F[_]] { F =>
 
   def map[A, B](fa: F[A])(f: A => B): F[B]
@@ -30,6 +27,15 @@ object Functor {
       def traverse[F[_]: Applicative, A, B](fa: A)(f: A => F[B]): F[B] = f(fa)
     }
 
+  implicit val option: Monad[Option] with Traverse[Option] =
+    new Monad[Option] with Traverse[Option] {
+      def pure[A](a: A): Option[A] = Some(a)
+      override def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
+      def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa.flatMap(f)
+      def traverse[F[_], A, B](fa: Option[A])(f: A => F[B])(implicit F: Applicative[F]): F[Option[B]] =
+        fa.fold(F.pure(None: Option[B]))(a => F.map(f(a))(pure))
+    }
+
   implicit val list: Monad[List] with Traverse[List] =
     new Monad[List] with Traverse[List] {
       def pure[A](a: A): List[A] = a :: Nil
@@ -46,15 +52,6 @@ object Functor {
       def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: Vector[A])(f: A => F[B])(implicit F: Applicative[F]): F[Vector[B]] =
         fa.foldLeft(F.pure(Vector.empty[B]))((ga, a) => F.map(ga, f(a))(_ :+ _))
-    }
-
-  implicit val option: Monad[Option] with Traverse[Option] =
-    new Monad[Option] with Traverse[Option] {
-      def pure[A](a: A): Option[A] = Some(a)
-      override def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
-      def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa.flatMap(f)
-      def traverse[F[_], A, B](fa: Option[A])(f: A => F[B])(implicit F: Applicative[F]): F[Option[B]] =
-        fa.fold(F.pure(None: Option[B]))(a => F.map(f(a))(pure))
     }
 
   implicit def map[K]: Traverse[({ type F[A] = Map[K, A] })#F] =
@@ -102,34 +99,25 @@ object Functor {
       def flatMap[A, B](fa: TailRec[A])(f: A => TailRec[B]): TailRec[B] = tailcall(fa.flatMap(f))
     }
 
-  implicit def validation[E]: Traverse[({ type F[A] = Validation[E, A] })#F] =
-    new Traverse[({ type F[A] = Validation[E, A] })#F] {
-      override def map[A, B](fa: Validation[E, A])(f: A => B): Validation[E, B] = Validation(fa.value.right.map(f))
-      def traverse[F[_], A, B](fa: Validation[E, A])(f: A => F[B])(implicit F: Applicative[F]): F[Validation[E, B]] =
-        fa.value match {
-          case Left(e) => F.pure(Validation(Left(e)))
-          case Right(a) => F.map(f(a))(b => Validation(Right(b)))
-        }
+  implicit def validation[E]: Traverse[({ type F[A] = Applicative.Validation[E, A] })#F] =
+    new Traverse[({ type F[A] = Applicative.Validation[E, A] })#F] {
+      override def map[A, B](fa: Applicative.Validation[E, A])(f: A => B): Applicative.Validation[E, B] = fa.map(f)
+      def traverse[F[_]: Applicative, A, B](fa: Applicative.Validation[E, A])(f: A => F[B]): F[Applicative.Validation[E, B]] = fa.traverse(f)
     }
 
-  implicit def reader[F[_], R](implicit F: Monad[F]): Monad[({ type G[A] = Reader[F, R, A] })#G] =
-    new Monad[({ type G[A] = Reader[F, R, A] })#G] {
-      def pure[A](a: A): Reader[F, R, A] = Reader(_ => F.pure(a))
-      def flatMap[A, B](fa: Reader[F, R, A])(f: A => Reader[F, R, B]): Reader[F, R, B] =
-        Reader(r => F.flatMap(fa.value(r))(a => f(a).value(r)))
+  implicit def reader[F[_], R](implicit F: Functor[F]): Functor[({ type G[A] = Monad.Reader[F, R, A] })#G] =
+    new Functor[({ type G[A] = Monad.Reader[F, R, A] })#G] {
+      def map[A, B](fa: Monad.Reader[F, R, A])(f: A => B): Monad.Reader[F, R, B] = fa.map(f)
     }
 
-  implicit def writer[F[_], W](implicit F: Traverse[F]): Traverse[({ type G[A] = Writer[F, W, A] })#G] =
-    new Traverse[({ type G[A] = Writer[F, W, A] })#G] {
-      def traverse[G[_], A, B](fa: Writer[F, W, A])(f: A => G[B])(implicit G: Applicative[G]): G[Writer[F, W, B]] =
-        G.map(F.traverse(fa.value) { case (w, a) => G.map(f(a))(b => (w, b)) })(Writer(_))
+  implicit def writer[F[_], W](implicit F: Functor[F]): Functor[({ type G[A] = Monad.Writer[F, W, A] })#G] =
+    new Functor[({ type G[A] = Monad.Writer[F, W, A] })#G] {
+      def map[A, B](fa: Monad.Writer[F, W, A])(f: A => B): Monad.Writer[F, W, B] = fa.map(f)
     }
 
-  implicit def state[F[_], S](implicit F: Monad[F]): Monad[({ type G[A] = State[F, S, A] })#G] =
-    new Monad[({ type G[A] = State[F, S, A] })#G] {
-      def pure[A](a: A): State[F, S, A] = State(s => F.pure((s, a)))
-      def flatMap[A, B](fa: State[F, S, A])(f: A => State[F, S, B]): State[F, S, B] =
-        State(s => F.flatMap(fa.value(s)) { case (s, a) => f(a).value(s) })
+  implicit def state[F[_]: Functor, S]: Functor[({ type G[A] = Monad.State[F, S, A] })#G] =
+    new Functor[({ type G[A] = Monad.State[F, S, A] })#G] {
+      def map[A, B](fa: Monad.State[F, S, A])(f: A => B): Monad.State[F, S, B] = fa.map(f)
     }
 
 }

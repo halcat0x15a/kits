@@ -64,18 +64,6 @@ object Monoid {
       def append(x: Unit, y: Unit): Unit = ()
     }
 
-  implicit def list[A]: Monoid[List[A]] =
-    new Monoid[List[A]] {
-      def empty: List[A] = Nil
-      def append(x: List[A], y: List[A]): List[A] = x ::: y
-    }
-
-  implicit def vector[A]: Monoid[Vector[A]] =
-    new Monoid[Vector[A]] {
-      def empty: Vector[A] = Vector.empty
-      def append(x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
-    }
-
   implicit def option[A](implicit A: Monoid[A]): Monoid[Option[A]] =
     new Monoid[Option[A]] {
       def empty: Option[A] = None
@@ -98,6 +86,18 @@ object Monoid {
     new Monoid[Last[A]] {
       def empty: Last[A] = Last(None)
       def append(x: Last[A], y: Last[A]): Last[A] = Last(y.value.orElse(x.value))
+    }
+
+  implicit def list[A]: Monoid[List[A]] =
+    new Monoid[List[A]] {
+      def empty: List[A] = Nil
+      def append(x: List[A], y: List[A]): List[A] = x ::: y
+    }
+
+  implicit def vector[A]: Monoid[Vector[A]] =
+    new Monoid[Vector[A]] {
+      def empty: Vector[A] = Vector.empty
+      def append(x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
     }
 
   implicit def map[K, V](implicit V: Monoid[V]): Monoid[Map[K, V]] =
