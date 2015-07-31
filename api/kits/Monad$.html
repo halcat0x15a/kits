@@ -1,9 +1,9 @@
 <!DOCTYPE html >
 <html>
         <head>
-          <title>Traverse - kits.Traverse</title>
-          <meta name="description" content="Traverse - kits.Traverse" />
-          <meta name="keywords" content="Traverse kits.Traverse" />
+          <title>Monad - kits.Monad</title>
+          <meta name="description" content="Monad - kits.Monad" />
+          <meta name="keywords" content="Monad kits.Monad" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
@@ -16,7 +16,7 @@
       <script type="text/javascript">
          if(top === self) {
             var url = '../index.html';
-            var hash = 'kits.Traverse';
+            var hash = 'kits.Monad$';
             var anchor = window.location.hash;
             var anchor_opt = '';
             if (anchor.length >= 1)
@@ -26,16 +26,16 @@
    	  </script>
     
         </head>
-        <body class="type">
+        <body class="value">
       <div id="definition">
-        <a href="Traverse$.html" title="See companion object"><img alt="Trait/Object" src="../lib/trait_to_object_big.png" /></a>
+        <a href="Monad.html" title="See companion trait"><img alt="Object/Trait" src="../lib/object_to_trait_big.png" /></a>
         <p id="owner"><a href="package.html" class="extype" name="kits">kits</a></p>
-        <h1><a href="Traverse$.html" title="See companion object">Traverse</a></h1><h3><span class="morelinks"><div>
+        <h1><a href="Monad.html" title="See companion trait">Monad</a></h1><h3><span class="morelinks"><div>
             Related Docs:
-            <a href="Traverse$.html" title="See companion object">object Traverse</a>
+            <a href="Monad.html" title="See companion trait">trait Monad</a>
             | <a href="package.html" class="extype" name="kits">package kits</a>
           </div></span></h3><span class="permalink">
-      <a href="../index.html#kits.Traverse" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -44,16 +44,16 @@
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">Traverse</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Traverse.F">F</span>]</span>
+        <span class="name">Monad</span>
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Self Type</dt><dd><a href="" class="extype" name="kits.Traverse">Traverse</a>[<span class="extype" name="kits.Traverse.F">F</span>]</dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Traverse.F">F</span>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -71,7 +71,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="kits.Traverse"><span>Traverse</span></li><li class="in" name="kits.Functor"><span>Functor</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="kits.Monad"><span>Monad</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -90,23 +90,55 @@
         <div id="allMembers">
         
 
-        
-
-        <div id="values" class="values members">
-              <h3>Abstract Value Members</h3>
-              <ol><li name="kits.Traverse#traverse" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="traverse[G[_],A,B](fa:F[A])(f:A=&gt;G[B])(implicitevidence$1:kits.Applicative[G]):G[F[B]]"></a>
-      <a id="traverse[G[_],A,B](F[A])((A)⇒G[B])(Applicative[G]):G[F[B]]"></a>
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="kits.Monad.Reader" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Reader[F[_],R,A]extendsAnyValwithProductwithSerializable"></a>
+      <a id="Reader[F[_],R,A]:Reader[F,R,A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">abstract </span>
-        <span class="kind">def</span>
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">traverse</span><span class="tparams">[<span name="G">G<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="fa">fa: <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.traverse.A">A</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="kits.Traverse.traverse.A">A</span>) ⇒ <span class="extype" name="kits.Traverse.traverse.G">G</span>[<span class="extype" name="kits.Traverse.traverse.B">B</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="Applicative.html" class="extype" name="kits.Applicative">Applicative</a>[<span class="extype" name="kits.Traverse.traverse.G">G</span>]</span>)</span><span class="result">: <span class="extype" name="kits.Traverse.traverse.G">G</span>[<span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.traverse.B">B</span>]]</span>
+        <a href="Monad$$Reader.html"><span class="name">Reader</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="R">R</span>, <span name="A">A</span>]</span><span class="params">(<span name="value">value: (<span class="extype" name="kits.Monad.Reader.R">R</span>) ⇒ <span class="extype" name="kits.Monad.Reader.F">F</span>[<span class="extype" name="kits.Monad.Reader.A">A</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.AnyVal">AnyVal</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@traverse[G[_],A,B](fa:F[A])(f:A=&gt;G[B])(implicitevidence$1:kits.Applicative[G]):G[F[B]]" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@Reader[F[_],R,A]extendsAnyValwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Monad.State" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="State[F[_],S,A]extendsAnyValwithProductwithSerializable"></a>
+      <a id="State[F[_],S,A]:State[F,S,A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Monad$$State.html"><span class="name">State</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="S">S</span>, <span name="A">A</span>]</span><span class="params">(<span name="value">value: (<span class="extype" name="kits.Monad.State.S">S</span>) ⇒ <span class="extype" name="kits.Monad.State.F">F</span>[(<span class="extype" name="kits.Monad.State.S">S</span>, <span class="extype" name="kits.Monad.State.A">A</span>)]</span>)</span><span class="result"> extends <span class="extype" name="scala.AnyVal">AnyVal</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.Monad$@State[F[_],S,A]extendsAnyValwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Monad.Writer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Writer[F[_],W,A]extendsAnyValwithProductwithSerializable"></a>
+      <a id="Writer[F[_],W,A]:Writer[F,W,A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Monad$$Writer.html"><span class="name">Writer</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="W">W</span>, <span name="A">A</span>]</span><span class="params">(<span name="value">value: <span class="extype" name="kits.Monad.Writer.F">F</span>[(<span class="extype" name="kits.Monad.Writer.W">W</span>, <span class="extype" name="kits.Monad.Writer.A">A</span>)]</span>)</span><span class="result"> extends <span class="extype" name="scala.AnyVal">AnyVal</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.Monad$@Writer[F[_],W,A]extendsAnyValwithProductwithSerializable" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -114,8 +146,10 @@
     </li></ol>
             </div>
 
+        
+
         <div id="values" class="values members">
-              <h3>Concrete Value Members</h3>
+              <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
       <a id="!=(Any):Boolean"></a>
@@ -128,7 +162,7 @@
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@!=(x$1:Any):Boolean" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -145,7 +179,7 @@
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@##():Int" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@##():Int" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -162,11 +196,28 @@
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@==(x$1:Any):Boolean" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@==(x$1:Any):Boolean" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="kits.Monad#apply" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="apply[F[_]](implicitF:kits.Monad[F]):kits.Monad[F]"></a>
+      <a id="apply[F[_]](Monad[F]):Monad[F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">apply</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <a href="Monad.html" class="extype" name="kits.Monad">Monad</a>[<span class="extype" name="kits.Monad.apply.F">F</span>]</span>)</span><span class="result">: <a href="Monad.html" class="extype" name="kits.Monad">Monad</a>[<span class="extype" name="kits.Monad.apply.F">F</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.Monad$@apply[F[_]](implicitF:kits.Monad[F]):kits.Monad[F]" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -179,7 +230,7 @@
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@asInstanceOf[T0]:T0" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -196,7 +247,7 @@
         <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@clone():Object" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@clone():Object" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -207,40 +258,6 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="kits.Traverse#compose" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="compose[G[_]](implicitG:kits.Traverse[G]):kits.Traverse[[A]F[G[A]]]"></a>
-      <a id="compose[G[_]](Traverse[G]):Traverse[[A]F[G[A]]]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">compose</span><span class="tparams">[<span name="G">G<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="G">G: <a href="" class="extype" name="kits.Traverse">Traverse</a>[<span class="extype" name="kits.Traverse.compose.G">G</span>]</span>)</span><span class="result">: <a href="" class="extype" name="kits.Traverse">Traverse</a>[[A]<span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.compose.G">G</span>[<span class="extype" name="kits.Traverse.&lt;refinement&gt;.H.A">A</span>]]]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@compose[G[_]](implicitG:kits.Traverse[G]):kits.Traverse[[A]F[G[A]]]" title="Permalink" target="_top">
-        <img src="../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="kits.Functor#compose" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="compose[G[_]](implicitG:kits.Functor[G]):kits.Functor[[A]F[G[A]]]"></a>
-      <a id="compose[G[_]](Functor[G]):Functor[[A]F[G[A]]]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">compose</span><span class="tparams">[<span name="G">G<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="G">G: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Functor.compose.G">G</span>]</span>)</span><span class="result">: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[[A]<span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Functor.compose.G">G</span>[<span class="extype" name="kits.Functor.&lt;refinement&gt;.H.A">A</span>]]]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@compose[G[_]](implicitG:kits.Functor[G]):kits.Functor[[A]F[G[A]]]" title="Permalink" target="_top">
-        <img src="../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Functor.html" class="extype" name="kits.Functor">Functor</a></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -253,7 +270,7 @@
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -270,7 +287,7 @@
         <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@equals(x$1:Any):Boolean" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -287,7 +304,7 @@
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@finalize():Unit" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@finalize():Unit" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -298,40 +315,6 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="kits.Traverse#fold" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="fold[A](fa:F[A])(implicitevidence$3:kits.Monoid[A]):A"></a>
-      <a id="fold[A](F[A])(Monoid[A]):A"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">fold</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="fa">fa: <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.fold.A">A</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="Monoid.html" class="extype" name="kits.Monoid">Monoid</a>[<span class="extype" name="kits.Traverse.fold.A">A</span>]</span>)</span><span class="result">: <span class="extype" name="kits.Traverse.fold.A">A</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@fold[A](fa:F[A])(implicitevidence$3:kits.Monoid[A]):A" title="Permalink" target="_top">
-        <img src="../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="kits.Traverse#foldMap" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="foldMap[A,B](fa:F[A])(f:A=&gt;B)(implicitB:kits.Monoid[B]):B"></a>
-      <a id="foldMap[A,B](F[A])((A)⇒B)(Monoid[B]):B"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">foldMap</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="fa">fa: <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.foldMap.A">A</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="kits.Traverse.foldMap.A">A</span>) ⇒ <span class="extype" name="kits.Traverse.foldMap.B">B</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="B">B: <a href="Monoid.html" class="extype" name="kits.Monoid">Monoid</a>[<span class="extype" name="kits.Traverse.foldMap.B">B</span>]</span>)</span><span class="result">: <span class="extype" name="kits.Traverse.foldMap.B">B</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@foldMap[A,B](fa:F[A])(f:A=&gt;B)(implicitB:kits.Monoid[B]):B" title="Permalink" target="_top">
-        <img src="../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <a id="getClass():Class[_]"></a>
@@ -344,7 +327,7 @@
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@getClass():Class[_]" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@getClass():Class[_]" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -361,7 +344,7 @@
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@hashCode():Int" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@hashCode():Int" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -378,62 +361,11 @@
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="kits.Traverse#map" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="map[A,B](fa:F[A])(f:A=&gt;B):F[B]"></a>
-      <a id="map[A,B](F[A])((A)⇒B):F[B]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">map</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="fa">fa: <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.map.A">A</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="kits.Traverse.map.A">A</span>) ⇒ <span class="extype" name="kits.Traverse.map.B">B</span></span>)</span><span class="result">: <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.map.B">B</span>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@map[A,B](fa:F[A])(f:A=&gt;B):F[B]" title="Permalink" target="_top">
-        <img src="../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="kits.Traverse">Traverse</a> → <a href="Functor.html" class="extype" name="kits.Functor">Functor</a></dd></dl></div>
-    </li><li name="kits.Traverse#mapAccumL" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="mapAccumL[S,A,B](s:S,fa:F[A])(f:(S,A)=&gt;(S,B)):(S,F[B])"></a>
-      <a id="mapAccumL[S,A,B](S,F[A])((S,A)⇒(S,B)):(S,F[B])"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">mapAccumL</span><span class="tparams">[<span name="S">S</span>, <span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="s">s: <span class="extype" name="kits.Traverse.mapAccumL.S">S</span></span>, <span name="fa">fa: <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.mapAccumL.A">A</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="kits.Traverse.mapAccumL.S">S</span>, <span class="extype" name="kits.Traverse.mapAccumL.A">A</span>) ⇒ (<span class="extype" name="kits.Traverse.mapAccumL.S">S</span>, <span class="extype" name="kits.Traverse.mapAccumL.B">B</span>)</span>)</span><span class="result">: (<span class="extype" name="kits.Traverse.mapAccumL.S">S</span>, <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.mapAccumL.B">B</span>])</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@mapAccumL[S,A,B](s:S,fa:F[A])(f:(S,A)=&gt;(S,B)):(S,F[B])" title="Permalink" target="_top">
-        <img src="../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="kits.Traverse#mapAccumR" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="mapAccumR[S,A,B](s:S,fa:F[A])(f:(S,A)=&gt;(S,B)):(S,F[B])"></a>
-      <a id="mapAccumR[S,A,B](S,F[A])((S,A)⇒(S,B)):(S,F[B])"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">mapAccumR</span><span class="tparams">[<span name="S">S</span>, <span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="s">s: <span class="extype" name="kits.Traverse.mapAccumR.S">S</span></span>, <span name="fa">fa: <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.mapAccumR.A">A</span>]</span>)</span><span class="params">(<span name="f">f: (<span class="extype" name="kits.Traverse.mapAccumR.S">S</span>, <span class="extype" name="kits.Traverse.mapAccumR.A">A</span>) ⇒ (<span class="extype" name="kits.Traverse.mapAccumR.S">S</span>, <span class="extype" name="kits.Traverse.mapAccumR.B">B</span>)</span>)</span><span class="result">: (<span class="extype" name="kits.Traverse.mapAccumR.S">S</span>, <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.mapAccumR.B">B</span>])</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@mapAccumR[S,A,B](s:S,fa:F[A])(f:(S,A)=&gt;(S,B)):(S,F[B])" title="Permalink" target="_top">
-        <img src="../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -446,7 +378,7 @@
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -463,7 +395,7 @@
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@notify():Unit" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@notify():Unit" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -480,24 +412,24 @@
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@notifyAll():Unit" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@notifyAll():Unit" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="kits.Traverse#sequence" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="sequence[G[_],A](fga:F[G[A]])(implicitevidence$2:kits.Applicative[G]):G[F[A]]"></a>
-      <a id="sequence[G[_],A](F[G[A]])(Applicative[G]):G[F[A]]"></a>
+    </li><li name="kits.Monad#reader" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="reader[F[_],R](implicitF:kits.Monad[F]):kits.Monad[[A]kits.Monad.Reader[F,R,A]]"></a>
+      <a id="reader[F[_],R](Monad[F]):Monad[[A]Reader[F,R,A]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sequence</span><span class="tparams">[<span name="G">G<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="A">A</span>]</span><span class="params">(<span name="fga">fga: <span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.sequence.G">G</span>[<span class="extype" name="kits.Traverse.sequence.A">A</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="Applicative.html" class="extype" name="kits.Applicative">Applicative</a>[<span class="extype" name="kits.Traverse.sequence.G">G</span>]</span>)</span><span class="result">: <span class="extype" name="kits.Traverse.sequence.G">G</span>[<span class="extype" name="kits.Traverse.F">F</span>[<span class="extype" name="kits.Traverse.sequence.A">A</span>]]</span>
+        <span class="name">reader</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="R">R</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <a href="Monad.html" class="extype" name="kits.Monad">Monad</a>[<span class="extype" name="kits.Monad.reader.F">F</span>]</span>)</span><span class="result">: <a href="Monad.html" class="extype" name="kits.Monad">Monad</a>[[A]<a href="Monad$$Reader.html" class="extype" name="kits.Monad.Reader">Reader</a>[<span class="extype" name="kits.Monad.reader.F">F</span>, <span class="extype" name="kits.Monad.reader.R">R</span>, <span class="extype" name="kits.Monad.&lt;refinement&gt;.G.A">A</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@sequence[G[_],A](fga:F[G[A]])(implicitevidence$2:kits.Applicative[G]):G[F[A]]" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@reader[F[_],R](implicitF:kits.Monad[F]):kits.Monad[[A]kits.Monad.Reader[F,R,A]]" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -514,7 +446,7 @@
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -531,7 +463,7 @@
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@toString():String" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@toString():String" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -548,7 +480,7 @@
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@wait():Unit" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@wait():Unit" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -571,7 +503,7 @@
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -594,7 +526,7 @@
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Traverse@wait(x$1:Long):Unit" title="Permalink" target="_top">
+      <a href="../index.html#kits.Monad$@wait(x$1:Long):Unit" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -605,6 +537,23 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="kits.Monad#writer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="writer[F[_],W](implicitF:kits.Monad[F],implicitW:kits.Monoid[W]):kits.Monad[[A]kits.Monad.Writer[F,W,A]]"></a>
+      <a id="writer[F[_],W](Monad[F],Monoid[W]):Monad[[A]Writer[F,W,A]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">writer</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="W">W</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <a href="Monad.html" class="extype" name="kits.Monad">Monad</a>[<span class="extype" name="kits.Monad.writer.F">F</span>]</span>, <span name="W">W: <a href="Monoid.html" class="extype" name="kits.Monoid">Monoid</a>[<span class="extype" name="kits.Monad.writer.W">W</span>]</span>)</span><span class="result">: <a href="Monad.html" class="extype" name="kits.Monad">Monad</a>[[A]<a href="Monad$$Writer.html" class="extype" name="kits.Monad.Writer">Writer</a>[<span class="extype" name="kits.Monad.writer.F">F</span>, <span class="extype" name="kits.Monad.writer.W">W</span>, <span class="extype" name="kits.Monad.&lt;refinement&gt;.G.A">A</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.Monad$@writer[F[_],W](implicitF:kits.Monad[F],implicitW:kits.Monoid[W]):kits.Monad[[A]kits.Monad.Writer[F,W,A]]" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li></ol>
             </div>
 
@@ -614,9 +563,7 @@
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="kits.Functor">
-              <h3>Inherited from <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Traverse.F">F</span>]</h3>
-            </div><div class="parent" name="scala.AnyRef">
+        <div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
