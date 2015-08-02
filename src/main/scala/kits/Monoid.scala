@@ -6,6 +6,18 @@ trait Monoid[A] { A =>
 
   def append(x: A, y: A): A
 
+  def multiply(a: A, n: Int): A = {
+    @scala.annotation.tailrec
+    def go(acc: A, n: Int): A =
+      if (n <= 0)
+        empty
+      else if (n == 1)
+        acc
+      else
+        go(append(acc, a), n - 1)
+    go(a, n)
+  }
+
   def applicative: Applicative[({ type F[B] = A })#F] =
     new Applicative[({ type F[B] = A })#F] {
       def pure[B](b: B): A = A.empty
@@ -26,7 +38,7 @@ object Monoid {
 
   def append[A](xs: A*)(implicit A: Monoid[A]): A = xs.foldLeft(A.empty)(A.append)
 
-  def multiply[A: Monoid](a: A, n: Int): A = append(Seq.fill(n)(a): _*)
+  def multiply[A](a: A, n: Int)(implicit A: Monoid[A]): A = A.multiply(a, n)
 
   implicit def sum[A](implicit A: Numeric[A]): Monoid[Sum[A]] =
     new Monoid[Sum[A]] {
