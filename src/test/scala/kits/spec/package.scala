@@ -2,7 +2,7 @@ package kits
 
 import org.scalacheck.{Arbitrary, Gen}
 
-package object test {
+package object spec {
 
   implicit def arbSum[A: Numeric](implicit A: Arbitrary[A]): Arbitrary[Monoid.Sum[A]] = Arbitrary(A.arbitrary.map(Monoid.Sum[A]))
 
