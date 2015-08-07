@@ -79,8 +79,6 @@ assert(kits.Monoid.append(Sum(2), Sum(3)) == Sum(5))
 assert(kits.Monoid.append(Product(2), Product(3)) == Product(6))
 ```
 
-`Sum`や`Product`は値クラスとして定義されているので, インスタンスの生成と値の参照のコストはありません.
-
 半群に単位元を加えることでモノイドをなす例として`Option`や`Map`が存在します.
 
 これらはコンテナ同士の結合にその値のモノイドを利用します.

@@ -6,7 +6,7 @@ trait Traverse[F[_]] extends Functor[F] { F =>
 
   def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
 
-  def map[A, B](fa: F[A])(f: A => B): F[B] = traverse[Identity, A, B](fa)(f)
+  def map[A, B](fa: F[A])(f: A => B): F[B] = traverse(fa)(a => Identity(f(a))).value
 
   def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] = traverse(fga)(identity)
 

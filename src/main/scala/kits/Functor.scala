@@ -21,10 +21,10 @@ object Functor {
 
   implicit val identity: Monad[Identity] with Traverse[Identity] =
     new Monad[Identity] with Traverse[Identity] {
-      def pure[A](a: A): A = a
-      override def map[A, B](fa: A)(f: A => B): B = f(fa)
-      def flatMap[A, B](fa: A)(f: A => B): B = f(fa)
-      def traverse[F[_]: Applicative, A, B](fa: A)(f: A => F[B]): F[B] = f(fa)
+      def pure[A](a: A): Identity[A] = Identity(a)
+      override def map[A, B](fa: Identity[A])(f: A => B): Identity[B] = fa.map(f)
+      def flatMap[A, B](fa: Identity[A])(f: A => Identity[B]): Identity[B] = fa.flatMap(f)
+      def traverse[F[_]: Applicative, A, B](fa: Identity[A])(f: A => F[B]): F[Identity[B]] = fa.traverse(f)
     }
 
   implicit val option: Monad[Option] with Traverse[Option] =
