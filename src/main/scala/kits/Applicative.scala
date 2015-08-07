@@ -17,13 +17,13 @@ trait Applicative[F[_]] extends Functor[F] { F =>
   def compose[G[_]](implicit G: Applicative[G]): Applicative[({ type H[A] = F[G[A]] })#H] =
     new Applicative[({ type H[A] = F[G[A]] })#H] {
       def pure[A](a: A): F[G[A]] = F.pure(G.pure(a))
-      def ap[A, B](fga: F[G[A]])(f: F[G[A => B]]): F[G[B]] = F.ap(fga)(F.map(f)(g => G.ap(_)(g)))
+      def ap[A, B](fga: F[G[A]])(f: F[G[A => B]]): F[G[B]] = F.map(fga, f)(G.ap(_)(_))
     }
 
   def dual: Applicative[F] =
     new Applicative[F] {
       def pure[A](a: A): F[A] = F.pure(a)
-      def ap[A, B](fa: F[A])(f: F[A => B]): F[B] = F.ap(f)(F.map(fa)(a => f => f(a)))
+      def ap[A, B](fa: F[A])(f: F[A => B]): F[B] = F.map(f, fa)(_(_))
     }
 
 }
