@@ -23,6 +23,7 @@ object Functor {
     new Monad[Identity] with Traverse[Identity] {
       def pure[A](a: A): Identity[A] = Identity(a)
       override def map[A, B](fa: Identity[A])(f: A => B): Identity[B] = fa.map(f)
+      override def ap[A, B](fa: Identity[A])(f: Identity[A => B]): Identity[B] = fa.ap(f)
       def flatMap[A, B](fa: Identity[A])(f: A => Identity[B]): Identity[B] = fa.flatMap(f)
       def traverse[F[_]: Applicative, A, B](fa: Identity[A])(f: A => F[B]): F[Identity[B]] = fa.traverse(f)
     }
