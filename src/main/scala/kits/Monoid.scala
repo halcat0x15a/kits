@@ -167,46 +167,4 @@ object Monoid {
         }
     }
 
-  case class Sum[A](value: A) extends AnyVal {
-
-    def append(that: Sum[A])(implicit A: Numeric[A]): Sum[A] = Sum(A.plus(value, that.value))
-
-  }
-
-  case class Product[A](value: A) extends AnyVal {
-
-    def append(that: Product[A])(implicit A: Numeric[A]): Product[A] = Product(A.times(value, that.value))
-
-  }
-
-  case class All(value: Boolean) extends AnyVal {
-
-    def append(that: All): All = All(value && that.value)
-
-  }
-
-  case class Any(value: Boolean) extends AnyVal {
-
-    def append(that: Any): Any = Any(value || that.value)
-
-  }
-
-  case class First[A](value: Option[A]) extends AnyVal {
-
-    def append(that: First[A]): First[A] = First(value.orElse(that.value))
-
-  }
-
-  case class Last[A](value: Option[A]) extends AnyVal {
-
-    def append(that: Last[A]): Last[A] = Last(that.value.orElse(value))
-
-  }
-
-  case class Endo[A](value: A => A) extends AnyVal {
-
-    def append(that: Endo[A]): Endo[A] = Endo(value.andThen(that.value))
-
-  }
-
 }

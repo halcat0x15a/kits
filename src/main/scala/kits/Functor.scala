@@ -100,25 +100,25 @@ object Functor {
       def flatMap[A, B](fa: TailRec[A])(f: A => TailRec[B]): TailRec[B] = tailcall(fa.flatMap(f))
     }
 
-  implicit def validation[E]: Traverse[({ type F[A] = Applicative.Validation[E, A] })#F] =
-    new Traverse[({ type F[A] = Applicative.Validation[E, A] })#F] {
-      override def map[A, B](fa: Applicative.Validation[E, A])(f: A => B): Applicative.Validation[E, B] = fa.map(f)
-      def traverse[F[_]: Applicative, A, B](fa: Applicative.Validation[E, A])(f: A => F[B]): F[Applicative.Validation[E, B]] = fa.traverse(f)
+  implicit def validation[E]: Traverse[({ type F[A] = Validation[E, A] })#F] =
+    new Traverse[({ type F[A] = Validation[E, A] })#F] {
+      override def map[A, B](fa: Validation[E, A])(f: A => B): Validation[E, B] = fa.map(f)
+      def traverse[F[_]: Applicative, A, B](fa: Validation[E, A])(f: A => F[B]): F[Validation[E, B]] = fa.traverse(f)
     }
 
-  implicit def reader[F[_], R](implicit F: Functor[F]): Functor[({ type G[A] = Monad.Reader[F, R, A] })#G] =
-    new Functor[({ type G[A] = Monad.Reader[F, R, A] })#G] {
-      def map[A, B](fa: Monad.Reader[F, R, A])(f: A => B): Monad.Reader[F, R, B] = fa.map(f)
+  implicit def reader[F[_], R](implicit F: Functor[F]): Functor[({ type G[A] = Reader[F, R, A] })#G] =
+    new Functor[({ type G[A] = Reader[F, R, A] })#G] {
+      def map[A, B](fa: Reader[F, R, A])(f: A => B): Reader[F, R, B] = fa.map(f)
     }
 
-  implicit def writer[F[_], W](implicit F: Functor[F]): Functor[({ type G[A] = Monad.Writer[F, W, A] })#G] =
-    new Functor[({ type G[A] = Monad.Writer[F, W, A] })#G] {
-      def map[A, B](fa: Monad.Writer[F, W, A])(f: A => B): Monad.Writer[F, W, B] = fa.map(f)
+  implicit def writer[F[_], W](implicit F: Functor[F]): Functor[({ type G[A] = Writer[F, W, A] })#G] =
+    new Functor[({ type G[A] = Writer[F, W, A] })#G] {
+      def map[A, B](fa: Writer[F, W, A])(f: A => B): Writer[F, W, B] = fa.map(f)
     }
 
-  implicit def state[F[_]: Functor, S]: Functor[({ type G[A] = Monad.State[F, S, A] })#G] =
-    new Functor[({ type G[A] = Monad.State[F, S, A] })#G] {
-      def map[A, B](fa: Monad.State[F, S, A])(f: A => B): Monad.State[F, S, B] = fa.map(f)
+  implicit def state[F[_]: Functor, S]: Functor[({ type G[A] = State[F, S, A] })#G] =
+    new Functor[({ type G[A] = State[F, S, A] })#G] {
+      def map[A, B](fa: State[F, S, A])(f: A => B): State[F, S, B] = fa.map(f)
     }
 
 }

@@ -72,11 +72,9 @@ assert(kits.Monoid.append("foo", "bar", "baz") == "foobarbaz")
 数値には2種類のインスタンスが実装されており, `Sum`と`Product`でラップすることで利用できます.
 
 ```scala
-import kits.Monoid.{Sum, Product}
+assert(kits.Monoid.append(kits.Sum(2), kits.Sum(3)) == kits.Sum(5))
 
-assert(kits.Monoid.append(Sum(2), Sum(3)) == Sum(5))
-
-assert(kits.Monoid.append(Product(2), Product(3)) == Product(6))
+assert(kits.Monoid.append(kits.Product(2), kits.Product(3)) == kits.Product(6))
 ```
 
 半群に単位元を加えることでモノイドをなす例として`Option`や`Map`が存在します.
@@ -169,13 +167,11 @@ assert(kits.Applicative.map(Some("foo"), None, Some("bar"))(_ + _ + _) == None)
 `kits.Application.Validation`はエラーを蓄積可能な計算を提供します.
 
 ```scala
-import kits.Application.Validation
+type Result[A] = kits.Validation[List[String], A]
 
-type Result[A] = Validation[List[String], A]
+def fail[A](s: String): Result[A] = kits.Validation(Left(List(s)))
 
-def fail[A](s: String): Result[A] = Validation(Left(List(s)))
-
-def succeed[A](a: A): Result[A] = Validation(Right(a))
+def succeed[A](a: A): Result[A] = kits.Validation(Right(a))
 
 assert(kits.Applicative.map(fail[Int]("foo"), succeed(1), fail[Int]("bar"))(_ + _ + _) == Validation(Left(List("foo", "bar"))))
 ```

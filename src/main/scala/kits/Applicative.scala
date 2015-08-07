@@ -47,45 +47,25 @@ object Applicative {
       def ap[A, B](fa: Validation[E, A])(f: Validation[E, A => B]): Validation[E, B] = fa.ap(f)
     }
 
-  implicit def reader[F[_], R](implicit F: Applicative[F]): Applicative[({ type G[A] = Monad.Reader[F, R, A] })#G] =
-    new Applicative[({ type G[A] = Monad.Reader[F, R, A] })#G] {
-      def pure[A](a: A): Monad.Reader[F, R, A] = Monad.Reader(_ => F.pure(a))
-      override def map[A, B](fa: Monad.Reader[F, R, A])(f: A => B): Monad.Reader[F, R, B] = fa.map(f)
-      def ap[A, B](fa: Monad.Reader[F, R, A])(f: Monad.Reader[F, R, A => B]): Monad.Reader[F, R, B] = fa.ap(f)
+  implicit def reader[F[_], R](implicit F: Applicative[F]): Applicative[({ type G[A] = Reader[F, R, A] })#G] =
+    new Applicative[({ type G[A] = Reader[F, R, A] })#G] {
+      def pure[A](a: A): Reader[F, R, A] = Reader(_ => F.pure(a))
+      override def map[A, B](fa: Reader[F, R, A])(f: A => B): Reader[F, R, B] = fa.map(f)
+      def ap[A, B](fa: Reader[F, R, A])(f: Reader[F, R, A => B]): Reader[F, R, B] = fa.ap(f)
     }
 
-  implicit def writer[F[_], W](implicit F: Applicative[F], W: Monoid[W]): Applicative[({ type G[A] = Monad.Writer[F, W, A] })#G] =
-    new Applicative[({ type G[A] = Monad.Writer[F, W, A] })#G] {
-      def pure[A](a: A): Monad.Writer[F, W, A] = Monad.Writer(F.pure((W.empty, a)))
-      override def map[A, B](fa: Monad.Writer[F, W, A])(f: A => B): Monad.Writer[F, W, B] = fa.map(f)
-      def ap[A, B](fa: Monad.Writer[F, W, A])(f: Monad.Writer[F, W, A => B]): Monad.Writer[F, W, B] = fa.ap(f)
+  implicit def writer[F[_], W](implicit F: Applicative[F], W: Monoid[W]): Applicative[({ type G[A] = Writer[F, W, A] })#G] =
+    new Applicative[({ type G[A] = Writer[F, W, A] })#G] {
+      def pure[A](a: A): Writer[F, W, A] = Writer(F.pure((W.empty, a)))
+      override def map[A, B](fa: Writer[F, W, A])(f: A => B): Writer[F, W, B] = fa.map(f)
+      def ap[A, B](fa: Writer[F, W, A])(f: Writer[F, W, A => B]): Writer[F, W, B] = fa.ap(f)
     }
 
-  implicit def state[F[_], S](implicit F: Monad[F]): Monad[({ type G[A] = Monad.State[F, S, A] })#G] =
-    new Monad[({ type G[A] = Monad.State[F, S, A] })#G] {
-      def pure[A](a: A): Monad.State[F, S, A] = Monad.State(s => F.pure((s, a)))
-      override def map[A, B](fa: Monad.State[F, S, A])(f: A => B): Monad.State[F, S, B] = fa.map(f)
-      def flatMap[A, B](fa: Monad.State[F, S, A])(f: A => Monad.State[F, S, B]): Monad.State[F, S, B] = fa.flatMap(f)
+  implicit def state[F[_], S](implicit F: Monad[F]): Monad[({ type G[A] = State[F, S, A] })#G] =
+    new Monad[({ type G[A] = State[F, S, A] })#G] {
+      def pure[A](a: A): State[F, S, A] = State(s => F.pure((s, a)))
+      override def map[A, B](fa: State[F, S, A])(f: A => B): State[F, S, B] = fa.map(f)
+      def flatMap[A, B](fa: State[F, S, A])(f: A => State[F, S, B]): State[F, S, B] = fa.flatMap(f)
     }
-
-  case class Validation[E, A](value: Either[E, A]) extends AnyVal {
-
-    def map[B](f: A => B): Validation[E, B] = Validation(value.right.map(f))
-
-    def ap[B](f: Validation[E, A => B])(implicit E: Monoid[E]): Validation[E, B] =
-      (f.value, value) match {
-        case (Right(f), Right(a)) => Validation(Right(f(a)))
-        case (Right(_), Left(e)) => Validation(Left(e))
-        case (Left(e), Right(_)) => Validation(Left(e))
-        case (Left(x), Left(y)) => Validation(Left(E.append(x, y)))
-      }
-
-    def traverse[F[_], B](f: A => F[B])(implicit F: Applicative[F]): F[Validation[E, B]] =
-      value match {
-        case Left(e) => F.pure(Validation(Left(e)))
-        case Right(a) => F.map(f(a))(b => Validation(Right(b)))
-      }
-
-  }
 
 }

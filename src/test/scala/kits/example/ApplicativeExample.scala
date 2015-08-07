@@ -4,8 +4,6 @@ package example
 
 import org.scalatest.FunSuite
 
-import Applicative.Validation
-
 class ApplicativeExample extends FunSuite {
 
   trait Functor[F[_]] {
@@ -36,11 +34,11 @@ class ApplicativeExample extends FunSuite {
   def map3[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] =
     F.ap(fc)(map2(fa, fb)((a, b) => f(a, b, _)))
 
-  type Result[A] = Validation[List[String], A]
+  type Result[A] = kits.Validation[List[String], A]
 
-  def fail[A](s: String): Result[A] = Validation(Left(List(s)))
+  def fail[A](s: String): Result[A] = kits.Validation(Left(List(s)))
 
-  def succeed[A](a: A): Result[A] = Validation(Right(a))
+  def succeed[A](a: A): Result[A] = kits.Validation(Right(a))
 
   case class User(id: Int, name: String)
 

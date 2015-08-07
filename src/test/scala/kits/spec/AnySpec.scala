@@ -6,6 +6,6 @@ import org.scalacheck.Properties
 
 object AnySpec extends Properties("Any") {
 
-  include(MonoidSpec[Monoid.Any])
+  include(MonoidSpec[Any])
 
 }

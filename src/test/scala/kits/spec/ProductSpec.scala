@@ -6,6 +6,6 @@ import org.scalacheck.Properties
 
 object ProductSpec extends Properties("Product") {
 
-  include(MonoidSpec[Monoid.Product[Int]])
+  include(MonoidSpec[Product[Int]])
 
 }

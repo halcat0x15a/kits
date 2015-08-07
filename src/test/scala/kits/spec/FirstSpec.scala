@@ -6,6 +6,6 @@ import org.scalacheck.Properties
 
 object FirstSpec extends Properties("First") {
 
-  include(MonoidSpec[Monoid.First[AnyVal]])
+  include(MonoidSpec[First[AnyVal]])
 
 }

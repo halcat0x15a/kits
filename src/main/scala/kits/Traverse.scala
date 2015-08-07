@@ -15,10 +15,10 @@ trait Traverse[F[_]] extends Functor[F] { F =>
   def fold[A: Monoid](fa: F[A]): A = foldMap(fa)(identity)
 
   def mapAccumL[S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B)): (S, F[B]) =
-    Applicative.state[TailRec, S].traverse(fa)(a => Monad.State(s => done(f(s, a))))(this).value(s).result
+    Applicative.state[TailRec, S].traverse(fa)(a => State(s => done(f(s, a))))(this).value(s).result
 
   def mapAccumR[S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B)): (S, F[B]) =
-    Applicative.state[TailRec, S].dual.traverse(fa)(a => Monad.State(s => done(f(s, a))))(this).value(s).result
+    Applicative.state[TailRec, S].dual.traverse(fa)(a => State(s => done(f(s, a))))(this).value(s).result
 
   def compose[G[_]](implicit G: Traverse[G]): Traverse[({ type H[A] = F[G[A]] })#H] =
     new Traverse[({ type H[A] = F[G[A]] })#H] {
@@ -44,10 +44,10 @@ object Traverse {
 
   def mapAccumR[F[_], S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B))(implicit F: Traverse[F]): (S, F[B]) = F.mapAccumR(s, fa)(f)
 
-  implicit def writer[F[_], W](implicit F: Traverse[F]): Traverse[({ type G[A] = Monad.Writer[F, W, A] })#G] =
-    new Traverse[({ type G[A] = Monad.Writer[F, W, A] })#G] {
-      override def map[A, B](fa: Monad.Writer[F, W, A])(f: A => B): Monad.Writer[F, W, B] = fa.map(f)
-      def traverse[G[_]: Applicative, A, B](fa: Monad.Writer[F, W, A])(f: A => G[B]): G[Monad.Writer[F, W, B]] = fa.traverse(f)
+  implicit def writer[F[_], W](implicit F: Traverse[F]): Traverse[({ type G[A] = Writer[F, W, A] })#G] =
+    new Traverse[({ type G[A] = Writer[F, W, A] })#G] {
+      override def map[A, B](fa: Writer[F, W, A])(f: A => B): Writer[F, W, B] = fa.map(f)
+      def traverse[G[_]: Applicative, A, B](fa: Writer[F, W, A])(f: A => G[B]): G[Writer[F, W, B]] = fa.traverse(f)
     }
 
 }
