@@ -35,9 +35,12 @@ class TraverseExample extends FunSuite {
 
   def sequence[F[_], G[_], A](fga: F[G[A]])(implicit F: Traverse[F], G: Applicative[G]): G[F[A]] = F.traverse(fga)(identity)
 
-  test("Examples") {
+  test("sequence") {
     assert(sequence(List(Option(1), Option(2), Option(3))) == Some(List(1, 2, 3)))
     assert(sequence(List(Some(1), None, Some(3))) == None)
+  }
+
+  test("foldMap") {
     assert(foldMap(List("hello", "world"))(identity) == "helloworld")
     assert(foldMap(List("hello", "world"))(x => Vector(x)) == Vector("hello", "world"))
   }

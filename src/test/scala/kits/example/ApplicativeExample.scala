@@ -44,10 +44,15 @@ class ApplicativeExample extends FunSuite {
 
   case class User(id: Int, name: String)
 
-  test("examples") {
-    assert(Option(346).flatMap(id => Option("halcat").map(name => User(id, name))) == Some(User(346, "halcat")))
-    assert((for (id <- Option(346); name <- Option("halcat")) yield User(id, name)) == Some(User(346, "halcat")))
+  test("map2") {
     assert(map2(Option(346), Option("halcat"))(User) == Some(User(346, "halcat")))
+  }
+
+  test("for") {
+    assert((for (id <- Option(346); name <- Option("halcat")) yield User(id, name)) == Some(User(346, "halcat")))
+  }
+
+  test("map") {
     assert(kits.Applicative.map(List(1, 2), List(3))(_ + _) == List(4, 5))
     assert(kits.Applicative.map(Some("foo"), None, Some("bar"))(_ + _ + _) == None)
     assert(kits.Applicative.map(fail[Int]("foo"), succeed(1), fail[Int]("bar"))(_ + _ + _) == Validation(Left(List("foo", "bar"))))

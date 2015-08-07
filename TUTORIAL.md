@@ -62,9 +62,9 @@ assert(double("fuga") == "fugafuga")
 kitsではモノイドが`kits.Monoid`に定義され, そのインスタンスはコンパニオンオブジェクトに定義されます.
 
 ```scala
-assert(kits.Monoid.append("foo", "bar", "baz") == "foobarbaz")
+assert(kits.Monoid.append(List(0, 1), List(2, 3)) == List(0, 1, 2, 3))
 
-assert(kits.Monoid.multiply("hoge", 3) == "hogehogehoge")
+assert(kits.Monoid.append("foo", "bar", "baz") == "foobarbaz")
 ```
 
 `implicit value`は呼び出しのスコープ以外にもデータ型や型クラスのコンパニオンオブジェクトから探索されます.
