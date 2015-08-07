@@ -53,7 +53,7 @@
       
           <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">scala.Any</span></div>
         </div></div>
         
 
@@ -98,14 +98,14 @@
               <h3>Value Members</h3>
               <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a>
-      <a id="!=(Any):Boolean"></a>
+      <a id="!=(scala.Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">scala.Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
       <a href="../index.html#kits.Functor$@!=(x$1:Any):Boolean" title="Permalink" target="_top">
@@ -132,14 +132,14 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a>
-      <a id="==(Any):Boolean"></a>
+      <a id="==(scala.Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">scala.Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
       <a href="../index.html#kits.Functor$@==(x$1:Any):Boolean" title="Permalink" target="_top">
@@ -240,14 +240,14 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
-      <a id="equals(Any):Boolean"></a>
+      <a id="equals(scala.Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">scala.Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4><span class="permalink">
       <a href="../index.html#kits.Functor$@equals(x$1:Any):Boolean" title="Permalink" target="_top">
@@ -338,7 +338,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">identity</span><span class="result">: <a href="Monad.html" class="extype" name="kits.Monad">Monad</a>[<a href="package.html#Identity[A]=A" class="extmbr" name="kits.Identity">Identity</a>] with <a href="Traverse.html" class="extype" name="kits.Traverse">Traverse</a>[<a href="package.html#Identity[A]=A" class="extmbr" name="kits.Identity">Identity</a>]</span>
+        <span class="name">identity</span><span class="result">: <a href="Monad.html" class="extype" name="kits.Monad">Monad</a>[<a href="package$$Identity.html" class="extype" name="kits.Identity">Identity</a>] with <a href="Traverse.html" class="extype" name="kits.Traverse">Traverse</a>[<a href="package$$Identity.html" class="extype" name="kits.Identity">Identity</a>]</span>
       </span>
       </h4><span class="permalink">
       <a href="../index.html#kits.Functor$@identity:kits.Monad[kits.Identity]withkits.Traverse[kits.Identity]" title="Permalink" target="_top">
@@ -466,7 +466,7 @@
     </span>
       
     </li><li name="kits.Functor#reader" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="reader[F[_],R](implicitF:kits.Functor[F]):kits.Functor[[A]kits.Monad.Reader[F,R,A]]"></a>
+      <a id="reader[F[_],R](implicitF:kits.Functor[F]):kits.Functor[[A]kits.Reader[F,R,A]]"></a>
       <a id="reader[F[_],R](Functor[F]):Functor[[A]Reader[F,R,A]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -474,10 +474,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">reader</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="R">R</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Functor.reader.F">F</span>]</span>)</span><span class="result">: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[[A]<a href="Monad$$Reader.html" class="extype" name="kits.Monad.Reader">Reader</a>[<span class="extype" name="kits.Functor.reader.F">F</span>, <span class="extype" name="kits.Functor.reader.R">R</span>, <span class="extype" name="kits.Functor.&lt;refinement&gt;.G.A">A</span>]]</span>
+        <span class="name">reader</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="R">R</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Functor.reader.F">F</span>]</span>)</span><span class="result">: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[[A]<a href="package$$Reader.html" class="extype" name="kits.Reader">Reader</a>[<span class="extype" name="kits.Functor.reader.F">F</span>, <span class="extype" name="kits.Functor.reader.R">R</span>, <span class="extype" name="kits.Functor.&lt;refinement&gt;.G.A">A</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Functor$@reader[F[_],R](implicitF:kits.Functor[F]):kits.Functor[[A]kits.Monad.Reader[F,R,A]]" title="Permalink" target="_top">
+      <a href="../index.html#kits.Functor$@reader[F[_],R](implicitF:kits.Functor[F]):kits.Functor[[A]kits.Reader[F,R,A]]" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -500,7 +500,7 @@
     </span>
       
     </li><li name="kits.Functor#state" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="state[F[_],S](implicitevidence$3:kits.Functor[F]):kits.Functor[[A]kits.Monad.State[F,S,A]]"></a>
+      <a id="state[F[_],S](implicitevidence$3:kits.Functor[F]):kits.Functor[[A]kits.State[F,S,A]]"></a>
       <a id="state[F[_],S](Functor[F]):Functor[[A]State[F,S,A]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -508,10 +508,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">state</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="S">S</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Functor.state.F">F</span>]</span>)</span><span class="result">: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[[A]<a href="Monad$$State.html" class="extype" name="kits.Monad.State">State</a>[<span class="extype" name="kits.Functor.state.F">F</span>, <span class="extype" name="kits.Functor.state.S">S</span>, <span class="extype" name="kits.Functor.&lt;refinement&gt;.G.A">A</span>]]</span>
+        <span class="name">state</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="S">S</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Functor.state.F">F</span>]</span>)</span><span class="result">: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[[A]<a href="package$$State.html" class="extype" name="kits.State">State</a>[<span class="extype" name="kits.Functor.state.F">F</span>, <span class="extype" name="kits.Functor.state.S">S</span>, <span class="extype" name="kits.Functor.&lt;refinement&gt;.G.A">A</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Functor$@state[F[_],S](implicitevidence$3:kits.Functor[F]):kits.Functor[[A]kits.Monad.State[F,S,A]]" title="Permalink" target="_top">
+      <a href="../index.html#kits.Functor$@state[F[_],S](implicitevidence$3:kits.Functor[F]):kits.Functor[[A]kits.State[F,S,A]]" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -585,7 +585,7 @@
     </span>
       
     </li><li name="kits.Functor#validation" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="validation[E]:kits.Traverse[[A]kits.Applicative.Validation[E,A]]"></a>
+      <a id="validation[E]:kits.Traverse[[A]kits.Validation[E,A]]"></a>
       <a id="validation[E]:Traverse[[A]Validation[E,A]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -593,10 +593,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">validation</span><span class="tparams">[<span name="E">E</span>]</span><span class="result">: <a href="Traverse.html" class="extype" name="kits.Traverse">Traverse</a>[[A]<a href="Applicative$$Validation.html" class="extype" name="kits.Applicative.Validation">Validation</a>[<span class="extype" name="kits.Functor.validation.E">E</span>, <span class="extype" name="kits.Functor.&lt;refinement&gt;.F.A">A</span>]]</span>
+        <span class="name">validation</span><span class="tparams">[<span name="E">E</span>]</span><span class="result">: <a href="Traverse.html" class="extype" name="kits.Traverse">Traverse</a>[[A]<a href="package$$Validation.html" class="extype" name="kits.Validation">Validation</a>[<span class="extype" name="kits.Functor.validation.E">E</span>, <span class="extype" name="kits.Functor.&lt;refinement&gt;.F.A">A</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Functor$@validation[E]:kits.Traverse[[A]kits.Applicative.Validation[E,A]]" title="Permalink" target="_top">
+      <a href="../index.html#kits.Functor$@validation[E]:kits.Traverse[[A]kits.Validation[E,A]]" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -688,7 +688,7 @@
               
         </dd></dl></div>
     </li><li name="kits.Functor#writer" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="writer[F[_],W](implicitF:kits.Functor[F]):kits.Functor[[A]kits.Monad.Writer[F,W,A]]"></a>
+      <a id="writer[F[_],W](implicitF:kits.Functor[F]):kits.Functor[[A]kits.Writer[F,W,A]]"></a>
       <a id="writer[F[_],W](Functor[F]):Functor[[A]Writer[F,W,A]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -696,10 +696,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writer</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="W">W</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Functor.writer.F">F</span>]</span>)</span><span class="result">: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[[A]<a href="Monad$$Writer.html" class="extype" name="kits.Monad.Writer">Writer</a>[<span class="extype" name="kits.Functor.writer.F">F</span>, <span class="extype" name="kits.Functor.writer.W">W</span>, <span class="extype" name="kits.Functor.&lt;refinement&gt;.G.A">A</span>]]</span>
+        <span class="name">writer</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="W">W</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Functor.writer.F">F</span>]</span>)</span><span class="result">: <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[[A]<a href="package$$Writer.html" class="extype" name="kits.Writer">Writer</a>[<span class="extype" name="kits.Functor.writer.F">F</span>, <span class="extype" name="kits.Functor.writer.W">W</span>, <span class="extype" name="kits.Functor.&lt;refinement&gt;.G.A">A</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../index.html#kits.Functor$@writer[F[_],W](implicitF:kits.Functor[F]):kits.Functor[[A]kits.Monad.Writer[F,W,A]]" title="Permalink" target="_top">
+      <a href="../index.html#kits.Functor$@writer[F[_],W](implicitF:kits.Functor[F]):kits.Functor[[A]kits.Writer[F,W,A]]" title="Permalink" target="_top">
         <img src="../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -716,7 +716,7 @@
         <div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
             </div><div class="parent" name="scala.Any">
-              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+              <h3>Inherited from <span class="extype" name="scala.Any">scala.Any</span></h3>
             </div>
         
         </div>
