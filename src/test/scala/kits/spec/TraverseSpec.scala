@@ -2,43 +2,18 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Properties, Prop}
 
-import org.scalatest.FunSpec
-import org.scalatest.prop.Checkers
+object TraverseSpec {
 
-trait TraverseSpec extends FunSpec with Checkers {
-
-  type F[A]
-
-  type G[A]
-
-  type A
-
-  implicit def G: Applicative[G]
-
-  implicit def arbF: Arbitrary[F[A]]
-
-  implicit def arbG: Arbitrary[G[A]]
-
-  val traversable: Traverse[F]
-
-  import traversable._
-
-  describe("Traverse") {
-
-    it("identity") {
-      check { fa: F[A] =>
-        traverse[Identity, A, A](fa)(identity) == fa
+  def apply[F[_], G[_], A: Arbitrary](implicit F: Traverse[F], G: Applicative[G], FA: Arbitrary[F[A]], GA: Arbitrary[G[A]]): Properties =
+    new Properties("Traverse") {
+      property("identity") = Prop.forAll { fa: F[A] =>
+        F.traverse[Identity, A, A](fa)(identity) == fa
+      }
+      property("composition") = Prop.forAll { (fa: F[A], f: A => G[A], g: A => G[A]) =>
+        F.traverse[({ type H[A] = G[G[A]] })#H, A, A](fa)(f.andThen(G.map(_)(g)))(G.compose(G)) == G.map(F.traverse(fa)(f))(F.traverse(_)(g))
       }
     }
-
-    it("composition") {
-      check { (fa: F[A], f: A => G[A], g: A => G[A]) =>
-        traverse[({ type H[A] = G[G[A]] })#H, A, A](fa)(f.andThen(G.map(_)(g)))(G.compose(G)) == G.map(traverse(fa)(f))(traverse(_)(g))
-      }
-    }
-
-  }
 
 }

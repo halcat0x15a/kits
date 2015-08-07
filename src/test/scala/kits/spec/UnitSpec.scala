@@ -2,14 +2,10 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class UnitSpec extends MonoidSpec {
+object UnitSpec extends Properties("Unit") {
 
-  type T = Unit
-
-  val monoid: Monoid[Unit] = implicitly
-
-  val arbT: Arbitrary[Unit] = implicitly
+  include(MonoidSpec[Unit])
 
 }

@@ -2,28 +2,14 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class ValidationSpec extends FunctorSpec with ApplicativeSpec with TraverseSpec {
+object ValidationSpec extends Properties("Validation") {
 
-  type F[A] = Applicative.Validation[String, A]
+  include(FunctorSpec[({ type F[A] = Applicative.Validation[AnyVal, A] })#F, AnyVal])
 
-  type G[A] = Option[A]
+  include(ApplicativeSpec[({ type F[A] = Applicative.Validation[String, A] })#F, AnyVal])
 
-  type A = AnyVal
-
-  val functor: Functor[({ type F[A] = Applicative.Validation[String, A] })#F] = implicitly
-
-  val applicative: Applicative[({ type F[A] = Applicative.Validation[String, A] })#F] = implicitly
-
-  val traversable: Traverse[({ type F[A] = Applicative.Validation[String, A] })#F] = implicitly
-
-  val arbF: Arbitrary[Applicative.Validation[String, AnyVal]] = implicitly
-
-  val arbG: Arbitrary[Option[AnyVal]] = implicitly
-
-  val arbA: Arbitrary[AnyVal] = implicitly
-
-  val G: Applicative[Option] = implicitly
+  include(TraverseSpec[({ type F[A] = Applicative.Validation[AnyVal, A] })#F, Option, AnyVal])
 
 }

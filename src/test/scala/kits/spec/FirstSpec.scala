@@ -2,14 +2,10 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class FirstSpec extends MonoidSpec {
+object FirstSpec extends Properties("First") {
 
-  type T = Monoid.First[AnyVal]
-
-  val monoid: Monoid[Monoid.First[AnyVal]] = implicitly
-
-  val arbT: Arbitrary[Monoid.First[AnyVal]] = implicitly
+  include(MonoidSpec[Monoid.First[AnyVal]])
 
 }

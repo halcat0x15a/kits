@@ -2,14 +2,10 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class SumSpec extends MonoidSpec {
+object SumSpec extends Properties("Sum") {
 
-  type T = Monoid.Sum[Int]
-
-  val monoid: Monoid[Monoid.Sum[Int]] = implicitly
-
-  val arbT: Arbitrary[Monoid.Sum[Int]] = implicitly
+  include(MonoidSpec[Monoid.Sum[Int]])
 
 }

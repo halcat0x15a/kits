@@ -2,30 +2,16 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class IdentitySpec extends FunctorSpec with ApplicativeSpec with MonadSpec with TraverseSpec {
+object IdentitySpec extends Properties("Identity") {
 
-  type F[A] = Identity[A]
+  include(FunctorSpec[Identity, AnyVal])
 
-  type G[A] = Option[A]
+  include(ApplicativeSpec[Identity, AnyVal])
 
-  type A = AnyVal
+  include(MonadSpec[Identity, AnyVal])
 
-  val functor: Functor[Identity] = implicitly
-
-  val applicative: Applicative[Identity] = implicitly
-
-  val monad: Monad[Identity] = implicitly
-
-  val traversable: Traverse[Identity] = implicitly
-
-  val arbF: Arbitrary[Identity[AnyVal]] = implicitly
-
-  val arbG: Arbitrary[Option[AnyVal]] = implicitly
-
-  val arbA: Arbitrary[AnyVal] = implicitly
-
-  val G: Applicative[Option] = implicitly
+  include(TraverseSpec[Identity, Option, AnyVal])
 
 }

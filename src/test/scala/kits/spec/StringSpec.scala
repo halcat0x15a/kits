@@ -2,14 +2,10 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class StringSpec extends MonoidSpec {
+class StringSpec extends Properties("String") {
 
-  type T = String
-
-  val monoid: Monoid[String] = implicitly
-
-  val arbT: Arbitrary[String] = implicitly
+  include(MonoidSpec[String])
 
 }

@@ -2,14 +2,10 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class LastSpec extends MonoidSpec {
+object LastSpec extends Properties("Last") {
 
-  type T = Monoid.Last[AnyVal]
-
-  val monoid: Monoid[Monoid.Last[AnyVal]] = implicitly
-
-  val arbT: Arbitrary[Monoid.Last[AnyVal]] = implicitly
+  include(MonoidSpec[Monoid.Last[AnyVal]])
 
 }

@@ -2,30 +2,16 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class EitherSpec extends FunctorSpec with ApplicativeSpec with MonadSpec with TraverseSpec {
+object EitherSpec extends Properties("Either") {
 
-  type F[A] = Either[AnyVal, A]
+  include(FunctorSpec[({ type F[A] = Either[AnyVal, A] })#F, AnyVal])
 
-  type G[A] = Option[A]
+  include(ApplicativeSpec[({ type F[A] = Either[AnyVal, A] })#F, AnyVal])
 
-  type A = AnyVal
+  include(MonadSpec[({ type F[A] = Either[AnyVal, A] })#F, AnyVal])
 
-  val functor: Functor[({ type F[A] = Either[AnyVal, A] })#F] = implicitly
-
-  val applicative: Applicative[({ type F[A] = Either[AnyVal, A] })#F] = implicitly
-
-  val monad: Monad[({ type F[A] = Either[AnyVal, A] })#F] = implicitly
-
-  val traversable: Traverse[({ type F[A] = Either[AnyVal, A] })#F] = implicitly
-
-  val arbF: Arbitrary[Either[AnyVal, AnyVal]] = implicitly
-
-  val arbG: Arbitrary[Option[AnyVal]] = implicitly
-
-  val arbA: Arbitrary[AnyVal] = implicitly
-
-  val G: Applicative[Option] = implicitly
+  include(TraverseSpec[({ type F[A] = Either[AnyVal, A] })#F, Option, AnyVal])
 
 }

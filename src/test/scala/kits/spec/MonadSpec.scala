@@ -2,45 +2,21 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Properties, Prop}
 
-import org.scalatest.FunSpec
-import org.scalatest.prop.Checkers
+object MonadSpec {
 
-trait MonadSpec extends FunSpec with Checkers {
-
-  type F[A]
-
-  type A
-
-  implicit def arbF: Arbitrary[F[A]]
-
-  implicit def arbA: Arbitrary[A]
-
-  val monad: Monad[F]
-
-  import monad._
-
-  describe("Monad") {
-
-    it("composition") {
-      check { (fa: F[A], f: A => F[A], g: A => F[A]) =>
-        flatMap(fa)(a => flatMap(f(a))(g)) == flatMap(flatMap(fa)(f))(g)
+  def apply[F[_], A: Arbitrary](implicit F: Monad[F], FA: Arbitrary[F[A]]): Properties =
+    new Properties("Monad") {
+      property("composition") = Prop.forAll { (fa: F[A], f: A => F[A], g: A => F[A]) =>
+        F.flatMap(fa)(a => F.flatMap(f(a))(g)) == F.flatMap(F.flatMap(fa)(f))(g)
+      }
+      property("leftIdentity") = Prop.forAll { (a: A, f: A => F[A]) =>
+        F.flatMap(F.pure(a))(f) == f(a)
+      }
+      property("rightIdentity") = Prop.forAll { fa: F[A] =>
+        F.flatMap(fa)(F.pure) == fa
       }
     }
-
-    it("leftIdentity") {
-      check { (a: A, f: A => F[A]) =>
-        flatMap(pure(a))(f) == f(a)
-      }
-    }
-
-    it("rightIdentity") {
-      check { fa: F[A] =>
-        flatMap(fa)(pure) == fa
-      }
-    }
-
-  }
 
 }

@@ -2,36 +2,18 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class ListSpec extends MonoidSpec with FunctorSpec with ApplicativeSpec with MonadSpec with TraverseSpec {
+object ListSpec extends Properties("List") {
 
-  type F[A] = List[A]
+  include(MonoidSpec[List[AnyVal]])
 
-  type G[A] = Option[A]
+  include(FunctorSpec[List, AnyVal])
 
-  type T = List[AnyVal]
+  include(ApplicativeSpec[List, AnyVal])
 
-  type A = AnyVal
+  include(MonadSpec[List, AnyVal])
 
-  val monoid: Monoid[List[AnyVal]] = implicitly
-
-  val functor: Functor[List] = implicitly
-
-  val applicative: Applicative[List] = implicitly
-
-  val monad: Monad[List] = implicitly
-
-  val traversable: Traverse[List] = implicitly
-
-  val arbF: Arbitrary[List[AnyVal]] = implicitly
-
-  val arbG: Arbitrary[Option[AnyVal]] = implicitly
-
-  val arbT: Arbitrary[List[AnyVal]] = implicitly
-
-  val arbA: Arbitrary[AnyVal] = implicitly
-
-  val G: Applicative[Option] = implicitly
+  include(TraverseSpec[List, Option, AnyVal])
 
 }

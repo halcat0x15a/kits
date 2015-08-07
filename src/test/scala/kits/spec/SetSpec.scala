@@ -2,36 +2,18 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class SetSpec extends MonoidSpec with FunctorSpec with ApplicativeSpec with MonadSpec with TraverseSpec {
+object SetSpec extends Properties("Set") {
 
-  type F[A] = Set[A]
+  include(MonoidSpec[Set[String]])
 
-  type G[A] = Option[A]
+  include(FunctorSpec[Set, AnyVal])
 
-  type T = Set[AnyVal]
+  include(ApplicativeSpec[Set, AnyVal])
 
-  type A = AnyVal
+  include(MonadSpec[Set, AnyVal])
 
-  val monoid: Monoid[Set[AnyVal]] = implicitly
-
-  val functor: Functor[Set] = implicitly
-
-  val applicative: Applicative[Set] = implicitly
-
-  val monad: Monad[Set] = implicitly
-
-  val traversable: Traverse[Set] = implicitly
-
-  val arbF: Arbitrary[Set[AnyVal]] = implicitly
-
-  val arbG: Arbitrary[Option[AnyVal]] = implicitly
-
-  val arbT: Arbitrary[Set[AnyVal]] = implicitly
-
-  val arbA: Arbitrary[AnyVal] = implicitly
-
-  val G: Applicative[Option] = implicitly
+  include(TraverseSpec[Set, Option, AnyVal])
 
 }

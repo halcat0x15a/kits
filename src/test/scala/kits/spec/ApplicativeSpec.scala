@@ -2,51 +2,24 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Properties, Prop}
 
-import org.scalatest.FunSpec
-import org.scalatest.prop.Checkers
+object ApplicativeSpec {
 
-trait ApplicativeSpec extends FunSpec with Checkers {
-
-  type F[A]
-
-  type A
-
-  implicit def arbF: Arbitrary[F[A]]
-
-  implicit def arbA: Arbitrary[A]
-
-  implicit val applicative: Applicative[F]
-
-  import applicative._
-
-  describe("Applicative") {
-
-    it("identity") {
-      check { fa: F[A] =>
-        ap(fa)(pure((a: A) => a)) == fa
+  def apply[F[_], A: Arbitrary](implicit F: Applicative[F], FA: Arbitrary[F[A]]): Properties =
+    new Properties("Applicative") {
+      property("identity") = Prop.forAll { fa: F[A] =>
+        F.ap(fa)(F.pure((a: A) => a)) == fa
+      }
+      property("composition") = Prop.forAll { (fa: F[A], f: F[A => A], g: F[A => A]) =>
+        F.ap(fa)(F.ap(f)(F.ap(g)(F.pure((f: A => A) => (g: A => A) => f.compose(g))))) == F.ap(F.ap(fa)(f))(g)
+      }
+      property("homomorphism") = Prop.forAll { (a: A, f: A => A) =>
+        F.ap(F.pure(a))(F.pure(f)) == F.pure(f(a))
+      }
+      property("interchange") = Prop.forAll { (a: A, f: F[A => A]) =>
+        F.ap(F.pure(a))(f) == F.ap(f)(F.pure((_: A => A)(a)))
       }
     }
-
-    it("composition") {
-      check { (fa: F[A], f: F[A => A], g: F[A => A]) =>
-        ap(fa)(ap(f)(ap(g)(pure((f: A => A) => (g: A => A) => f.compose(g))))) == ap(ap(fa)(f))(g)
-      }
-    }
-
-    it("homomorphism") {
-      check { (a: A, f: A => A) =>
-        ap(pure(a))(pure(f)) == pure(f(a))
-      }
-    }
-
-    it("interchange") {
-      check { (a: A, f: F[A => A]) =>
-        ap(pure(a))(f) == ap(f)(pure((_: A => A)(a)))
-      }
-    }
-
-  }
 
 }

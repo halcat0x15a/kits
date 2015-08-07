@@ -2,36 +2,18 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.Properties
 
-class OptionSpec extends MonoidSpec with FunctorSpec with ApplicativeSpec with MonadSpec with TraverseSpec {
+object OptionSpec extends Properties("Option") {
 
-  type F[A] = Option[A]
+  include(MonoidSpec[Option[String]])
 
-  type G[A] = Option[A]
+  include(FunctorSpec[Option, AnyVal])
 
-  type T = Option[String]
+  include(ApplicativeSpec[Option, AnyVal])
 
-  type A = AnyVal
+  include(MonadSpec[Option, AnyVal])
 
-  val monoid: Monoid[Option[String]] = implicitly
-
-  val functor: Functor[Option] = implicitly
-
-  val applicative: Applicative[Option] = implicitly
-
-  val monad: Monad[Option] = implicitly
-
-  val traversable: Traverse[Option] = implicitly
-
-  val arbF: Arbitrary[Option[AnyVal]] = implicitly
-
-  val arbG: Arbitrary[Option[AnyVal]] = implicitly
-
-  val arbT: Arbitrary[Option[String]] = implicitly
-
-  val arbA: Arbitrary[AnyVal] = implicitly
-
-  val G: Applicative[Option] = implicitly
+  include(TraverseSpec[Option, Option, AnyVal])
 
 }
