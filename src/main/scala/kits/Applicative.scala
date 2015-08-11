@@ -20,7 +20,7 @@ trait Applicative[F[_]] extends Functor[F] { F =>
       def ap[A, B](fga: F[G[A]])(f: F[G[A => B]]): F[G[B]] = F.map(fga, f)(G.ap(_)(_))
     }
 
-  def dual: Applicative[F] =
+  lazy val dual: Applicative[F] =
     new Applicative[F] {
       def pure[A](a: A): F[A] = F.pure(a)
       def ap[A, B](fa: F[A])(f: F[A => B]): F[B] = F.map(f, fa)(_(_))

@@ -18,16 +18,16 @@ trait Monoid[A] { A =>
     go(a, n)
   }
 
-  def applicative: Applicative[({ type F[B] = A })#F] =
+  lazy val applicative: Applicative[({ type F[B] = A })#F] =
     new Applicative[({ type F[B] = A })#F] {
       def pure[B](b: B): A = A.empty
       def ap[B, C](fb: A)(f: A): A = A.append(f, fb)
     }
 
-  def dual: Monoid[A] =
+  lazy val dual: Monoid[A] =
     new Monoid[A] {
       def empty: A = A.empty
-      def append(x: A, y: A) = A.append(y, x)
+      def append(x: A, y: A): A = A.append(y, x)
     }
 
 }
