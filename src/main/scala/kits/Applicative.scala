@@ -40,7 +40,7 @@ object Applicative {
 
   def map[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] = F.map(fa, fb, fc)(f)
 
-  implicit def validation[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Validation[E, A] })#F] =
+  implicit def validation[E: Monoid]: Applicative[({ type F[A] = Validation[E, A] })#F] =
     new Applicative[({ type F[A] = Validation[E, A] })#F] {
       def pure[A](a: A): Validation[E, A] = Validation(Right(a))
       override def map[A, B](fa: Validation[E, A])(f: A => B): Validation[E, B] = fa.map(f)

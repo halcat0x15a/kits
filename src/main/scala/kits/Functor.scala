@@ -116,12 +116,12 @@ object Functor {
       def traverse[F[_]: Applicative, A, B](fa: Validation[E, A])(f: A => F[B]): F[Validation[E, B]] = fa.traverse(f)
     }
 
-  implicit def reader[F[_], R](implicit F: Functor[F]): Functor[({ type G[A] = Reader[F, R, A] })#G] =
+  implicit def reader[F[_]: Functor, R]: Functor[({ type G[A] = Reader[F, R, A] })#G] =
     new Functor[({ type G[A] = Reader[F, R, A] })#G] {
       def map[A, B](fa: Reader[F, R, A])(f: A => B): Reader[F, R, B] = fa.map(f)
     }
 
-  implicit def writer[F[_], W](implicit F: Functor[F]): Functor[({ type G[A] = Writer[F, W, A] })#G] =
+  implicit def writer[F[_]: Functor, W]: Functor[({ type G[A] = Writer[F, W, A] })#G] =
     new Functor[({ type G[A] = Writer[F, W, A] })#G] {
       def map[A, B](fa: Writer[F, W, A])(f: A => B): Writer[F, W, B] = fa.map(f)
     }
