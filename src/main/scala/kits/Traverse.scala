@@ -15,10 +15,10 @@ trait Traverse[F[_]] extends Functor[F] { F =>
   def fold[A: Monoid](fa: F[A]): A = foldMap(fa)(identity)
 
   def mapAccumL[S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B)): (S, F[B]) =
-    Applicative.state[TailRec, S].traverse(fa)(a => State(s => done(f(s, a))))(this).value(s).result
+    Applicative.state[TailRec, S].traverse(fa)(a => State[TailRec, S, B](s => done(f(s, a))))(this).value(s).result
 
   def mapAccumR[S, A, B](s: S, fa: F[A])(f: (S, A) => (S, B)): (S, F[B]) =
-    Applicative.state[TailRec, S].dual.traverse(fa)(a => State(s => done(f(s, a))))(this).value(s).result
+    Applicative.state[TailRec, S].dual.traverse(fa)(a => State[TailRec, S, B](s => done(f(s, a))))(this).value(s).result
 
   def compose[G[_]](implicit G: Traverse[G]): Traverse[({ type H[A] = F[G[A]] })#H] =
     new Traverse[({ type H[A] = F[G[A]] })#H] {

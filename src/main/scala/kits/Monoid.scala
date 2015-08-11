@@ -76,6 +76,12 @@ object Monoid {
       def append(x: Unit, y: Unit): Unit = ()
     }
 
+  implicit def endo[A]: Monoid[Endo[A]] =
+    new Monoid[Endo[A]] {
+      def empty: Endo[A] = Endo(identity)
+      def append(f: Endo[A], g: Endo[A]): Endo[A] = f.append(g)
+    }
+
   implicit def option[A](implicit A: Monoid[A]): Monoid[Option[A]] =
     new Monoid[Option[A]] {
       def empty: Option[A] = None
@@ -125,12 +131,6 @@ object Monoid {
     new Monoid[Set[A]] {
       def empty: Set[A] = Set.empty
       def append(x: Set[A], y: Set[A]): Set[A] = x | y
-    }
-
-  implicit def endo[A]: Monoid[Endo[A]] =
-    new Monoid[Endo[A]] {
-      def empty: Endo[A] = Endo(identity)
-      def append(f: Endo[A], g: Endo[A]): Endo[A] = f.append(g)
     }
 
   implicit def pair[A, B](implicit A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
