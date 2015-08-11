@@ -36,7 +36,7 @@ class MonoidExample extends FunSuite {
     assert(kits.Monoid.append(List(0, 1), List(2, 3)) == List(0, 1, 2, 3))
     assert(kits.Monoid.append("foo", "bar", "baz") == "foobarbaz")
     assert(kits.Monoid.append(kits.Sum(2), kits.Sum(3)) == kits.Sum(5))
-    assert(kits.Monoid.append(kits.Product(2), kits.Product(3)) == kits.Product(6))
+    assert(kits.Monoid.append(kits.Prod(2), kits.Prod(3)) == kits.Prod(6))
     assert(kits.Monoid.append(Some("foo"), None, Some("bar")) == Some("foobar"))
     assert(kits.Monoid.append(Map('a -> "foo", 'b -> "bar"), Map('a -> "bar", 'c -> "baz")) == Map('a -> "foobar", 'b -> "bar", 'c -> "baz"))
   }

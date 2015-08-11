@@ -18,21 +18,21 @@ package object kits {
 
   }
 
-  case class Product[A](value: A) extends AnyVal {
+  case class Prod[A](value: A) extends AnyVal {
 
-    def append(that: Product[A])(implicit A: Numeric[A]): Product[A] = Product(A.times(value, that.value))
-
-  }
-
-  case class All(value: Boolean) extends AnyVal {
-
-    def append(that: All): All = All(value && that.value)
+    def append(that: Prod[A])(implicit A: Numeric[A]): Prod[A] = Prod(A.times(value, that.value))
 
   }
 
-  case class Any(value: Boolean) extends AnyVal {
+  case class Conj(value: Boolean) extends AnyVal {
 
-    def append(that: Any): Any = Any(value || that.value)
+    def append(that: Conj): Conj = Conj(value && that.value)
+
+  }
+
+  case class Disj(value: Boolean) extends AnyVal {
+
+    def append(that: Disj): Disj = Disj(value || that.value)
 
   }
 

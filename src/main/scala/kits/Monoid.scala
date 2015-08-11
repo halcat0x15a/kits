@@ -46,22 +46,22 @@ object Monoid {
       def append(x: Sum[A], y: Sum[A]): Sum[A] = x.append(y)
     }
 
-  implicit def product[A](implicit A: Numeric[A]): Monoid[Product[A]] =
-    new Monoid[Product[A]] {
-      def empty: Product[A] = Product(A.one)
-      def append(x: Product[A], y: Product[A]): Product[A] = x.append(y)
+  implicit def product[A](implicit A: Numeric[A]): Monoid[Prod[A]] =
+    new Monoid[Prod[A]] {
+      def empty: Prod[A] = Prod(A.one)
+      def append(x: Prod[A], y: Prod[A]): Prod[A] = x.append(y)
     }
 
-  implicit val all: Monoid[All] =
-    new Monoid[All] {
-      def empty: All = All(true)
-      def append(x: All, y: All): All = x.append(y)
+  implicit val conj: Monoid[Conj] =
+    new Monoid[Conj] {
+      def empty: Conj = Conj(true)
+      def append(x: Conj, y: Conj): Conj = x.append(y)
     }
 
-  implicit val any: Monoid[Any] =
-    new Monoid[Any] {
-      def empty: Any = Any(false)
-      def append(x: Any, y: Any): Any = x.append(y)
+  implicit val disj: Monoid[Disj] =
+    new Monoid[Disj] {
+      def empty: Disj = Disj(false)
+      def append(x: Disj, y: Disj): Disj = x.append(y)
     }
 
   implicit val string: Monoid[String] =
