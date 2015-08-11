@@ -28,6 +28,15 @@ object Functor {
       def traverse[F[_]: Applicative, A, B](fa: Identity[A])(f: A => F[B]): F[Identity[B]] = fa.traverse(f)
     }
 
+  implicit val function0: Monad[Function0] with Traverse[Function0] =
+    new Monad[Function0] with Traverse[Function0] {
+      def pure[A](a: A): Function0[A] = () => a
+      override def map[A, B](fa: Function0[A])(f: A => B): Function0[B] = () => f(fa())
+      override def ap[A, B](fa: Function0[A])(f: Function0[A => B]): Function0[B] = () => f()(fa())
+      def flatMap[A, B](fa: Function0[A])(f: A => Function0[B]): Function0[B] = () => f(fa())()
+      def traverse[F[_], A, B](fa: Function0[A])(f: A => F[B])(implicit F: Applicative[F]): F[Function0[B]] = F.map(f(fa()))(b => () => b)
+    }
+
   implicit val option: Monad[Option] with Traverse[Option] =
     new Monad[Option] with Traverse[Option] {
       def pure[A](a: A): Option[A] = Some(a)
