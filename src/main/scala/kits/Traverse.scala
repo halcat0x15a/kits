@@ -32,9 +32,9 @@ object Traverse {
 
   def apply[F[_]](implicit F: Traverse[F]): Traverse[F] = F
 
-  def traverse[F[_], G[_]: Applicative, A, B](fa: F[A])(f: A => G[B])(implicit F: Traverse[F]): G[F[B]] = F.traverse(fa)(f)
+  def traverse[F[_]: Traverse, A, GB](fa: F[A])(f: A => GB)(implicit GB: Instance[Applicative, GB]): GB.F[F[GB.A]] = GB.T.traverse(fa)(a => GB(f(a)))
 
-  def sequence[F[_], G[_]: Applicative, A](fga: F[G[A]])(implicit F: Traverse[F]): G[F[A]] = F.sequence(fga)
+  def sequence[F[_]: Traverse, GA](fga: F[GA])(implicit GA: Instance[Applicative, GA]): GA.F[F[GA.A]] = traverse(fga)(identity)
 
   def foldMap[F[_], A, B: Monoid](fa: F[A])(f: A => B)(implicit F: Traverse[F]): B = F.foldMap(fa)(f)
 
