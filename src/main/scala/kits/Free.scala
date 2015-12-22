@@ -2,36 +2,90 @@ package kits.free
 
 import scala.annotation.tailrec
 
-sealed abstract class Queue[R[_], -A, +B] {
-
-  def :+[C](f: B => Free[R, C]): Queue[R, A, C] = Node(this, Leaf(f))
-
-  def ++[C](that: Queue[R, B, C]): Queue[R, A, C] = Node(this, that)
-
-  def view: View[R, A, B]
-
-}
-
-case class Leaf[R[_], A, B](arrow: A => Free[R, B]) extends Queue[R, A, B] {
-
-  lazy val view: View[R, A, B] = One(arrow)
-
-}
-
-sealed abstract case class Node[R[_], A, B]() extends Queue[R, A, B] { self =>
+sealed abstract class Union {
 
   type T
 
-  def left: Queue[R, A, T]
+}
 
-  def right: Queue[R, T, B]
+sealed abstract class Void extends Union
 
-  lazy val view: View[R, A, B] = {
+sealed abstract class :+:[F[_], U <: Union] extends Union
+
+case class Inl[F[_], A, U <: Union](value: F[A]) extends (F :+: U) {
+
+  type T = A
+
+}
+
+case class Inr[F[_], A, U <: Union](value: U) extends (F :+: U) {
+
+  type T = A
+
+}
+
+sealed abstract class Member[F[_], U <: Union] {
+
+  def inject[A](fa: F[A]): U
+
+  def project[A](u: U { type T = A }): Option[F[A]]
+
+}
+
+object Member {
+
+  implicit def left[F[_], U <: Union]: Member[F, F :+: U] =
+    new Member[F, F :+: U] {
+      def inject[A](fa: F[A]): F :+: U = Inl(fa)
+      def project[A](u: (F :+: U) { type T = A }): Option[F[A]] =
+        u match {
+          case Inl(v) => Some(v)
+          case Inr(_) => None
+        }
+    }
+
+  implicit def right[F[_], G[_], U <: Union](implicit member: Member[F, U]): Member[F, G :+: U] =
+    new Member[F, G :+: U] {
+      def inject[A](fa: F[A]): G :+: U = Inr(member.inject(fa))
+      def project[A](u: (G :+: U) { type T = A }): Option[F[A]] =
+        u match {
+          case Inl(_) => None
+          case Inr(u: U { type T = A }) => member.project(u)
+        }
+    }
+
+}
+
+sealed abstract class Queue[U <: Union, -A, +B] {
+
+  def :+[C](f: B => Free[U, C]): Queue[U, A, C] = Node(this, Leaf(f))
+
+  def ++[C](that: Queue[U, B, C]): Queue[U, A, C] = Node(this, that)
+
+  def view: View[U, A, B]
+
+}
+
+case class Leaf[U <: Union, A, B](arrow: A => Free[U, B]) extends Queue[U, A, B] {
+
+  lazy val view: View[U, A, B] = One(arrow)
+
+}
+
+sealed abstract case class Node[U <: Union, A, B]() extends Queue[U, A, B] { self =>
+
+  type T
+
+  def left: Queue[U, A, T]
+
+  def right: Queue[U, T, B]
+
+  lazy val view: View[U, A, B] = {
     @tailrec
-    def go[R[_], A, B](tpe: { type T })(left: Queue[R, A, tpe.T], right: Queue[R, tpe.T, B]): View[R, A, B] =
+    def go[U <: Union, A, B](tpe: { type T })(left: Queue[U, A, tpe.T], right: Queue[U, tpe.T, B]): View[U, A, B] =
       left match {
         case Leaf(value) => Cons(value, right)
-        case node@Node() => go[R, A, B](new { type T = node.T })(node.left, Node(node.right, right))
+        case node@Node() => go[U, A, B](new { type T = node.T })(node.left, Node(node.right, right))
       }
     go(new { type T = self.T })(left, right)
   }
@@ -40,8 +94,8 @@ sealed abstract case class Node[R[_], A, B]() extends Queue[R, A, B] { self =>
 
 object Node {
 
-  def apply[R[_], A, B, C](f: Queue[R, A, B], g: Queue[R, B, C]): Node[R, A, C] { type T = B } =
-    new Node[R, A, C] {
+  def apply[U <: Union, A, B, C](f: Queue[U, A, B], g: Queue[U, B, C]): Node[U, A, C] { type T = B } =
+    new Node[U, A, C] {
       type T = B
       val left = f
       val right = g
@@ -49,24 +103,24 @@ object Node {
 
 }
 
-sealed abstract class View[R[_], -A, +B]
+sealed abstract class View[U <: Union, -A, +B]
 
-case class One[R[_], A, B](arrow: A => Free[R, B]) extends View[R, A, B]
+case class One[U <: Union, A, B](arrow: A => Free[U, B]) extends View[U, A, B]
 
-sealed abstract case class Cons[R[_], A, B]() extends View[R, A, B] {
+sealed abstract case class Cons[U <: Union, A, B]() extends View[U, A, B] {
 
   type T
 
-  def arrow: A => Free[R, T]
+  def arrow: A => Free[U, T]
 
-  def arrows: Queue[R, T, B]
+  def arrows: Queue[U, T, B]
 
 }
 
 object Cons {
 
-  def apply[R[_], A, B, C](head: A => Free[R, B], tail: Queue[R, B, C]): Cons[R, A, C] { type T = B } =
-    new Cons[R, A, C] {
+  def apply[U <: Union, A, B, C](head: A => Free[U, B], tail: Queue[U, B, C]): Cons[U, A, C] { type T = B } =
+    new Cons[U, A, C] {
       type T = B
       val arrow = head
       val arrows = tail
@@ -74,92 +128,75 @@ object Cons {
 
 }
 
-sealed abstract class Sum
+sealed abstract class Free[U <: Union, +A] {
 
-sealed abstract class Void extends Sum
+  def map[B](f: A => B): Free[U, B]
 
-sealed abstract class :+:[F[_], G <: Sum] {
+  def flatMap[B](f: A => Free[U, B]): Free[U, B]
 
-  type T
-
-}
-
-case class L[F[_], A, G <: Sum](value: F[A]) extends (F :+: G) {
-
-  type T = A
-
-}
-
-case class R[F[_], A, G <: Sum](value: G) extends (F :+: G) {
-
-  type T = A
-
-}
-
-sealed abstract class Free[R[_], +A] {
-
-  def map[B](f: A => B): Free[R, B]
-
-  def flatMap[B](f: A => Free[R, B]): Free[R, B]
+  def run(implicit ev: U =:= Void): A =
+    this match {
+      case Pure(a) => a
+    }
   
-  def fold[B](f: A => Free[R, B])(g: R[Any] => (Any => Free[R, B]) => Free[R, B]): B = {
-    def go(free: Free[R, A]): Free[R, B] =
+  def fold[B](f: A => Free[U, B])(g: Any => (Any => Free[U, B]) => Free[U, B]): Free[U, B] = {
+    def go(free: Free[U, A]): Free[U, B] =
       free match {
         case Pure(v) => f(v)
         case impure@Impure() =>
-          g(impure.union.asInstanceOf[R[Any]])(x => go(Free(impure.arrows.asInstanceOf[Queue[R, Any, A]], x)))
+          def k(x: Any): Free[U, B] =
+            go(Free(impure.arrows.asInstanceOf[Queue[U, Any, A]], x))
+          impure.union match {
+            case Inl(v) => g(v)(k)
+            case Inr(u: U) => Impure(u)(Leaf(k))
+          }
       }
-    go(this) match {
-      case Pure(a) => a
-    }
+    go(this)
   }
 
 }
 
-case class Pure[R[_], A](value: A) extends Free[R, A] {
+case class Pure[U <: Union, A](value: A) extends Free[U, A] {
 
-  def map[B](f: A => B): Free[R, B] = Pure(f(value))
+  def map[B](f: A => B): Free[U, B] = Pure(f(value))
 
-  def flatMap[B](f: A => Free[R, B]): Free[R, B] = f(value)
+  def flatMap[B](f: A => Free[U, B]): Free[U, B] = f(value)
 
 }
 
-sealed abstract case class Impure[R[_], A]() extends Free[R, A] {
+sealed abstract case class Impure[U <: Union, A]() extends Free[U, A] {
 
-  type T
+  val union: U
 
-  def union: R[T]
+  def arrows: Queue[U, union.T, A]
 
-  def arrows: Queue[R, T, A]
+  def map[B](f: A => B): Free[U, B] = Impure(union)(arrows :+ (a => Pure(f(a))))
 
-  def map[B](f: A => B): Free[R, B] = Impure(union, arrows :+ (a => Pure(f(a))))
-
-  def flatMap[B](f: A => Free[R, B]): Free[R, B] = Impure(union, arrows :+ f)
+  def flatMap[B](f: A => Free[U, B]): Free[U, B] = Impure(union)(arrows :+ f)
 
 }
 
 object Impure {
 
-  def apply[R[_], A, B](u: R[A], a: Queue[R, A, B]): Impure[R, B] { type T = A } =
-    new Impure[R, B] {
-      type T = A
-      def union = u
-      def arrows = a
+  def apply[U <: Union, A](u: U)(a: Queue[U, u.T, A]): Impure[U, A] =
+    new Impure[U, A] {
+      val union: u.type = u
+      val arrows: Queue[U, u.T, A] = a
     }
 
 }
 
 object Free {
 
-  def apply[R[_], A, B](arrows: Queue[R, A, B], value: A): Free[R, B] = {
+  def apply[U <: Union, A, B](arrows: Queue[U, A, B], value: A): Free[U, B] = {
     @tailrec
-    def go[R[_], A](tpe: { type T })(arrows: Queue[R, tpe.T, A], value: tpe.T): Free[R, A] =
+    def go[U <: Union, A](tpe: { type T })(arrows: Queue[U, tpe.T, A], value: tpe.T): Free[U, A] =
       arrows.view match {
         case One(f) => f(value)
         case cons@Cons() =>
           cons.arrow(value) match {
-            case Pure(value) => go[R, A](new { type T = cons.T })(cons.arrows, value)
-            case impure@Impure() => Impure(impure.union, impure.arrows ++ cons.arrows)
+            case Pure(value) => go[U, A](new { type T = cons.T })(cons.arrows, value)
+            case impure@Impure() => Impure(impure.union)(impure.arrows ++ cons.arrows)
           }
       }
     go(new { type T = A })(arrows, value)
@@ -173,8 +210,16 @@ case class Get() extends Reader[String]
 
 object Reader {
 
-  def run[A](free: Free[Reader, A], str: String): A =
-    free.fold(x => Pure(x))(_ => k => k(str))
+  @tailrec
+  def run[A](free: Free[Reader :+: Void, A], str: String): A =
+    free match {
+      case Pure(a) => a
+      case impure@Impure() =>
+        run[A](Free(impure.arrows, str.asInstanceOf[impure.union.T]), str)
+    }
+
+  def ask[U <: Union](implicit member: Member[Reader, U]): Free[U, String] =
+    Impure(member.inject(Get()))(Leaf(x => Pure(x.asInstanceOf[String])))
 
 }
 
@@ -184,25 +229,35 @@ case class Put(value: String) extends Writer[Unit]
 
 object Writer {
 
-  def run[A](free: Free[Writer, A]): (A, List[String]) =
-    free.fold(a => Pure((a, List.empty[String]))) {
-      case Put(w) => k => k(()).map { case (a, l) => (a, w :: l) }
-    }
+  def run[U <: Union, A](free: Free[Writer :+: U, A]): Free[U, (A, List[String])] = {
+    @tailrec
+    def go(free: Free[Writer :+: U, A], acc: List[String]): Free[U, (A, List[String])] =
+      free match {
+        case Pure(a) => Pure((a, acc))
+        case impure@Impure() =>
+          impure.union match {
+            case Inl(Put(w)) => go(Free(impure.arrows, ().asInstanceOf[impure.union.T]), w :: acc)
+            case Inr(u) => ???
+          }
+      }
+    go(free, Nil)
+  }
 
-  def tell(value: String): Free[Writer, Unit] =
-    Impure(Put(value), Leaf(Pure(_: Any)))
+  def tell[U <: Union](value: String)(implicit member: Member[Writer, U]): Free[U, Unit] =
+    Impure(member.inject(Put(value)))(Leaf(Pure(_)))
 
 }
 
 object Example extends App {
 
-  val e1 = for {
-    _ <- Writer.tell("hoge")
-    _ <- Writer.tell("hoge")
-    _ <- Writer.tell("hoge")
+  def e1[U <: Union](implicit w: Member[Writer, U], r: Member[Reader, U]): Free[U, Unit] = for {
+    _ <- Writer.tell("start")
+    a <- Reader.ask
+    _ <- Writer.tell(a)
+    _ <- Writer.tell("end")
   } yield ()
 
-  def e2(n: Int): Free[Writer, Unit] =
+  def e2[U <: Union](n: Int)(implicit member: Member[Writer, U]): Free[U, Unit] =
     if (n <= 0)
       Writer.tell("end")
     else
@@ -211,7 +266,7 @@ object Example extends App {
         _ <- e2(n - 1)
       } yield ()
 
-  println(Writer.run(e1))
-  println(Writer.run(e2(100000))._2.size)
+  println(Reader.run(Writer.run(e1), "hoge"))
+  println(Writer.run(e2[Writer :+: Void](10000)).run._2.size)
 
 }
