@@ -143,12 +143,12 @@ sealed abstract class Free[U <: Union, +A] {
     def go(free: Free[U, A]): Free[U, B] =
       free match {
         case Pure(v) => f(v)
-        case impure@Impure() =>
+        case impure@Impure(u, a) =>
           def k(x: Any): Free[U, B] =
             go(Free(impure.arrows.asInstanceOf[Queue[U, Any, A]], x))
           impure.union match {
             case Inl(v) => g(v)(k)
-            case Inr(u: U) => Impure(u)(Leaf(k))
+            case Inr(u: U) => Impure(u, Leaf(k))
           }
       }
     go(this)
@@ -164,25 +164,11 @@ case class Pure[U <: Union, A](value: A) extends Free[U, A] {
 
 }
 
-sealed abstract case class Impure[U <: Union, A]() extends Free[U, A] {
+case class Impure[U <: Union, A](union: U, arrows: Queue[U, U#T, A]) extends Free[U, A] {
 
-  val union: U
+  def map[B](f: A => B): Free[U, B] = Impure(union, arrows :+ (a => Pure(f(a))))
 
-  def arrows: Queue[U, union.T, A]
-
-  def map[B](f: A => B): Free[U, B] = Impure(union)(arrows :+ (a => Pure(f(a))))
-
-  def flatMap[B](f: A => Free[U, B]): Free[U, B] = Impure(union)(arrows :+ f)
-
-}
-
-object Impure {
-
-  def apply[U <: Union, A](u: U)(a: Queue[U, u.T, A]): Impure[U, A] =
-    new Impure[U, A] {
-      val union: u.type = u
-      val arrows: Queue[U, u.T, A] = a
-    }
+  def flatMap[B](f: A => Free[U, B]): Free[U, B] = Impure(union, arrows :+ f)
 
 }
 
@@ -196,7 +182,7 @@ object Free {
         case cons@Cons() =>
           cons.arrow(value) match {
             case Pure(value) => go[U, A](new { type T = cons.T })(cons.arrows, value)
-            case impure@Impure() => Impure(impure.union)(impure.arrows ++ cons.arrows)
+            case Impure(union, arrows) => Impure(union, arrows ++ cons.arrows)
           }
       }
     go(new { type T = A })(arrows, value)
@@ -214,12 +200,11 @@ object Reader {
   def run[A](free: Free[Reader :+: Void, A], str: String): A =
     free match {
       case Pure(a) => a
-      case impure@Impure() =>
-        run[A](Free(impure.arrows, str.asInstanceOf[impure.union.T]), str)
+      case impure@Impure(_, a) => run[A](Free(a, str.asInstanceOf[impure.union.T]), str)
     }
 
   def ask[U <: Union](implicit member: Member[Reader, U]): Free[U, String] =
-    Impure(member.inject(Get()))(Leaf(x => Pure(x.asInstanceOf[String])))
+    Impure(member.inject(Get()), Leaf(x => Pure(x.asInstanceOf[String])))
 
 }
 
@@ -234,7 +219,7 @@ object Writer {
     def go(free: Free[Writer :+: U, A], acc: List[String]): Free[U, (A, List[String])] =
       free match {
         case Pure(a) => Pure((a, acc))
-        case impure@Impure() =>
+        case impure@Impure(_, _) =>
           impure.union match {
             case Inl(Put(w)) => go(Free(impure.arrows, ().asInstanceOf[impure.union.T]), w :: acc)
             case Inr(u) => ???
@@ -244,7 +229,7 @@ object Writer {
   }
 
   def tell[U <: Union](value: String)(implicit member: Member[Writer, U]): Free[U, Unit] =
-    Impure(member.inject(Put(value)))(Leaf(Pure(_)))
+    Impure(member.inject(Put(value)), Leaf(Pure(_)))
 
 }
 
