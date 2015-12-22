@@ -4,9 +4,9 @@ import scala.annotation.tailrec
 
 sealed abstract class Queue[R[_], -A, +B] {
 
-  def :+[C](f: B => Free[R, C]): Queue[R, A, C] = new Node(this, new Leaf(f))
+  def :+[C](f: B => Free[R, C]): Queue[R, A, C] = Node(this, Leaf(f))
 
-  def ++[C](that: Queue[R, B, C]): Queue[R, A, C] = new Node(this, that)
+  def ++[C](that: Queue[R, B, C]): Queue[R, A, C] = Node(this, that)
 
   def view: View[R, A, B]
 
@@ -14,21 +14,38 @@ sealed abstract class Queue[R[_], -A, +B] {
 
 case class Leaf[R[_], A, B](arrow: A => Free[R, B]) extends Queue[R, A, B] {
 
-  lazy val view: View[R, A, B] = new One(arrow)
+  lazy val view: View[R, A, B] = One(arrow)
 
 }
 
-case class Node[R[_], A, B, T](left: Queue[R, A, T], right: Queue[R, T, B]) extends Queue[R, A, B] {
+sealed abstract case class Node[R[_], A, B]() extends Queue[R, A, B] { self =>
+
+  type T
+
+  def left: Queue[R, A, T]
+
+  def right: Queue[R, T, B]
 
   lazy val view: View[R, A, B] = {
     @tailrec
-    def go[R[_], A, B](x: Queue[R, A, Any], y: Queue[R, Any, B]): View[R, A, B] =
-      x match {
-        case Leaf(v) => new Cons(v, y)
-        case Node(l, r) => go(l, new Node(r, y))
+    def go[R[_], A, B](tpe: { type T })(left: Queue[R, A, tpe.T], right: Queue[R, tpe.T, B]): View[R, A, B] =
+      left match {
+        case Leaf(value) => Cons(value, right)
+        case node@Node() => go[R, A, B](new { type T = node.T })(node.left, Node(node.right, right))
       }
-    go(left, right.asInstanceOf[Queue[R, Any, B]])
+    go(new { type T = self.T })(left, right)
   }
+
+}
+
+object Node {
+
+  def apply[R[_], A, B, C](f: Queue[R, A, B], g: Queue[R, B, C]): Node[R, A, C] { type T = B } =
+    new Node[R, A, C] {
+      type T = B
+      val left = f
+      val right = g
+    }
 
 }
 
@@ -36,76 +53,144 @@ sealed abstract class View[R[_], -A, +B]
 
 case class One[R[_], A, B](arrow: A => Free[R, B]) extends View[R, A, B]
 
-case class Cons[R[_], A, B, T](arrow: A => Free[R, T], queue: Queue[R, T, B]) extends View[R, A, B]
+sealed abstract case class Cons[R[_], A, B]() extends View[R, A, B] {
+
+  type T
+
+  def arrow: A => Free[R, T]
+
+  def arrows: Queue[R, T, B]
+
+}
+
+object Cons {
+
+  def apply[R[_], A, B, C](head: A => Free[R, B], tail: Queue[R, B, C]): Cons[R, A, C] { type T = B } =
+    new Cons[R, A, C] {
+      type T = B
+      val arrow = head
+      val arrows = tail
+    }
+
+}
+
+sealed abstract class Sum
+
+sealed abstract class Void extends Sum
+
+sealed abstract class :+:[F[_], G <: Sum] {
+
+  type T
+
+}
+
+case class L[F[_], A, G <: Sum](value: F[A]) extends (F :+: G) {
+
+  type T = A
+
+}
+
+case class R[F[_], A, G <: Sum](value: G) extends (F :+: G) {
+
+  type T = A
+
+}
 
 sealed abstract class Free[R[_], +A] {
 
   def map[B](f: A => B): Free[R, B]
 
   def flatMap[B](f: A => Free[R, B]): Free[R, B]
+  
+  def fold[B](f: A => Free[R, B])(g: R[Any] => (Any => Free[R, B]) => Free[R, B]): B = {
+    def go(free: Free[R, A]): Free[R, B] =
+      free match {
+        case Pure(v) => f(v)
+        case impure@Impure() =>
+          g(impure.union.asInstanceOf[R[Any]])(x => go(Free(impure.arrows.asInstanceOf[Queue[R, Any, A]], x)))
+      }
+    go(this) match {
+      case Pure(a) => a
+    }
+  }
 
 }
 
 case class Pure[R[_], A](value: A) extends Free[R, A] {
 
-  def map[B](f: A => B): Free[R, B] = new Pure(f(value))
+  def map[B](f: A => B): Free[R, B] = Pure(f(value))
 
   def flatMap[B](f: A => Free[R, B]): Free[R, B] = f(value)
 
 }
 
-case class Impure[R[_], A, T](union: R[T], arrows: Queue[R, T, A]) extends Free[R, A] {
+sealed abstract case class Impure[R[_], A]() extends Free[R, A] {
 
-  def map[B](f: A => B): Free[R, B] = new Impure(union, arrows :+ (a => new Pure(f(a))))
+  type T
 
-  def flatMap[B](f: A => Free[R, B]): Free[R, B] = new Impure(union, arrows :+ f)
+  def union: R[T]
+
+  def arrows: Queue[R, T, A]
+
+  def map[B](f: A => B): Free[R, B] = Impure(union, arrows :+ (a => Pure(f(a))))
+
+  def flatMap[B](f: A => Free[R, B]): Free[R, B] = Impure(union, arrows :+ f)
+
+}
+
+object Impure {
+
+  def apply[R[_], A, B](u: R[A], a: Queue[R, A, B]): Impure[R, B] { type T = A } =
+    new Impure[R, B] {
+      type T = A
+      def union = u
+      def arrows = a
+    }
 
 }
 
 object Free {
 
-  @tailrec
-  def apply[R[_], A](arrows: Queue[R, Any, A], value: Any): Free[R, A] =
-    arrows.view match {
-      case One(f) => f(value)
-      case Cons(f, t) =>
-        f(value) match {
-          case Pure(v) => apply(t, v)
-          case Impure(u, a) => Impure(u, (t ++ a).asInstanceOf[Queue[R, Any, A]])
-        }
-    }
-
-  def fold[R[_], A, B](free: Free[R, A])(f: A => B)(g: R[Any] => (Any => B) => B): B =
-    free match {
-      case Pure(v) => f(v)
-      case Impure(u, a) => g(u)(x => fold(apply(a, x))(f)(g))
-    }
+  def apply[R[_], A, B](arrows: Queue[R, A, B], value: A): Free[R, B] = {
+    @tailrec
+    def go[R[_], A](tpe: { type T })(arrows: Queue[R, tpe.T, A], value: tpe.T): Free[R, A] =
+      arrows.view match {
+        case One(f) => f(value)
+        case cons@Cons() =>
+          cons.arrow(value) match {
+            case Pure(value) => go[R, A](new { type T = cons.T })(cons.arrows, value)
+            case impure@Impure() => Impure(impure.union, impure.arrows ++ cons.arrows)
+          }
+      }
+    go(new { type T = A })(arrows, value)
+  }
 
 }
 
-case class Writer[T](value: String)
+sealed abstract class Reader[A]
+
+case class Get() extends Reader[String]
+
+object Reader {
+
+  def run[A](free: Free[Reader, A], str: String): A =
+    free.fold(x => Pure(x))(_ => k => k(str))
+
+}
+
+sealed abstract class Writer[+A]
+
+case class Put(value: String) extends Writer[Unit]
 
 object Writer {
 
-  def run(free: Free[Writer, Any]): (Any, List[String]) = {
-    @tailrec
-    def go(free: Free[Writer, Any], acc: List[String]): (Any, List[String]) =
-      free match {
-        case Pure(v) => (v, acc)
-        case Impure(Writer(s), a) => go(Free(a, ()), s :: acc)
-      }
-    go(free, Nil)
-  }
-
-  def runF(free: Free[Writer, Any]): (Any, List[String]) =
-    Free.fold(free)(a => (a, List.empty[String])) {
-      case Writer(s) => k => k(()) match {
-        case (a, l) => (a, s :: l)
-      }
+  def run[A](free: Free[Writer, A]): (A, List[String]) =
+    free.fold(a => Pure((a, List.empty[String]))) {
+      case Put(w) => k => k(()).map { case (a, l) => (a, w :: l) }
     }
 
   def tell(value: String): Free[Writer, Unit] =
-    Impure(Writer(value), Leaf(Pure(_: Any)))
+    Impure(Put(value), Leaf(Pure(_: Any)))
 
 }
 
@@ -127,6 +212,6 @@ object Example extends App {
       } yield ()
 
   println(Writer.run(e1))
-  println(Writer.run(e2(10000))._2.size)
+  println(Writer.run(e2(100000))._2.size)
 
 }
