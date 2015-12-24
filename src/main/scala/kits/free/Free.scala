@@ -50,14 +50,18 @@ object Free {
       case Pure(a) => a
     }
 
-  def fold[F[_], U <: Union, A, B](free: Free[F :+: U, A])(f: A => Free[Trampoline :+: U, B])(g: (F[_], Any => Free[Trampoline :+: U, B]) => Free[Trampoline :+: U, B]): Free[U, B] = {
+  trait Fold[F[_], U <: Union, A] {
+    def apply[T](fa: F[T])(f: T => Free[Trampoline :+: U, A]): Free[Trampoline :+: U, A]
+  }
+
+  def fold[F[_], U <: Union, A, B, T](free: Free[F :+: U, A])(f: A => Free[Trampoline :+: U, B])(g: Fold[F, U, B]): Free[U, B] = {
     def go(free: Free[F :+: U, A]): Free[Trampoline :+: U, B] =
       free match {
         case Pure(v) => f(v)
         case impure@Impure() =>
-          def k(x: Any): Free[Trampoline :+: U, B] = Trampoline(go(impure.arrows(x.asInstanceOf[impure.T])))
+          def k[A](x: A): Free[Trampoline :+: U, B] = Trampoline(go(impure.arrows(x.asInstanceOf[impure.T])))
           impure.union match {
-            case inl@Inl() => g(inl.head.asInstanceOf[F[Any]], k)
+            case inl@Inl() => g(inl.head)(k)
             case Inr(u) => Impure(Inr(u), Leaf(k))
           }
       }
