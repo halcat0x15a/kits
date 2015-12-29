@@ -65,7 +65,7 @@ object Node {
 
 sealed abstract class View[U <: Union, -A, +B]
 
-case class One[U <: Union, A, B](arrow: A => Free[U, B]) extends View[U, A, B]
+case class One[U <: Union, A, B](head: A => Free[U, B]) extends View[U, A, B]
 
 sealed abstract case class Cons[U <: Union, A, B]() extends View[U, A, B] {
 

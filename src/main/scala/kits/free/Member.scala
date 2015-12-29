@@ -1,6 +1,6 @@
 package kits.free
 
-abstract class Member[F[_], U <: Union] {
+trait Member[F[_], U <: Union] {
 
   def inject[A](f: F[A]): U
 

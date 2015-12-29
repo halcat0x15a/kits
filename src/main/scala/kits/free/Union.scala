@@ -4,13 +4,11 @@ sealed abstract class Union
 
 sealed abstract class Void extends Union
 
-sealed abstract class :+:[F[_], U <: Union] extends Union {
-
-  type T
-
-}
+sealed abstract class :+:[F[_], U <: Union] extends Union
 
 sealed abstract case class Inl[F[_], U <: Union]() extends (F :+: U) {
+
+  type T
 
   def head: F[T]
 
@@ -18,7 +16,7 @@ sealed abstract case class Inl[F[_], U <: Union]() extends (F :+: U) {
 
 object Inl {
 
-  def apply[F[_], A, U <: Union](fa: F[A]): (F :+: U) { type T = A } =
+  def apply[F[_], A, U <: Union](fa: F[A]): Inl[F, U] { type T = A } =
     new Inl[F, U] {
       type T = A
       val head: F[A] = fa

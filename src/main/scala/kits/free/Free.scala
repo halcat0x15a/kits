@@ -43,54 +43,39 @@ object Impure {
 
 }
 
+object ImpureL {
+
+  def unapply[F[_], U <: Union, A, B](free: Free[F :+: U, A]): Option[(F[A], Queue[F :+: U, A, B])] =
+    free match {
+      case Pure(_) => None
+      case impure@Impure() =>
+        impure.union match {
+          case inl@Inl() => Some((inl.head.asInstanceOf[F[A]], impure.arrows.asInstanceOf[Queue[F :+: U, A, B]]))
+          case Inr(_) => None
+        }
+    }
+
+}
+
+object ImpureR {
+
+  def unapply[F[_], U <: Union, A, B](free: Free[F :+: U, A]): Option[(U, Queue[F :+: U, A, B])] =
+    free match {
+      case Pure(_) => None
+      case impure@Impure() =>
+        impure.union match {
+          case Inl() => None
+          case Inr(u) => Some((u, impure.arrows.asInstanceOf[Queue[F :+: U, A, B]]))
+        }
+    }
+
+}
+
 object Free {
 
   def run[A](free: Free[Void, A]): A =
     free match {
       case Pure(a) => a
     }
-
-  trait Fold[F[_], U <: Union, A] {
-    def apply[T](fa: F[T])(f: T => Free[Trampoline :+: U, A]): Free[Trampoline :+: U, A]
-  }
-
-  def fold[F[_], U <: Union, A, B, T](free: Free[F :+: U, A])(f: A => Free[Trampoline :+: U, B])(g: Fold[F, U, B]): Free[U, B] = {
-    def go(free: Free[F :+: U, A]): Free[Trampoline :+: U, B] =
-      free match {
-        case Pure(v) => f(v)
-        case impure@Impure() =>
-          def k[A](x: A): Free[Trampoline :+: U, B] = Trampoline(go(impure.arrows(x.asInstanceOf[impure.T])))
-          impure.union match {
-            case inl@Inl() => g(inl.head)(k)
-            case Inr(u) => Impure(Inr(u), Leaf(k))
-          }
-      }
-    Trampoline.run(go(free))
-  }
-
-}
-
-object Example extends App {
-
-  def e1[U <: Union](implicit w: Member[Writer, U], r: Member[Reader, U]): Free[U, Unit] = for {
-    _ <- Writer.tell("start")
-    a <- Reader.ask[U, String]
-    _ <- Writer.tell(a)
-    _ <- Writer.tell("end")
-  } yield ()
-
-  def e2[U <: Union](n: Int)(implicit member: Member[Writer, U], r: Member[Reader, U]): Free[U, Unit] =
-    if (n <= 0) {
-      Writer.tell("end")
-    } else {
-      for {
-        a <- Reader.ask[U, String]
-        _ <- Writer.tell(a)
-        _ <- e2(n - 1)
-      } yield ()
-    }
-
-  println(Free.run(Reader.run(Writer.run(e1[Writer :+: Reader :+: Void]), "hoge")))
-  println(Free.run(Writer.run(Reader.run(e2[Reader :+: Writer :+: Void](100000), "hoge")))._2.size)
 
 }
