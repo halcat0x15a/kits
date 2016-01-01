@@ -18,35 +18,21 @@ case class Pure[U <: Union, A](value: A) extends Free[U, A] {
 
 }
 
-sealed abstract case class Impure[U <: Union, A]() extends Free[U, A] { self =>
+case class Impure[U <: Union, A, B](union: U { type T = A }, arrows: Queue[U, A, B]) extends Free[U, B] {
 
-  type T
+  def map[C](f: B => C): Free[U, C] = Impure(union, arrows :+ (a => Pure(f(a))))
 
-  def union: U { type T = self.T }
-
-  def arrows: Queue[U, T, A]
-
-  def map[B](f: A => B): Free[U, B] = Impure(union, arrows :+ (a => Pure(f(a))))
-
-  def flatMap[B](f: A => Free[U, B]): Free[U, B] = Impure(union, arrows :+ f)
-
-}
-
-object Impure {
-
-  def apply[U <: Union, A, B](u: U { type T = A }, a: Queue[U, A, B]): Impure[U, B] { type T = A } =
-    new Impure[U, B] {
-      type T = A
-      val union: U { type T = A } = u
-      val arrows: Queue[U, A, B] = a
-    }
+  def flatMap[C](f: B => Free[U, C]): Free[U, C] = Impure(union, arrows :+ f)
 
 }
 
 object Free {
 
+  def apply[F[_], A, U <: Union](fa: F[A])(implicit member: Member[F, U]): Free[U, A] =
+    Impure(member.inject(fa), Leaf(Pure(_: A)))
+
   def run[A](free: Free[Void, A]): A =
-    free match {
+    (free: @unchecked) match {
       case Pure(a) => a
     }
 

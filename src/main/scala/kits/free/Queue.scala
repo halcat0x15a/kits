@@ -12,7 +12,7 @@ sealed abstract class Queue[U <: Union, -A, +B] {
         case cons@Cons() =>
           cons.head(value) match {
             case Pure(value) => go(new { type T = cons.T })(cons.tail, value)
-            case impure@Impure() => Impure(impure.union, impure.arrows ++ cons.tail)
+            case Impure(union, arrows) => Impure(union, arrows ++ cons.tail)
           }
       }
     go(new { type T = A })(this, a)

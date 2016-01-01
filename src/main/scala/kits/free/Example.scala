@@ -8,7 +8,7 @@ object Example extends App {
 
   def e1[U <: Union](implicit w: Member[WriterString.Writer, U], r: Member[ReaderInt.Reader, U]): Free[U, Unit] = for {
     _ <- WriterString.tell("start")
-    a <- ReaderInt.ask[U]
+    a <- ReaderInt.ask
     _ <- WriterString.tell(a.toString)
     _ <- WriterString.tell("end")
   } yield ()
@@ -18,7 +18,7 @@ object Example extends App {
       WriterString.tell("end")
     } else {
       for {
-        a <- ReaderInt.ask[U]
+        a <- ReaderInt.ask
         _ <- WriterString.tell(a.toString)
         _ <- e2(n - 1)
       } yield ()

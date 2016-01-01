@@ -2,7 +2,7 @@ package kits.free
 
 trait Writer[O] {
 
-  sealed abstract class Writer[A]
+  sealed abstract class Writer[+A]
 
   case class Put(value: O) extends Writer[Unit]
 
@@ -11,16 +11,12 @@ trait Writer[O] {
     def go(free: Free[Writer :+: U, A], acc: Vector[O]): Free[U, (A, Vector[O])] =
       free match {
         case Pure(a) => Pure((a, acc))
-        case impure@Impure() =>
-          impure.union match {
-            case inl@Inl(_) => go(impure.arrows(().asInstanceOf[impure.T]), acc/* :+ o*/)
-            case Inr(u) => Impure(u, Leaf((x: impure.T) => run(impure.arrows(x))))
-          }
+        case Impure(Inl(Put(o)), f) => go(f(()), acc :+ o)
+        case Impure(Inr(u), f) => Impure(u, Leaf((x: Any) => run(f(x))))
       }
     go(free, Vector.empty)
   }
 
-  def tell[U <: Union](value: O)(implicit member: Member[Writer, U]): Free[U, Unit] =
-    Impure(member.inject(Put(value)), Leaf(Pure(_: Unit)))
+  def tell[U <: Union](value: O)(implicit member: Member[Writer, U]): Free[U, Unit] = Free(Put(value))
 
 }
