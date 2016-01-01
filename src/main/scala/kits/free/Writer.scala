@@ -7,12 +7,15 @@ trait Writer[O] {
   case class Put(value: O) extends Writer[Unit]
 
   def run[U <: Union, A](free: Free[Writer :+: U, A]): Free[U, (A, Vector[O])] = {
-    //@scala.annotation.tailrec
+    @scala.annotation.tailrec
     def go(free: Free[Writer :+: U, A], acc: Vector[O]): Free[U, (A, Vector[O])] =
       free match {
         case Pure(a) => Pure((a, acc))
-        case ImpureL(Put(o), f) => go(f(()), acc :+ o)
-        case ImpureR(u, f) => Impure(u, Leaf((x: A) => run(f(x))))
+        case impure@Impure() =>
+          impure.union match {
+            case inl@Inl(_) => go(impure.arrows(().asInstanceOf[impure.T]), acc/* :+ o*/)
+            case Inr(u) => Impure(u, Leaf((x: impure.T) => run(impure.arrows(x))))
+          }
       }
     go(free, Vector.empty)
   }

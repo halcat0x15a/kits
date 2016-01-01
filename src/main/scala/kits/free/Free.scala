@@ -18,11 +18,11 @@ case class Pure[U <: Union, A](value: A) extends Free[U, A] {
 
 }
 
-sealed abstract case class Impure[U <: Union, A]() extends Free[U, A] {
+sealed abstract case class Impure[U <: Union, A]() extends Free[U, A] { self =>
 
   type T
 
-  def union: U
+  def union: U { type T = self.T }
 
   def arrows: Queue[U, T, A]
 
@@ -34,39 +34,11 @@ sealed abstract case class Impure[U <: Union, A]() extends Free[U, A] {
 
 object Impure {
 
-  def apply[U <: Union, A, B](u: U, a: Queue[U, A, B]): Impure[U, B] { type T = A } =
+  def apply[U <: Union, A, B](u: U { type T = A }, a: Queue[U, A, B]): Impure[U, B] { type T = A } =
     new Impure[U, B] {
       type T = A
-      val union: U = u
+      val union: U { type T = A } = u
       val arrows: Queue[U, A, B] = a
-    }
-
-}
-
-object ImpureL {
-
-  def unapply[F[_], U <: Union, A, B](free: Free[F :+: U, A]): Option[(F[A], Queue[F :+: U, A, B])] =
-    free match {
-      case Pure(_) => None
-      case impure@Impure() =>
-        impure.union match {
-          case inl@Inl() => Some((inl.head.asInstanceOf[F[A]], impure.arrows.asInstanceOf[Queue[F :+: U, A, B]]))
-          case Inr(_) => None
-        }
-    }
-
-}
-
-object ImpureR {
-
-  def unapply[F[_], U <: Union, A, B](free: Free[F :+: U, A]): Option[(U, Queue[F :+: U, A, B])] =
-    free match {
-      case Pure(_) => None
-      case impure@Impure() =>
-        impure.union match {
-          case Inl() => None
-          case Inr(u) => Some((u, impure.arrows.asInstanceOf[Queue[F :+: U, A, B]]))
-        }
     }
 
 }

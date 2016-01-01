@@ -11,8 +11,12 @@ trait Reader[I] {
     def go(free: Free[Reader :+: U, A]): Free[U, A] =
       free match {
         case Pure(a) => Pure(a)
-        case ImpureL(_, f) => go(f(i.asInstanceOf[A]))
-        case ImpureR(u, f) => Impure(u, Leaf((x: A) => run(f(x), i)))
+        //case ImpureL(Get(), f) => ???
+        case impure@Impure() =>
+          impure.union match {
+            case Inl(_) => go(impure.arrows(i.asInstanceOf[impure.T]))
+            case Inr(u) => Impure(u, Leaf((x: impure.T) => run(impure.arrows(x), i)))
+          }
       }
     go(free)
   }
