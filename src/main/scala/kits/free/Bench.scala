@@ -33,6 +33,19 @@ object Bench extends App {
     }
   }
 
+  def e3(n: Int): scalaz.ReaderWriterStateT[scalaz.Free.Trampoline, String, String, Unit, Unit] = {
+    import scalaz._, Scalaz._
+    if (n <= 0) {
+      ReaderWriterStateT((r: String, s: Unit) => Trampoline.done(("end", (), s)))
+    } else {
+      for {
+        a <- ReaderWriterStateT((r: String, s: Unit) => Trampoline.done(("", r, s)))
+        _ <- ReaderWriterStateT((r: String, s: Unit) => Trampoline.done((r, (), s)))
+        _ <- e3(n - 1)
+      } yield ()
+    }
+  }
+
   val r1 = for (n <- 1 to 1000) yield {
     val s = System.nanoTime
     Free.run(Writer.run(Reader.run(e1[ReaderString :+: WriterString :+: Void](n), "hoge")))
@@ -45,7 +58,14 @@ object Bench extends App {
     System.nanoTime - s
   }
 
+  val r3 = for (n <- 1 to 1000) yield {
+    val s = System.nanoTime
+    e3(n).run("hoge", ()).run
+    System.nanoTime - s
+  }
+
   println(r1.takeRight(100).sum.toDouble / 100000000)
   println(r2.takeRight(100).sum.toDouble / 100000000)
+  println(r3.takeRight(100).sum.toDouble / 100000000)
 
 }
