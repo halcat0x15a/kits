@@ -1,22 +1,26 @@
 package kits.free
 
-trait Reader[I] {
+sealed abstract class Reader[T, +A]
 
-  sealed abstract class Reader[+A]
+case class Get[T]() extends Reader[T, T]
 
-  case class Get() extends Reader[I]
+object Reader {
 
-  def run[U <: Union, A](free: Free[Reader :+: U, A], i: I): Free[U, A] = {
+  def run[U <: Union, T, A](free: Free[({ type F[A] = Reader[T, A] })#F :+: U, A], value: T): Free[U, A] = {
+    type F[A] = Reader[T, A]
     @scala.annotation.tailrec
-    def go(free: Free[Reader :+: U, A]): Free[U, A] =
+    def go(free: Free[F :+: U, A]): Free[U, A] =
       free match {
         case Pure(a) => Pure(a)
-        case Impure(Inl(Get()), f) => go(f(i))
-        case Impure(Inr(u), f) => Impure(u, Arrows.singleton((x: Any) => run(f(x), i)))
+        case Impure(Inl(Get()), f) => go(f(value))
+        case Impure(Inr(u), f) => Impure(u, Arrows.singleton((x: Any) => run(f(x), value)))
       }
     go(free)
   }
 
-  def ask[U <: Union](implicit member: Member[Reader, U]): Free[U, I] = Free(Get())
+  def ask[U <: Union, T](implicit member: Member[({ type F[A] = Reader[T, A] })#F, U]): Free[U, T] = {
+    type F[A] = Reader[T, A]
+    Free(Get(): F[T])
+  }
 
 }

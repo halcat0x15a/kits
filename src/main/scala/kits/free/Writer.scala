@@ -1,14 +1,15 @@
 package kits.free
 
-trait Writer[O] {
+sealed abstract class Writer[T, +A]
 
-  sealed abstract class Writer[+A]
+case class Put[T](value: T) extends Writer[T, Unit]
 
-  case class Put(value: O) extends Writer[Unit]
+object Writer {
 
-  def run[U <: Union, A](free: Free[Writer :+: U, A]): Free[U, (A, Vector[O])] = {
+  def run[U <: Union, T, A](free: Free[({ type F[A] = Writer[T, A] })#F :+: U, A]): Free[U, (A, Vector[T])] = {
+    type F[A] = Writer[T, A]
     @scala.annotation.tailrec
-    def go(free: Free[Writer :+: U, A], acc: Vector[O]): Free[U, (A, Vector[O])] =
+    def go(free: Free[F :+: U, A], acc: Vector[T]): Free[U, (A, Vector[T])] =
       free match {
         case Pure(a) => Pure((a, acc))
         case Impure(Inl(Put(o)), f) => go(f(()), acc :+ o)
@@ -17,6 +18,9 @@ trait Writer[O] {
     go(free, Vector.empty)
   }
 
-  def tell[U <: Union](value: O)(implicit member: Member[Writer, U]): Free[U, Unit] = Free(Put(value))
+  def tell[U <: Union, T](value: T)(implicit member: Member[({ type F[A] = Writer[T, A] })#F, U]): Free[U, Unit] = {
+    type F[A] = Writer[T, A]
+    Free(Put(value): F[Unit])
+  }
 
 }
