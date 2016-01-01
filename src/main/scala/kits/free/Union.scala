@@ -10,7 +10,7 @@ sealed abstract class Void extends Union
 
 sealed abstract class :+:[F[_], U <: Union] extends Union
 
-sealed abstract class Inl[F[_], U <: Union]() extends (F :+: U) {
+sealed abstract class Inl[F[_], U <: Union] extends (F :+: U) {
 
   def head: F[T]
 
@@ -32,7 +32,7 @@ object Inl {
 
 }
 
-sealed abstract class Inr[F[_], U <: Union]() extends (F :+: U) { self =>
+sealed abstract class Inr[F[_], U <: Union] extends (F :+: U) { self =>
 
   def tail: U { type T = self.T }
 

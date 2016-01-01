@@ -12,7 +12,7 @@ trait Reader[I] {
       free match {
         case Pure(a) => Pure(a)
         case Impure(Inl(Get()), f) => go(f(i))
-        case Impure(Inr(u), f) => Impure(u, Leaf((x: Any) => run(f(x), i)))
+        case Impure(Inr(u), f) => Impure(u, Arrows.singleton((x: Any) => run(f(x), i)))
       }
     go(free)
   }

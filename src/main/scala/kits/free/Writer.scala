@@ -12,7 +12,7 @@ trait Writer[O] {
       free match {
         case Pure(a) => Pure((a, acc))
         case Impure(Inl(Put(o)), f) => go(f(()), acc :+ o)
-        case Impure(Inr(u), f) => Impure(u, Leaf((x: Any) => run(f(x))))
+        case Impure(Inr(u), f) => Impure(u, Arrows.singleton((x: Any) => run(f(x))))
       }
     go(free, Vector.empty)
   }
