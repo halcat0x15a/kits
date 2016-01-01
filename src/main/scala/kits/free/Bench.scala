@@ -17,16 +17,16 @@ object Bench extends App {
       } yield ()
     }
 
-  def e2(n: Int): scalaz.Kleisli[({ type F[A] = scalaz.Writer[String, A] })#F, String, Unit] = {
+  def e2(n: Int): scalaz.Kleisli[({ type F[A] = scalaz.Writer[Vector[String], A] })#F, String, Unit] = {
     import scalaz._, Scalaz._
     type T[F[_], A] = ReaderT[F, String, A]
-    type F[A] = Writer[String, A]
+    type F[A] = Writer[Vector[String], A]
     if (n <= 0) {
-      WriterT.tell("end").liftM[T]
+      WriterT.tell(Vector("end")).liftM[T]
     } else {
       for {
         a <- ReaderT.ask[F, String]
-        _ <- WriterT.tell(a).liftM[T]
+        _ <- WriterT.tell(Vector(a)).liftM[T]
         _ <- e2(n - 1)
       } yield ()
     }
