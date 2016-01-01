@@ -4,7 +4,7 @@ trait Reader[I] {
 
   sealed abstract class Reader[+A]
 
-  case class Get() extends Reader[I]
+  case class Get[A <: I]() extends Reader[A]
 
   def run[U <: Union, A](free: Free[Reader :+: U, A], i: I): Free[U, A] = {
     @scala.annotation.tailrec
@@ -17,6 +17,7 @@ trait Reader[I] {
     go(free)
   }
 
-  def ask[U <: Union](implicit member: Member[Reader, U]): Free[U, I] = Free(Get())
+  def ask[U <: Union](implicit member: Member[Reader, U]): Free[U, I] =
+    Impure(member.inject(Get()), Leaf(Pure(_: I)))
 
 }
