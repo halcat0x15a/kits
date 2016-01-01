@@ -17,16 +17,17 @@ object Bench extends App {
       } yield ()
     }
 
-  def e2(n: Int): scalaz.Kleisli[({ type F[A] = scalaz.Writer[Vector[String], A] })#F, String, Unit] = {
+  def e2(n: Int): scalaz.Kleisli[({ type F[A] = scalaz.WriterT[scalaz.Free.Trampoline, String, A] })#F, String, Unit] = {
     import scalaz._, Scalaz._
+    implicit val m = WriterT.writerTMonad[Free.Trampoline, String]
     type T[F[_], A] = ReaderT[F, String, A]
-    type F[A] = Writer[Vector[String], A]
+    type F[A] = WriterT[Free.Trampoline, String, A]
     if (n <= 0) {
-      WriterT.tell(Vector("end")).liftM[T]
+      WriterT.writerT(Trampoline.done(("end", ()))).liftM[T]
     } else {
       for {
         a <- ReaderT.ask[F, String]
-        _ <- WriterT.tell(Vector(a)).liftM[T]
+        _ <- WriterT.writerT(Trampoline.done((a, ()))).liftM[T]
         _ <- e2(n - 1)
       } yield ()
     }
@@ -40,7 +41,7 @@ object Bench extends App {
 
   val r2 = for (n <- 1 to 1000) yield {
     val s = System.nanoTime
-    e2(n).run("hoge").run
+    e2(n).run("hoge").run.run
     System.nanoTime - s
   }
 

@@ -1,21 +1,23 @@
 package kits.free
 
+import kits.Monoid
+
 sealed abstract class Writer[T, +A]
 
 case class Put[T](value: T) extends Writer[T, Unit]
 
 object Writer {
 
-  def run[U <: Union, T, A](free: Free[({ type F[A] = Writer[T, A] })#F :+: U, A]): Free[U, (A, Vector[T])] = {
+  def run[U <: Union, T, A](free: Free[({ type F[A] = Writer[T, A] })#F :+: U, A])(implicit monoid: Monoid[T]): Free[U, (A, T)] = {
     type F[A] = Writer[T, A]
     @scala.annotation.tailrec
-    def go(free: Free[F :+: U, A], acc: Vector[T]): Free[U, (A, Vector[T])] =
+    def go(free: Free[F :+: U, A], acc: T): Free[U, (A, T)] =
       free match {
         case Pure(a) => Pure((a, acc))
-        case Impure(Inl(Put(o)), f) => go(f(()), acc :+ o)
+        case Impure(Inl(Put(o)), f) => go(f(()), monoid.append(acc, o))
         case Impure(Inr(u), f) => Impure(u, Arrows.singleton((x: Any) => run(f(x))))
       }
-    go(free, Vector.empty)
+    go(free, monoid.empty)
   }
 
   def tell[U <: Union, T](value: T)(implicit member: Member[({ type F[A] = Writer[T, A] })#F, U]): Free[U, Unit] = {
