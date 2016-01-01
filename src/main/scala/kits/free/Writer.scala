@@ -1,6 +1,6 @@
-package kits.free
+package kits
 
-import kits.Monoid
+package free
 
 sealed abstract class Writer[T, +A]
 
