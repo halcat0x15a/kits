@@ -25,6 +25,7 @@ object Example extends App {
     }
 
   println(Free.run(Reader.run(Writer.run(e1[WriterString :+: ReaderInt :+: Void]), 42)))
+  println(Free.run(Writer.run(Reader.run(e1[ReaderInt :+: WriterString :+: Void], 42))))
   println(Free.run(Writer.run(Reader.run(e2[ReaderInt :+: WriterString :+: Void](100000), 42)))._2.size)
 
 }
