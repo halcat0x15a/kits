@@ -1,14 +1,14 @@
 # Kits
 
-kitsはScalaの関数プログラミングを支援するライブラリです.
+kitsはScalaの関数プログラミングを支援するライブラリです。
 
-このライブラリを通してScalaに標準で存在しない抽象概念について紹介します.
+このライブラリを通してScalaの標準ライブラリに存在しない抽象概念について紹介します。
 
 ## Monoid
 
-モノイドは単位元と結合演算をもちます.
+モノイドは単位元と結合演算をもちます。
 
-モノイドを型クラスとして表現すると次のようになります.
+モノイドを型クラスとして表現すると次のようになります。
 
 ```scala
 trait Monoid[A] {
@@ -17,7 +17,7 @@ trait Monoid[A] {
 }
 ```
 
-`Int`は単位元が`0`, 結合演算が`+`のモノイドです.
+`Int`は単位元が`0`、結合演算が`+`のモノイドです。
 
 ```scala
 implicit val intMonoid: Monoid[Int] =
@@ -27,13 +27,13 @@ implicit val intMonoid: Monoid[Int] =
   }
 ```
 
-型クラスのインスタンスは`implicit value`として定義します.
+型クラスのインスタンスは`implicit value`として定義します。
 
-`implicit value`は`val`, `object`, `def`により定義できます.
+`implicit value`は`val`, `object`, `def`により定義されます。
 
-特に`def`は`type parameter`と`implicit parameter`をとることができます.
+特に`def`は`type parameter`と`implicit parameter`をもつことができます。
 
-次にモノイドを使った関数を定義します.
+モノイドを使った関数は次のようになります。
 
 ```scala
 def double[A](a: A)(implicit A: Monoid[A]): A = A.append(a, a)
@@ -42,9 +42,9 @@ assert(double(2) == 4)
 assert(double(3) == 6)
 ```
 
-関数は型クラスを`implicit parameter`にとることでインスタンスを明示する必要がなくなります.
+関数は型クラスを`implicit parameter`にとることでインスタンスを明示する必要がなくなります。
 
-`String`は単位元が空文字列, 結合演算が文字列連結のモノイドです.
+`String`は単位元が空文字列、結合演算が文字列連結のモノイドです。
 
 ```scala
 implicit val stringMonoid: Monoid[String] =
@@ -57,9 +57,9 @@ assert(double("hoge") == "hogehoge")
 assert(double("fuga") == "fugafuga")
 ```
 
-このように, 型クラスは既存の型に対して抽象化が可能であり, 振る舞いを付け加えることができます.
+このように、型クラスは既存の型に対して抽象化が可能であり、振る舞いを付け加えることができます。
 
-kitsではモノイドが`kits.Monoid`に定義され, そのインスタンスはコンパニオンオブジェクトに定義されます.
+kitsではモノイドが`kits.Monoid`に定義され、そのインスタンスはコンパニオンオブジェクトに定義されます。
 
 ```scala
 assert(kits.Monoid.append(List(0, 1), List(2, 3)) == List(0, 1, 2, 3))
@@ -67,29 +67,38 @@ assert(kits.Monoid.append(List(0, 1), List(2, 3)) == List(0, 1, 2, 3))
 assert(kits.Monoid.append("foo", "bar", "baz") == "foobarbaz")
 ```
 
-`implicit value`は呼び出しのスコープ以外にもデータ型や型クラスのコンパニオンオブジェクトから探索されます.
+`implicit value`は呼び出しのスコープ以外にもデータ型や型クラスのコンパニオンオブジェクトから探索されます。
 
-数値には2種類のインスタンスが実装されており, `Sum`と`Prod`でラップすることで利用できます.
+数値には2種類のインスタンスが実装されており、importによりインスタンスを選択します。
 
 ```scala
-assert(kits.Monoid.append(kits.Sum(2), kits.Sum(3)) == kits.Sum(5))
+locally {
+  import kits.Monoid.sum
+  assert(kits.Monoid.append(2, 3) == 5)
+}
 
-assert(kits.Monoid.append(kits.Prod(2), kits.Prod(3)) == kits.Prod(6))
+locally {
+  import kits.Monoid.prod
+  assert(kits.Monoid.append(2, 3) == 6)
+}
 ```
 
-半群に単位元を加えることでモノイドをなす例として`Option`や`Map`が存在します.
+半群に単位元を加えることでモノイドをなす例として`Option`や`Map`が存在します。
 
-これらはコンテナ同士の結合にその値のモノイドを利用します.
+これらはコンテナ同士の結合にその値のモノイドを利用します。
 
 ```scala
-assert(kits.Monoid.append(Some("foo"), None, Some("bar")) == Some("foobar"))
+locally {
+  import kits.Monoid.option
+  assert(kits.Monoid.append(Some("foo"), None) == Some("foo"))
+}
 
 assert(kits.Monoid.append(Map('a -> "foo", 'b -> "bar"), Map('a -> "bar", 'c -> "baz")) == Map('a -> "foobar", 'b -> "bar", 'c -> "baz"))
 ```
 
 ## Applicative
 
-ファンクタは`map`に関して抽象化した型クラスです.
+ファンクタは`map`に関して抽象化した型クラスです。
 
 ```scala
 trait Functor[F[_]] {
@@ -97,9 +106,9 @@ trait Functor[F[_]] {
 }
 ```
 
-`map`は関数`A => B`を`F[A] => F[B]`に持ち上げます.
+`map`は関数`A => B`を`F[A] => F[B]`に持ち上げます。
 
-モナドは`flatMap`に関して抽象化した型クラスです.
+モナドは`flatMap`に関して抽象化した型クラスです。
 
 ```scala
 trait Monad[F[_]] extends Applicative[F] {
@@ -109,7 +118,9 @@ trait Monad[F[_]] extends Applicative[F] {
 }
 ```
 
-`Option`のモナドのインスタンスは次のように定義されます.
+`flatMap`は関数`A => F[B]`を`map`し、返り値`F[F[B]]`を`F[B]`に`flatten`します。
+
+`Option`のモナドのインスタンスは次のようになります。
 
 ```scala
 implicit val optionMonad: Monad[Option] =
@@ -119,7 +130,7 @@ implicit val optionMonad: Monad[Option] =
   }
 ```
 
-アプリカティブはファンクタとモナドの間にある型クラスです.
+アプリカティブはファンクタとモナドの間にある型クラスです。
 
 ```scala
 trait Applicative[F[_]] extends Functor[F] {
@@ -129,10 +140,10 @@ trait Applicative[F[_]] extends Functor[F] {
 }
 ```
 
-* `pure`は値をコンテナに包みます.
-* `ap`はコンテナに包まれた値にコンテナに包まれた関数を適用します.
+* `pure`は値をコンテナに包みます
+* `ap`はコンテナに包まれた値にコンテナに包まれた関数を適用します
 
-これらは任意のアリティの関数を持ち上げることを可能にします.
+これらは任意のアリティの関数の持ち上げを可能にします。
 
 ```scala
 def map2[F[_], A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C)(implicit F: Applicative[F]): F[C] =
@@ -142,7 +153,7 @@ def map3[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(impl
   F.ap(fc)(map2(fa, fb)((a, b) => f(a, b, _)))
 ```
 
-アプリカティブはモナドより軽量な記述を可能にします.
+アプリカティブはモナドより軽量な記述を可能にします。
 
 ```scala
 case class User(id: Int, name: String)
@@ -152,11 +163,11 @@ assert(map2(Option(346), Option("halcat"))(User) == Some(User(346, "halcat")))
 assert((for (id <- Option(346); name <- Option("halcat")) yield User(id, name)) == Some(User(346, "halcat")))
 ```
 
-kitsでは`kits.Functor`, `kits.Applicative`, `kits.Monad`が定義され, それらのインスタンスは`kits.Functor`に定義されます.
+kitsでは`kits.Functor`, `kits.Applicative`, `kits.Monad`が定義され、それらのインスタンスは`kits.Functor`に定義されます。
 
-これは`implicit value`の探索がスーパークラスのコンパニオンオブジェクトに対しても行われるためです.
+これは`implicit value`の探索がスーパークラスのコンパニオンオブジェクトに対しても行われるためです。
 
-`kits.Applicative`は次のように使用できます.
+`kits.Applicative`は次のように使用できます。
 
 ```scala
 assert(kits.Applicative.map(List(1, 2), List(3))(_ + _) == List(4, 5))
@@ -164,21 +175,9 @@ assert(kits.Applicative.map(List(1, 2), List(3))(_ + _) == List(4, 5))
 assert(kits.Applicative.map(Some("foo"), None, Some("bar"))(_ + _ + _) == None)
 ```
 
-`kits.Application.Validation`はエラーを蓄積可能な計算を提供します.
-
-```scala
-type Result[A] = kits.Validation[List[String], A]
-
-def fail[A](s: String): Result[A] = kits.Validation(Left(List(s)))
-
-def succeed[A](a: A): Result[A] = kits.Validation(Right(a))
-
-assert(kits.Applicative.map(fail[Int]("foo"), succeed(1), fail[Int]("bar"))(_ + _ + _) == Validation(Left(List("foo", "bar"))))
-```
-
 ## Traverse
 
-`Traverse`はデータ構造の走査を抽象化した型クラスです.
+`Traverse`はデータ構造の走査を抽象化した型クラスです。
 
 ```scala
 trait Traverse[F[_]] extends Functor[F] {
@@ -187,9 +186,9 @@ trait Traverse[F[_]] extends Functor[F] {
 }
 ```
 
-`traverse`は各要素に関数を適用しアプリカティブのコンテキストで結果を収集します.
+`traverse`は各要素に関数を適用しアプリカティブのコンテキストで結果を収集します。
 
-`Identity`の文脈で`traverse`は`map`と同じ結果が得られます.
+`Identity`の文脈で`traverse`は`map`と同じ結果が得られます。
 
 ```scala
 type Identity[A] = A
@@ -201,9 +200,9 @@ implicit val identityApplicative: Applicative[Identity] =
   }
 ```
 
-`Identity`は自身に写すため, `Applicative`は単なる関数適用として作用します.
+`Identity`は自身に写すため、`Applicative`は単なる関数適用として作用します。
 
-`List`に対する`Traverse`のインスタンスは次のように定義されます.
+`List`に対する`Traverse`のインスタンスは次のように定義されます。
 
 ```scala
 implicit val listTraverse: Traverse[List] =
@@ -213,9 +212,9 @@ implicit val listTraverse: Traverse[List] =
   }
 ```
 
-`Traverse`はいくつかの有用な畳み込み関数を提供します.
+`Traverse`はいくつかの有用な畳み込み関数を提供します。
 
-`sequence`はデータ構造と計算コンテナを入れ替える関数です.
+`sequence`はデータ構造と計算コンテナを入れ替える関数です。
 
 ```scala
 def sequence[F[_], G[_], A](fga: F[G[A]])(implicit F: Traverse[F], G: Applicative[G]): G[F[A]] = F.traverse(fga)(identity)
@@ -225,11 +224,11 @@ assert(sequence(List(Option(1), Option(2), Option(3))) == Some(List(1, 2, 3)))
 assert(sequence(List(Some(1), None, Some(3))) == None)
 ```
 
-`foldMap`は`Monoid`を使って`Traverse`を畳み込む関数です.
+`foldMap`は`Monoid`を使って`Traverse`を畳み込む関数です。
 
-定義には`Monoid`からなる`Applicative`を利用します.
+定義には`Monoid`からなる`Applicative`を利用します。
 
-これは`empty`を`pure`に, `append`に`ap`を対応させたものです.
+これは`empty`を`pure`に、`append`に`ap`を対応させたものです。
 
 ```scala
 def monoidApplicative[A](A: Monoid[A]): Applicative[({ type F[B] = A })#F] =

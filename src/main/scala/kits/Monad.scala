@@ -14,4 +14,6 @@ object Monad {
 
   def apply[F[_]](implicit F: Monad[F]): Monad[F] = F
 
+  def flatMap[F[_], A, B](fa: F[A])(f: A => F[B])(implicit F: Monad[F]): F[B] = F.flatMap(fa)(f)
+
 }

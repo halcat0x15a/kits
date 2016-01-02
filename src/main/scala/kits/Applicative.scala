@@ -36,4 +36,6 @@ object Applicative {
 
   def map[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] = F.map(fa, fb, fc)(f)
 
+  implicit def monoid[A](implicit A: Monoid[A]): Applicative[({ type F[B] = A })#F] = A.applicative
+
 }

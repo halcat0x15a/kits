@@ -8,7 +8,7 @@ trait Traverse[F[_]] extends Functor[F] { F =>
 
   def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] = traverse(fga)(identity)
 
-  def foldMap[A, B](fa: F[A])(f: A => B)(implicit B: Monoid[B]): B = traverse[({ type G[A] = B })#G, A, B](fa)(f)(B.applicative)
+  def foldMap[A, B: Monoid](fa: F[A])(f: A => B): B = traverse[({ type G[A] = B })#G, A, B](fa)(f)
 
   def fold[A: Monoid](fa: F[A]): A = foldMap(fa)(identity)
 

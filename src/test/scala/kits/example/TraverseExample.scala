@@ -46,3 +46,4 @@ class TraverseExample extends FunSuite {
   }
 
 }
+

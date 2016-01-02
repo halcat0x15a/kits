@@ -2,24 +2,54 @@ package kits
 
 package spec
 
-import org.scalacheck.{Arbitrary, Properties, Prop}
+import org.scalacheck.Arbitrary
+import org.scalatest.FunSpec
+import org.scalatest.prop.Checkers
 
-object ApplicativeSpec {
+class ApplicativeSpec extends FunSpec with Checkers {
 
-  def apply[F[_], A: Arbitrary](implicit F: Applicative[F], FA: Arbitrary[F[A]]): Properties =
-    new Properties("Applicative") {
-      property("identity") = Prop.forAll { fa: F[A] =>
+  def law[F[_], A: Arbitrary](implicit F: Applicative[F], FA: Arbitrary[F[A]]): Unit = {
+    it("identity") {
+      check { fa: F[A] =>
         F.ap(fa)(F.pure((a: A) => a)) == fa
       }
-      property("composition") = Prop.forAll { (fa: F[A], f: F[A => A], g: F[A => A]) =>
-        F.ap(fa)(F.ap(f)(F.ap(g)(F.pure((f: A => A) => (g: A => A) => f.compose(g))))) == F.ap(F.ap(fa)(f))(g)
-      }
-      property("homomorphism") = Prop.forAll { (a: A, f: A => A) =>
-        F.ap(F.pure(a))(F.pure(f)) == F.pure(f(a))
-      }
-      property("interchange") = Prop.forAll { (a: A, f: F[A => A]) =>
-        F.ap(F.pure(a))(f) == F.ap(f)(F.pure((_: A => A)(a)))
+    }
+    it("composition") {
+      check { (fa: F[A], f: A => A, g: A => A) =>
+        F.ap(fa)(F.ap(F.pure(f))(F.ap(F.pure(g))(F.pure((f: A => A) => (g: A => A) => f.compose(g))))) == F.ap(F.ap(fa)(F.pure(f)))(F.pure(g))
       }
     }
+    it("homomorphism") {
+      check { (a: A, f: A => A) =>
+        F.ap(F.pure(a))(F.pure(f)) == F.pure(f(a))
+      }
+    }
+    it("interchange") {
+      check { (a: A, f: A => A) =>
+        F.ap(F.pure(a))(F.pure(f)) == F.ap(F.pure(f))(F.pure((_: A => A)(a)))
+      }
+    }
+  }
+
+  describe("Applicative") {
+    describe("Identity") {
+      law[Identity, AnyVal]
+    }
+    describe("Option") {
+      law[Option, AnyVal]
+    }
+    describe("Either") {
+      law[({ type F[A] = Either[AnyVal, A] })#F, AnyVal]
+    }
+    describe("List") {
+      law[List, AnyVal]
+    }
+    describe("Vector") {
+      law[Vector, AnyVal]
+    }
+    describe("Set") {
+      law[Set, AnyVal]
+    }
+  }
 
 }
