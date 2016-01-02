@@ -20,18 +20,18 @@ object Reader {
     go(free)
   }
 
-  def ask[U <: Union, T](implicit member: Member[({ type F[A] = Reader[T, A] })#F, U]): Free[U, T] = {
+  def ask[U <: Union, T](implicit F: Member[({ type F[A] = Reader[T, A] })#F, U]): Free[U, T] = {
     type F[A] = Reader[T, A]
     Free(Get(): F[T])
   }
 
-  def local[U <: Union, T, A](free: Free[U, A])(f: T => T)(implicit member: Member[({ type F[A] = Reader[T, A] })#F, U]): Free[U, A] = {
+  def local[U <: Union, T, A](free: Free[U, A])(f: T => T)(implicit F: Member[({ type F[A] = Reader[T, A] })#F, U]): Free[U, A] = {
     @tailrec
     def go(free: Free[U, A], value: T): Free[U, A] =
       free match {
         case Pure(a) => Pure(a)
         case Impure(u, k) =>
-          member.project(u) match {
+          F.project(u) match {
             case Some(Get()) => go(k(value), value)
             case None => Impure(u, Arrows.singleton((x: Any) => local(k(x))(f)))
           }
