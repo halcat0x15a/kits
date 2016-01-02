@@ -45,9 +45,23 @@ class FreeExample extends FunSuite {
     else
       Pure(n)
 
-  test("fail") {
+  test("error") {
     assert(Free.run(Error.run(tooBig[ErrorInt :+: Void](3))) == Right(3))
     assert(Free.run(Error.run(tooBig[ErrorInt :+: Void](7))) == Left(7))
+  }
+
+  type StateInt[A] = State[Int, A]
+
+  def put10And20[U <: Union](implicit e: Member[StateInt, U]): Free[U, (Int, Int)] =
+    for {
+      _ <- State.put(10)
+      x <- State.get
+      _ <- State.put(20)
+      y <- State.get
+    } yield (x, y)
+
+  test("state") {
+    assert(Free.run(State.run(put10And20[StateInt :+: Void], 0)) == (20, (10, 20)))
   }
 
 }
