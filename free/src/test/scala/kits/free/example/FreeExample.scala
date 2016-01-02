@@ -1,4 +1,6 @@
-package kits.free
+package kits
+
+package free
 
 package example
 
@@ -62,6 +64,21 @@ class FreeExample extends FunSuite {
 
   test("state") {
     assert(Free.run(State.run(put10And20[StateInt :+: Void], 0)) == (20, (10, 20)))
+  }
+
+  type ChoiceVector[A] = Choice[Vector, A]
+
+  def even[U <: Union](implicit c: Member[ChoiceVector, U]): Free[U, Int] = {
+    import MonadPlus.Ops
+    type F[A] = Free[U, A]
+    for {
+      n <- Traverse.foldMap((1 to 10).toVector)(n => Pure(n): F[Int])
+      if n % 2 == 0
+    } yield n
+  }
+
+  test("choice") {
+    assert(Free.run(Choice.run(even[ChoiceVector :+: Void])) == Vector(2, 4, 6, 8, 10))
   }
 
 }

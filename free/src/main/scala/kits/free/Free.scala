@@ -43,4 +43,13 @@ object Free {
       def flatMap[A, B](fa: Free[U, A])(f: A => Free[U, B]): Free[U, B] = fa.flatMap(f)
     }
 
+  implicit def monadPlus[U <: Union, M[_]](implicit F: Member[({ type F[A] = Choice[M, A] })#F, U]): MonadPlus[({ type F[A] = Free[U, A] })#F] =
+    new MonadPlus[({ type F[A] = Free[U, A] })#F] {
+      def zero[A]: Free[U, A] = Choice.zero
+      def pure[A](a: A): Free[U, A] = Pure(a)
+      def plus[A](x: Free[U, A], y: Free[U, A]): Free[U, A] = Choice.plus(x, y)
+      override def map[A, B](fa: Free[U, A])(f: A => B): Free[U, B] = fa.map(f)
+      def flatMap[A, B](fa: Free[U, A])(f: A => Free[U, B]): Free[U, B] = fa.flatMap(f)
+    }
+
 }

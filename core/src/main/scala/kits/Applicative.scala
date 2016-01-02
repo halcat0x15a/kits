@@ -38,4 +38,6 @@ object Applicative {
 
   implicit def monoid[A](implicit A: Monoid[A]): Applicative[({ type F[B] = A })#F] = A.applicative
 
+  implicit def monadPlus[M[_], A](implicit M: MonadPlus[M]): Applicative[({ type F[B] = M[A] })#F] = M.applicative
+
 }
