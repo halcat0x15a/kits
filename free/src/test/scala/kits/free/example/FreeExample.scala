@@ -34,7 +34,20 @@ class FreeExample extends FunSuite {
     } yield n
 
   test("tell") {
-    assert(Free.run(Writer.run(Reader.run(rdwr[ReaderInt :+: WriterString :+: Void], 10))) == (Vector("begin", "end"), 21))
+    assert(Free.run(Writer.run(Reader.run(rdwr[ReaderInt :+: WriterString :+: Void], 10))) == ("beginend", 21))
+  }
+
+  type ErrorInt[A] = Error[Int, A]
+
+  def tooBig[U <: Union](n: Int)(implicit e: Member[ErrorInt, U]): Free[U, Int] =
+    if (n > 5)
+      Error.fail(n)
+    else
+      Pure(n)
+
+  test("fail") {
+    assert(Free.run(Error.run(tooBig[ErrorInt :+: Void](3))) == Right(3))
+    assert(Free.run(Error.run(tooBig[ErrorInt :+: Void](7))) == Left(7))
   }
 
 }
