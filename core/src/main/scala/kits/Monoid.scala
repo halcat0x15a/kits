@@ -94,30 +94,6 @@ object Monoid {
         }
     }
 
-  implicit def first[A]: Monoid[Option[A]] =
-    new Monoid[Option[A]] {
-      lazy val empty: Option[A] = None
-      def append(x: Option[A], y: Option[A]): Option[A] = x.orElse(y)
-    }
-
-  implicit def last[A]: Monoid[Option[A]] =
-    new Monoid[Option[A]] {
-      lazy val empty: Option[A] = None
-      def append(x: Option[A], y: Option[A]): Option[A] = y.orElse(x)
-    }
-
-  implicit def list[A]: Monoid[List[A]] =
-    new Monoid[List[A]] {
-      lazy val empty: List[A] = Nil
-      def append(x: List[A], y: List[A]): List[A] = x ::: y
-    }
-
-  implicit def vector[A]: Monoid[Vector[A]] =
-    new Monoid[Vector[A]] {
-      lazy val empty: Vector[A] = Vector.empty
-      def append(x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
-    }
-
   implicit def map[K, V](implicit V: Monoid[V]): Monoid[Map[K, V]] =
     new Monoid[Map[K, V]] {
       lazy val empty: Map[K, V] = Map.empty
@@ -125,12 +101,6 @@ object Monoid {
         x.foldLeft(y) {
           case (a, (k, v)) => a.updated(k, a.get(k).fold(v)(V.append(v, _)))
         }
-    }
-
-  implicit def set[A]: Monoid[Set[A]] =
-    new Monoid[Set[A]] {
-      lazy val empty: Set[A] = Set.empty
-      def append(x: Set[A], y: Set[A]): Set[A] = x | y
     }
 
   implicit def sum[A](implicit A: Numeric[A]): Monoid[A] =
@@ -160,5 +130,7 @@ object Monoid {
             }
         }
     }
+
+  implicit def monadPlus[F[_], A](implicit F: MonadPlus[F]): Monoid[F[A]] = F.monoid
 
 }

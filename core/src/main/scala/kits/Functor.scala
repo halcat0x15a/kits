@@ -39,10 +39,13 @@ object Functor {
       def traverse[F[_], A, B](fa: Function0[A])(f: A => F[B])(implicit F: Applicative[F]): F[Function0[B]] = F.map(f(fa()))(b => () => b)
     }
 
-  implicit val option: Monad[Option] with Traverse[Option] =
-    new Monad[Option] with Traverse[Option] {
+  implicit val option: MonadPlus[Option] with Traverse[Option] =
+    new MonadPlus[Option] with Traverse[Option] {
+      def zero[A]: Option[A] = None
       def pure[A](a: A): Option[A] = Some(a)
+      def plus[A](x: Option[A], y: Option[A]): Option[A] = x.orElse(y)
       override def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
+      override def filter[A](fa: Option[A])(p: A => Boolean): Option[A] = fa.filter(p)
       def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: Option[A])(f: A => F[B])(implicit F: Applicative[F]): F[Option[B]] =
         fa.fold(F.pure(None: Option[B]))(a => F.map(f(a))(pure))
@@ -57,19 +60,25 @@ object Functor {
         fa.fold(e => F.pure(Left(e)), a => F.map(f(a))(pure))
     }
 
-  implicit val list: Monad[List] with Traverse[List] =
-    new Monad[List] with Traverse[List] {
+  implicit val list: MonadPlus[List] with Traverse[List] =
+    new MonadPlus[List] with Traverse[List] {
+      def zero[A]: List[A] = Nil
       def pure[A](a: A): List[A] = a :: Nil
+      def plus[A](x: List[A], y: List[A]): List[A] = x ::: y
       override def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
+      override def filter[A](fa: List[A])(p: A => Boolean): List[A] = fa.filter(p)
       def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: List[A])(f: A => F[B])(implicit F: Applicative[F]): F[List[B]] =
         fa.foldRight(F.pure(Nil: List[B]))((a, ga) => F.map(f(a), ga)(_ :: _))
     }
 
-  implicit val vector: Monad[Vector] with Traverse[Vector] =
-    new Monad[Vector] with Traverse[Vector] {
+  implicit val vector: MonadPlus[Vector] with Traverse[Vector] =
+    new MonadPlus[Vector] with Traverse[Vector] {
+      def zero[A]: Vector[A] = Vector.empty
       def pure[A](a: A): Vector[A] = Vector(a)
+      def plus[A](x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
       override def map[A, B](fa: Vector[A])(f: A => B): Vector[B] = fa.map(f)
+      override def filter[A](fa: Vector[A])(p: A => Boolean): Vector[A] = fa.filter(p)
       def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: Vector[A])(f: A => F[B])(implicit F: Applicative[F]): F[Vector[B]] =
         fa.foldLeft(F.pure(Vector.empty[B]))((ga, a) => F.map(ga, f(a))(_ :+ _))
@@ -82,10 +91,13 @@ object Functor {
         fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F.map(ga, f(a))((a, b) => a + (k -> b)) }
     }
 
-  implicit val set: Monad[Set] with Traverse[Set] =
-    new Monad[Set] with Traverse[Set] {
+  implicit val set: MonadPlus[Set] with Traverse[Set] =
+    new MonadPlus[Set] with Traverse[Set] {
+      def zero[A]: Set[A] = Set.empty
       def pure[A](a: A): Set[A] = Set(a)
+      def plus[A](x: Set[A], y: Set[A]): Set[A] = x ++ y
       override def map[A, B](fa: Set[A])(f: A => B): Set[B] = fa.map(f)
+      override def filter[A](fa: Set[A])(p: A => Boolean): Set[A] = fa.filter(p)
       def flatMap[A, B](fa: Set[A])(f: A => Set[B]): Set[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: Set[A])(f: A => F[B])(implicit F: Applicative[F]): F[Set[B]] =
         fa.foldLeft(F.pure(Set.empty[B]))((ga, a) => F.map(ga, f(a))(_ + _))

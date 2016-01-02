@@ -8,7 +8,7 @@ import org.scalatest.prop.Checkers
 
 class MonoidSpec extends FunSpec with Checkers {
 
-  def law[A: Arbitrary](A: Monoid[A]): Unit = {
+  def law[A: Arbitrary](implicit A: Monoid[A]): Unit = {
     it("rightIdentity") {
       check { a: A =>
         A.append(a, A.empty) == a
@@ -27,21 +27,49 @@ class MonoidSpec extends FunSpec with Checkers {
   }
 
   describe("Monoid") {
-    describe("Conj")(law(Monoid.conj))
-    describe("Disj")(law(Monoid.disj))
-    describe("String")(law(Monoid.string))
-    describe("Unit")(law(Monoid.unit))
-    describe("Pair")(law(Monoid.pair[String, String]))
-    describe("Triple")(law(Monoid.triple[String, String, String]))
-    describe("Option")(law(Monoid.option[String]))
-    describe("First")(Monoid.first[AnyVal])
-    describe("Last")(law(Monoid.last[AnyVal]))
-    describe("List")(law(Monoid.list[AnyVal]))
-    describe("Vector")(law(Monoid.vector[AnyVal]))
-    describe("Map")(law(Monoid.map[AnyVal, String]))
-    describe("Set")(law(Monoid.set[AnyVal]))
-    describe("Sum")(law(Monoid.sum[Int]))
-    describe("Prod")(law(Monoid.prod[Int]))
+    describe("Conj") {
+      import Monoid.conj
+      law[Boolean]
+    }
+    describe("Disj") {
+      import Monoid.disj
+      law[Boolean]
+    }
+    describe("String") {
+      law[String]
+    }
+    describe("Unit") {
+      law[Unit]
+    }
+    describe("Pair") {
+      law[(String, String)]
+    }
+    describe("Triple") {
+      law[(String, String, String)]
+    }
+    describe("Option") {
+      law[Option[String]]
+    }
+    describe("List") {
+      law[List[AnyVal]]
+    }
+    describe("Vector") {
+      law[Vector[AnyVal]]
+    }
+    describe("Map") {
+      law[Map[AnyVal, String]]
+    }
+    describe("Set") {
+      law[Set[AnyVal]]
+    }
+    describe("Sum") {
+      import Monoid.sum
+      law[Int]
+    }
+    describe("Prod") {
+      import Monoid.prod
+      law[Int]
+    }
   }
 
 }
