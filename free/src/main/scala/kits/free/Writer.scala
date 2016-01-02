@@ -6,9 +6,9 @@ import scala.annotation.tailrec
 
 sealed abstract class Writer[T, +A]
 
-case class Put[T](value: T) extends Writer[T, Unit]
-
 object Writer {
+
+  case class Put[T](value: T) extends Writer[T, Unit]
 
   def run[U <: Union, T, A](free: Free[({ type F[A] = Writer[T, A] })#F :+: U, A])(implicit T: Monoid[T]): Free[U, (T, A)] = {
     type F[A] = Writer[T, A]

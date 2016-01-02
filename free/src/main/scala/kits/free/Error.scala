@@ -4,9 +4,9 @@ import scala.annotation.tailrec
 
 sealed abstract class Error[T, +A]
 
-case class Fail[T](value: T) extends Error[T, Nothing]
-
 object Error {
+
+  case class Fail[T](value: T) extends Error[T, Nothing]
 
   def run[U <: Union, T, A](free: Free[({ type F[A] = Error[T, A] })#F :+: U, A]): Free[U, Either[T, A]] = {
     type F[A] = Error[T, A]

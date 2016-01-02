@@ -4,9 +4,9 @@ import scala.annotation.tailrec
 
 sealed abstract class Reader[T, +A]
 
-case class Get[T]() extends Reader[T, T]
-
 object Reader {
+
+  case class Get[T]() extends Reader[T, T]
 
   def run[U <: Union, T, A](free: Free[({ type F[A] = Reader[T, A] })#F :+: U, A], value: T): Free[U, A] = {
     type F[A] = Reader[T, A]
