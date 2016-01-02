@@ -8,7 +8,7 @@ sealed abstract class Writer[T, +A]
 
 object Writer {
 
-  case class Put[T](value: T) extends Writer[T, Unit]
+  case class Tell[T](value: T) extends Writer[T, Unit]
 
   def run[U <: Union, T, A](free: Free[({ type F[A] = Writer[T, A] })#F :+: U, A])(implicit T: Monoid[T]): Free[U, (T, A)] = {
     type F[A] = Writer[T, A]
@@ -16,7 +16,7 @@ object Writer {
     def go(free: Free[F :+: U, A], acc: T): Free[U, (T, A)] =
       free match {
         case Pure(a) => Pure((acc, a))
-        case Impure(Inl(Put(v)), k) => go(k(()), T.append(acc, v))
+        case Impure(Inl(Tell(v)), k) => go(k(()), T.append(acc, v))
         case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => run(k(x))))
       }
     go(free, T.empty)
@@ -24,7 +24,7 @@ object Writer {
 
   def tell[U <: Union, T](value: T)(implicit F: Member[({ type F[A] = Writer[T, A] })#F, U]): Free[U, Unit] = {
     type F[A] = Writer[T, A]
-    Free(Put(value): F[Unit])
+    Free(Tell(value): F[Unit])
   }
 
   def listen[U <: Union, T, A](free: Free[U, A])(implicit F: Member[({ type F[A] = Writer[T, A] })#F, U], T: Monoid[T]): Free[U, (T, A)] = {
@@ -34,7 +34,7 @@ object Writer {
         case Pure(a) => Pure((acc, a))
         case Impure(u, k) =>
           F.project(u) match {
-            case Some(Put(v)) => go(k(()), T.append(acc, v))
+            case Some(Tell(v)) => go(k(()), T.append(acc, v))
             case None => Impure(u, Arrows.singleton((x: Any) => listen(k(x))))
           }
       }
