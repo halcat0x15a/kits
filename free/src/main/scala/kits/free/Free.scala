@@ -1,4 +1,6 @@
-package kits.free
+package kits
+
+package free
 
 sealed abstract class Free[U <: Union, +A] {
 
@@ -32,6 +34,13 @@ object Free {
   def run[A](free: Free[Void, A]): A =
     (free: @unchecked) match {
       case Pure(a) => a
+    }
+
+  implicit def monad[U <: Union]: Monad[({ type F[A] = Free[U, A] })#F] =
+    new Monad[({ type F[A] = Free[U, A] })#F] {
+      def pure[A](a: A): Free[U, A] = Pure(a)
+      override def map[A, B](fa: Free[U, A])(f: A => B): Free[U, B] = fa.map(f)
+      def flatMap[A, B](fa: Free[U, A])(f: A => Free[U, B]): Free[U, B] = fa.flatMap(f)
     }
 
 }
