@@ -15,14 +15,14 @@ object State {
   def run[U <: Union, T, A](free: Free[({ type F[A] = State[T, A] })#F :+: U, A], state: T): Free[U, (T, A)] = {
     type F[A] = State[T, A]
     @tailrec
-    def go(free: Free[F :+: U, A], state: T): Free[U, (T, A)] =
+    def loop(free: Free[F :+: U, A], state: T): Free[U, (T, A)] =
       free match {
         case Pure(a) => Pure((state, a))
-        case Impure(Inl(Get()), k) => go(k(state), state)
-        case Impure(Inl(Put(v)), k) => go(k(()), v)
+        case Impure(Inl(Get()), k) => loop(k(state), state)
+        case Impure(Inl(Put(v)), k) => loop(k(()), v)
         case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => run(k(x), state)))
       }
-    go(free, state)
+    loop(free, state)
   }
 
   def get[U <: Union, T](implicit F: Member[({ type F[A] = State[T, A] })#F, U]): Free[U, T] = {

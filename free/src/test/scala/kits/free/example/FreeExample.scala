@@ -8,35 +8,29 @@ import org.scalatest.FunSuite
 
 class FreeExample extends FunSuite {
 
-  type ReaderInt[A] = Reader[Int, A]
-
-  def add1[U <: Union](implicit r: Member[ReaderInt, U]): Free[U, Int] =
-    for {
-      a <- Reader.ask
-    } yield a + 1
-
-  test("ask") {
+  test("reader") {
+    type ReaderInt[A] = Reader[Int, A]
+    def add1[U <: Union](implicit r: Member[ReaderInt, U]): Free[U, Int] =
+      for {
+        a <- Reader.ask
+      } yield a + 1
     assert(Free.run(Reader.run(add1[ReaderInt :+: Void], 10)) == 11)
-  }
-
-  def add11[U <: Union](implicit r: Member[ReaderInt, U]): Free[U, Int] =
-    Reader.local(add1)(((_: Int) + 10))
-
-  test("local") {
+    def add11[U <: Union](implicit r: Member[ReaderInt, U]): Free[U, Int] =
+      Reader.local(add1)(((_: Int) + 10))
     assert(Free.run(Reader.run(add11[ReaderInt :+: Void], 10)) == 21)
   }
 
-  type WriterString[A] = Writer[String, A]
-
-  def rdwr[U <: Union](implicit r: Member[ReaderInt, U], w: Member[WriterString, U]): Free[U, Int] =
-    for {
-      _ <- Writer.tell("begin")
-      n <- add11
-      _ <- Writer.tell("end")
-    } yield n
-
   test("tell") {
-    assert(Free.run(Writer.run(Reader.run(rdwr[ReaderInt :+: WriterString :+: Void], 10))) == ("beginend", 21))
+    type ReaderString[A] = Reader[String, A]
+    type WriterString[A] = Writer[String, A]
+    def rdwr[U <: Union](implicit r: Member[ReaderString, U], w: Member[WriterString, U]): Free[U, String] =
+      for {
+        _ <- Writer.tell("begin")
+        s <- Reader.ask
+        _ <- Writer.tell("end")
+      } yield s
+    assert(Free.run(Writer.run(Reader.run(rdwr[ReaderString :+: WriterString :+: Void], "hoge"))) == ("beginend", "hoge"))
+    assert(Free.run(Reader.run(Writer.run(rdwr[WriterString :+: ReaderString :+: Void]), "hoge")) == ("beginend", "hoge"))
   }
 
   type ErrorInt[A] = Error[Int, A]
@@ -70,9 +64,10 @@ class FreeExample extends FunSuite {
 
   def even[U <: Union](implicit c: Member[ChoiceVector, U]): Free[U, Int] = {
     import MonadPlus.Ops
+    import Choice.monadPlus
     type F[A] = Free[U, A]
     for {
-      n <- Traverse.foldMap((1 to 10).toVector)(n => Pure(n): F[Int])
+      n <- Traverse.foldMap((1 to 10).toList)(n => Pure(n): F[Int])
       if n % 2 == 0
     } yield n
   }
