@@ -1,5 +1,6 @@
 package kits
 
+import scala.collection.immutable.IndexedSeq
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.Try
 import scala.util.control.TailCalls._
@@ -70,6 +71,18 @@ object Functor {
       def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: List[A])(f: A => F[B])(implicit F: Applicative[F]): F[List[B]] =
         fa.foldRight(F.pure(Nil: List[B]))((a, ga) => F.map(f(a), ga)(_ :: _))
+    }
+
+  implicit val indexedSeq: MonadPlus[IndexedSeq] with Traverse[IndexedSeq] =
+    new MonadPlus[IndexedSeq] with Traverse[IndexedSeq] {
+      def zero[A]: IndexedSeq[A] = IndexedSeq.empty
+      def pure[A](a: A): IndexedSeq[A] = IndexedSeq(a)
+      def plus[A](x: IndexedSeq[A], y: IndexedSeq[A]): IndexedSeq[A] = x ++ y
+      override def map[A, B](fa: IndexedSeq[A])(f: A => B): IndexedSeq[B] = fa.map(f)
+      override def filter[A](fa: IndexedSeq[A])(p: A => Boolean): IndexedSeq[A] = fa.filter(p)
+      def flatMap[A, B](fa: IndexedSeq[A])(f: A => IndexedSeq[B]): IndexedSeq[B] = fa.flatMap(f)
+      def traverse[F[_], A, B](fa: IndexedSeq[A])(f: A => F[B])(implicit F: Applicative[F]): F[IndexedSeq[B]] =
+        fa.foldLeft(F.pure(IndexedSeq.empty[B]))((ga, a) => F.map(ga, f(a))(_ :+ _))
     }
 
   implicit val vector: MonadPlus[Vector] with Traverse[Vector] =

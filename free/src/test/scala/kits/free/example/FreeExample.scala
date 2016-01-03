@@ -20,7 +20,7 @@ class FreeExample extends FunSuite {
     assert(Free.run(Reader.run(add11[ReaderInt :+: Void], 10)) == 21)
   }
 
-  test("tell") {
+  test("writer") {
     type ReaderString[A] = Reader[String, A]
     type WriterString[A] = Writer[String, A]
     def rdwr[U <: Union](implicit r: Member[ReaderString, U], w: Member[WriterString, U]): Free[U, String] =
@@ -33,46 +33,40 @@ class FreeExample extends FunSuite {
     assert(Free.run(Reader.run(Writer.run(rdwr[WriterString :+: ReaderString :+: Void]), "hoge")) == ("beginend", "hoge"))
   }
 
-  type ErrorInt[A] = Error[Int, A]
-
-  def tooBig[U <: Union](n: Int)(implicit e: Member[ErrorInt, U]): Free[U, Int] =
-    if (n > 5)
-      Error.fail(n)
-    else
-      Pure(n)
-
   test("error") {
+    type ErrorInt[A] = Error[Int, A]
+    def tooBig[U <: Union](n: Int)(implicit e: Member[ErrorInt, U]): Free[U, Int] =
+      if (n > 5)
+        Error.fail(n)
+      else
+        Pure(n)
     assert(Free.run(Error.run(tooBig[ErrorInt :+: Void](3))) == Right(3))
     assert(Free.run(Error.run(tooBig[ErrorInt :+: Void](7))) == Left(7))
   }
 
-  type StateInt[A] = State[Int, A]
-
-  def put10And20[U <: Union](implicit e: Member[StateInt, U]): Free[U, (Int, Int)] =
-    for {
-      _ <- State.put(10)
-      x <- State.get
-      _ <- State.put(20)
-      y <- State.get
-    } yield (x, y)
-
   test("state") {
-    assert(Free.run(State.run(put10And20[StateInt :+: Void], 0)) == (20, (10, 20)))
-  }
-
-  type ChoiceVector[A] = Choice[Vector, A]
-
-  def even[U <: Union](implicit c: Member[ChoiceVector, U]): Free[U, Int] = {
-    import MonadPlus.Ops
-    import Choice.monadPlus
-    type F[A] = Free[U, A]
-    for {
-      n <- Traverse.foldMap((1 to 10).toList)(n => Pure(n): F[Int])
-      if n % 2 == 0
-    } yield n
+    type StateInt[A] = State[Int, A]
+    def putN[U <: Union](implicit e: Member[StateInt, U]): Free[U, (Int, Int)] =
+      for {
+        _ <- State.put(10)
+        x <- State.get
+        _ <- State.put(20)
+        y <- State.get
+      } yield (x, y)
+    assert(Free.run(State.run(putN[StateInt :+: Void], 0)) == (20, (10, 20)))
   }
 
   test("choice") {
+    import MonadPlus.Ops
+    import Choice.monadPlus
+    type ChoiceVector[A] = Choice[Vector, A]
+    def even[U <: Union](implicit c: Member[ChoiceVector, U]): Free[U, Int] = {
+      type F[A] = Free[U, A]
+      for {
+        n <- Traverse.foldMap(1 to 10)(n => Pure(n): F[Int])
+        if n % 2 == 0
+      } yield n
+    }
     assert(Free.run(Choice.run(even[ChoiceVector :+: Void])) == Vector(2, 4, 6, 8, 10))
   }
 
