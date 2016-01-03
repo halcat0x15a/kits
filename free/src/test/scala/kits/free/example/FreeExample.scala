@@ -10,12 +10,12 @@ class FreeExample extends FunSuite {
 
   test("reader") {
     type ReaderInt[A] = Reader[Int, A]
-    def add1[U <: Union](implicit r: Member[ReaderInt, U]): Free[U, Int] =
+    def add1[U <: Union](implicit reader: Member[ReaderInt, U]): Free[U, Int] =
       for {
         a <- Reader.ask
       } yield a + 1
     assert(Free.run(Reader.run(add1[ReaderInt :+: Void], 10)) == 11)
-    def add11[U <: Union](implicit r: Member[ReaderInt, U]): Free[U, Int] =
+    def add11[U <: Union](implicit reader: Member[ReaderInt, U]): Free[U, Int] =
       Reader.local(add1)(((_: Int) + 10))
     assert(Free.run(Reader.run(add11[ReaderInt :+: Void], 10)) == 21)
   }
@@ -23,7 +23,7 @@ class FreeExample extends FunSuite {
   test("writer") {
     type ReaderString[A] = Reader[String, A]
     type WriterString[A] = Writer[String, A]
-    def rdwr[U <: Union](implicit r: Member[ReaderString, U], w: Member[WriterString, U]): Free[U, String] =
+    def rdwr[U <: Union](implicit reader: Member[ReaderString, U], writer: Member[WriterString, U]): Free[U, String] =
       for {
         _ <- Writer.tell("begin")
         s <- Reader.ask
@@ -35,7 +35,7 @@ class FreeExample extends FunSuite {
 
   test("error") {
     type ErrorInt[A] = Error[Int, A]
-    def tooBig[U <: Union](n: Int)(implicit e: Member[ErrorInt, U]): Free[U, Int] =
+    def tooBig[U <: Union](n: Int)(implicit error: Member[ErrorInt, U]): Free[U, Int] =
       if (n > 5)
         Error.fail(n)
       else
@@ -46,7 +46,7 @@ class FreeExample extends FunSuite {
 
   test("state") {
     type StateInt[A] = State[Int, A]
-    def putN[U <: Union](implicit e: Member[StateInt, U]): Free[U, (Int, Int)] =
+    def putN[U <: Union](implicit state: Member[StateInt, U]): Free[U, (Int, Int)] =
       for {
         _ <- State.put(10)
         x <- State.get
@@ -59,15 +59,15 @@ class FreeExample extends FunSuite {
   test("choice") {
     import MonadPlus.Ops
     import Choice.monadPlus
-    type ChoiceVector[A] = Choice[Vector, A]
-    def even[U <: Union](implicit c: Member[ChoiceVector, U]): Free[U, Int] = {
+    def even[U <: Union](implicit choice: Member[Choice, U]): Free[U, Int] = {
       type F[A] = Free[U, A]
       for {
         n <- Traverse.foldMap(1 to 10)(n => Pure(n): F[Int])
         if n % 2 == 0
       } yield n
     }
-    assert(Free.run(Choice.run(even[ChoiceVector :+: Void])) == Vector(2, 4, 6, 8, 10))
+    import Functor.vector
+    assert(Free.run(Choice.run(even[Choice :+: Void])) == Vector(2, 4, 6, 8, 10))
   }
 
 }

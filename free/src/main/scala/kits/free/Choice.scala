@@ -4,19 +4,18 @@ package free
 
 import scala.annotation.tailrec
 
-sealed abstract class Choice[M[_], +A]
+sealed abstract class Choice[+A]
 
 object Choice {
 
-  case class Zero[M[_]]() extends Choice[M, Nothing]
+  case object Zero extends Choice[Nothing]
 
-  case class Plus[M[_]]() extends Choice[M, Boolean]
+  case object Plus extends Choice[Boolean]
 
-  def run[U <: Union, M[_], A](free: Free[({ type F[A] = Choice[M, A] })#F :+: U, A])(implicit M: MonadPlus[M]): Free[U, M[A]] = {
-    type F[A] = Choice[M, A]
-    def go(free: Free[F :+: U, A], stack: List[Free[F :+: U, A]], acc: M[A]): Free[U, M[A]] = loop(free, stack, acc)
+  def run[U <: Union, M[_], A](free: Free[Choice :+: U, A])(implicit M: MonadPlus[M]): Free[U, M[A]] = {
+    def go(free: Free[Choice :+: U, A], stack: List[Free[Choice :+: U, A]], acc: M[A]): Free[U, M[A]] = loop(free, stack, acc)
     @tailrec
-    def loop(free: Free[F :+: U, A], stack: List[Free[F :+: U, A]], acc: M[A]): Free[U, M[A]] =
+    def loop(free: Free[Choice :+: U, A], stack: List[Free[Choice :+: U, A]], acc: M[A]): Free[U, M[A]] =
       free match {
         case Pure(a) =>
           val r = M.plus(acc, M.pure(a))
@@ -24,12 +23,12 @@ object Choice {
             case Nil => Pure(r)
             case h :: t => loop(h, t, r)
           }
-        case Impure(Inl(Zero()), _) =>
+        case Impure(Inl(Zero), _) =>
           stack match {
             case Nil => Pure(acc)
             case h :: t => loop(h, t, acc)
           }
-        case Impure(Inl(Plus()), k) =>
+        case Impure(Inl(Plus), k) =>
           loop(k(true), k(false) :: stack, acc)
         case Impure(Inr(u), k) =>
           Impure(u, Arrows.singleton((x: Any) => go(k(x), stack, acc)))
@@ -37,17 +36,12 @@ object Choice {
     loop(free, Nil, M.zero)
   }
 
-  def zero[U <: Union, M[_]](implicit F: Member[({ type F[A] = Choice[M, A] })#F, U]): Free[U, Nothing] = {
-    type F[A] = Choice[M, A]
-    Free(Zero(): F[Nothing])
-  }
+  def zero[U <: Union](implicit F: Member[Choice, U]): Free[U, Nothing] = Free(Zero)
 
-  def plus[U <: Union, M[_], A](x: Free[U, A], y: Free[U, A])(implicit F: Member[({ type F[A] = Choice[M, A] })#F, U]): Free[U, A] = {
-    type F[A] = Choice[M, A]
-    Free(Plus(): F[Boolean]).flatMap(test => if (test) x else y)
-  }
+  def plus[U <: Union, A](x: Free[U, A], y: Free[U, A])(implicit F: Member[Choice, U]): Free[U, A] =
+    Free(Plus).flatMap(test => if (test) x else y)
 
-  implicit def monadPlus[U <: Union, M[_]](implicit F: Member[({ type F[A] = Choice[M, A] })#F, U]): MonadPlus[({ type F[A] = Free[U, A] })#F] =
+  implicit def monadPlus[U <: Union](implicit F: Member[Choice, U]): MonadPlus[({ type F[A] = Free[U, A] })#F] =
     new MonadPlus[({ type F[A] = Free[U, A] })#F] {
       def zero[A]: Free[U, A] = Choice.zero
       def pure[A](a: A): Free[U, A] = Pure(a)
