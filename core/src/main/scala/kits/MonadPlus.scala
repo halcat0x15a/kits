@@ -1,6 +1,6 @@
 package kits
 
-trait MonadPlus[F[_]] extends Monad[F] { F =>
+trait MonadPlus[F[_]] extends Monad[F] {
 
   def zero[A]: F[A]
 

@@ -69,18 +69,12 @@ assert(kits.Monoid.append("foo", "bar", "baz") == "foobarbaz")
 
 `implicit value`は呼び出しのスコープ以外にもデータ型や型クラスのコンパニオンオブジェクトから探索されます。
 
-数値には2種類のインスタンスが実装されており、importによりインスタンスを選択します。
+数値には2種類のインスタンスが実装されており、`Sum`と`Prod`でラップすることで利用できます。
 
 ```scala
-locally {
-  import kits.Monoid.sum
-  assert(kits.Monoid.append(2, 3) == 5)
-}
+assert(kits.Monoid.append(Sum(2), Sum(3)) == 5)
 
-locally {
-  import kits.Monoid.prod
-  assert(kits.Monoid.append(2, 3) == 6)
-}
+assert(kits.Monoid.append(Prod(2), Prod(3)) == 6)
 ```
 
 半群に単位元を加えることでモノイドをなす例として`Option`や`Map`が存在します。
@@ -88,10 +82,7 @@ locally {
 これらはコンテナ同士の結合にその値のモノイドを利用します。
 
 ```scala
-locally {
-  import kits.Monoid.option
-  assert(kits.Monoid.append(Some("foo"), None) == Some("foo"))
-}
+assert(kits.Monoid.append(Some("foo"), None) == Some("foo"))
 
 assert(kits.Monoid.append(Map('a -> "foo", 'b -> "bar"), Map('a -> "bar", 'c -> "baz")) == Map('a -> "foobar", 'b -> "bar", 'c -> "baz"))
 ```

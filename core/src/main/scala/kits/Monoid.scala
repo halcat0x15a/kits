@@ -14,31 +14,31 @@ object Monoid {
 
   def append[A](x: A, y: A)(implicit A: Monoid[A]): A = A.append(x, y)
 
-  implicit val Conj: Monoid[Boolean] =
-    new Monoid[Boolean] {
-      lazy val empty: Boolean = true
-      def append(x: Boolean, y: Boolean): Boolean = x && y
+  implicit val ConjMonoid: Monoid[Conj] =
+    new Monoid[Conj] {
+      lazy val empty: Conj = Conj(true)
+      def append(x: Conj, y: Conj): Conj = Conj(x && y)
     }
 
-  implicit val Disj: Monoid[Boolean] =
-    new Monoid[Boolean] {
-      lazy val empty: Boolean = false
-      def append(x: Boolean, y: Boolean): Boolean = x || y
+  implicit val DisjMonoid: Monoid[Disj] =
+    new Monoid[Disj] {
+      lazy val empty: Disj = Disj(false)
+      def append(x: Disj, y: Disj): Disj = Disj(x || y)
     }
 
-  implicit val String: Monoid[String] =
+  implicit val StringMonoid: Monoid[String] =
     new Monoid[String] {
       lazy val empty: String = ""
       def append(x: String, y: String): String = x + y
     }
 
-  implicit val Unit: Monoid[Unit] =
+  implicit val UnitMonoid: Monoid[Unit] =
     new Monoid[Unit] {
       lazy val empty: Unit = ()
       def append(x: Unit, y: Unit): Unit = ()
     }
 
-  implicit def Pair[A, B](implicit A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
+  implicit def PairMonoid[A, B](implicit A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
     new Monoid[(A, B)] {
       lazy val empty: (A, B) = (A.empty, B.empty)
       def append(x: (A, B), y: (A, B)): (A, B) =
@@ -47,7 +47,7 @@ object Monoid {
         }
     }
 
-  implicit def Triple[A, B, C](implicit A: Monoid[A], B: Monoid[B], C: Monoid[C]): Monoid[(A, B, C)] =
+  implicit def TripleMonoid[A, B, C](implicit A: Monoid[A], B: Monoid[B], C: Monoid[C]): Monoid[(A, B, C)] =
     new Monoid[(A, B, C)] {
       lazy val empty: (A, B, C) = (A.empty, B.empty, C.empty)
       def append(x: (A, B, C), y: (A, B, C)): (A, B, C) =
@@ -56,7 +56,7 @@ object Monoid {
         }
     }
 
-  implicit def Option[A](implicit A: Monoid[A]): Monoid[Option[A]] =
+  implicit def OptionMonoid[A](implicit A: Monoid[A]): Monoid[Option[A]] =
     new Monoid[Option[A]] {
       lazy val empty: Option[A] = None
       def append(x: Option[A], y: Option[A]): Option[A] =
@@ -68,28 +68,28 @@ object Monoid {
         }
     }
 
-  implicit def Map[K, V](implicit V: Monoid[V]): Monoid[Map[K, V]] =
+  implicit def MapMonoid[K, V](implicit V: Monoid[V]): Monoid[Map[K, V]] =
     new Monoid[Map[K, V]] {
-      lazy val empty: Map[K, V] = scala.collection.immutable.Map.empty
+      lazy val empty: Map[K, V] = Map.empty
       def append(x: Map[K, V], y: Map[K, V]): Map[K, V] =
         x.foldLeft(y) {
           case (a, (k, v)) => a.updated(k, a.get(k).fold(v)(V.append(v, _)))
         }
     }
 
-  implicit def Sum[A](implicit A: Numeric[A]): Monoid[A] =
-    new Monoid[A] {
-      lazy val empty: A = A.zero
-      def append(x: A, y: A): A = A.plus(x, y)
+  implicit def SumMonoid[A](implicit A: Numeric[A]): Monoid[Sum[A]] =
+    new Monoid[Sum[A]] {
+      lazy val empty: Sum[A] = Sum(A.zero)
+      def append(x: Sum[A], y: Sum[A]): Sum[A] = Sum(A.plus(x, y))
     }
 
-  implicit def Prod[A](implicit A: Numeric[A]): Monoid[A] =
-    new Monoid[A] {
-      lazy val empty: A = A.one
-      def append(x: A, y: A): A = A.times(x, y)
+  implicit def ProdMonoid[A](implicit A: Numeric[A]): Monoid[Prod[A]] =
+    new Monoid[Prod[A]] {
+      lazy val empty: Prod[A] = Prod(A.one)
+      def append(x: Prod[A], y: Prod[A]): Prod[A] = Prod(A.times(x, y))
     }
 
-  implicit def Ordering[A]: Monoid[Ordering[A]] =
+  implicit def OrderingMonoid[A]: Monoid[Ordering[A]] =
     new Monoid[Ordering[A]] {
       lazy val empty: Ordering[A] =
         new Ordering[A] {
@@ -105,7 +105,7 @@ object Monoid {
         }
     }
 
-  implicit def MonadPlus[F[_], A](implicit F: MonadPlus[F]): Monoid[F[A]] =
+  implicit def MonadPlusMonoid[F[_], A](implicit F: MonadPlus[F]): Monoid[F[A]] =
     new Monoid[F[A]] {
       lazy val empty: F[A] = F.zero
       def append(x: F[A], y: F[A]): F[A] = F.plus(x, y)

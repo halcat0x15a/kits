@@ -58,16 +58,16 @@ class FreeExample extends FunSuite {
 
   test("choice") {
     import MonadPlus.Ops
-    import Choice.monadPlus
-    def even[U <: Union](implicit choice: Member[Choice, U]): Free[U, Int] = {
+    import Choice.MonadPlus
+    type ChoiceVector[A] = Choice[Vector, A]
+    def even[U <: Union](implicit choice: Member[ChoiceVector, U]): Free[U, Int] = {
       type F[A] = Free[U, A]
       for {
         n <- Traverse.foldMap(1 to 10)(n => Pure(n): F[Int])
         if n % 2 == 0
       } yield n
     }
-    import Functor.vector
-    assert(Free.run(Choice.run(even[Choice :+: Void])) == Vector(2, 4, 6, 8, 10))
+    assert(Free.run(Choice.run(even[ChoiceVector :+: Void])) == Vector(2, 4, 6, 8, 10))
   }
 
 }

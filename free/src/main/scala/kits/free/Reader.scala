@@ -2,14 +2,14 @@ package kits.free
 
 import scala.annotation.tailrec
 
-sealed abstract class Reader[T, +A]
+sealed abstract class Reader[R, +A]
 
 object Reader {
 
-  case class Ask[T]() extends Reader[T, T]
+  case class Ask[R]() extends Reader[R, R]
 
-  def run[U <: Union, T, A](free: Free[({ type F[A] = Reader[T, A] })#F :+: U, A], value: T): Free[U, A] = {
-    type F[A] = Reader[T, A]
+  def run[U <: Union, R, A](free: Free[({ type F[A] = Reader[R, A] })#F :+: U, A], value: R): Free[U, A] = {
+    type F[A] = Reader[R, A]
     @tailrec
     def loop(free: Free[F :+: U, A]): Free[U, A] =
       free match {
@@ -20,15 +20,15 @@ object Reader {
     loop(free)
   }
 
-  def ask[U <: Union, T](implicit F: Member[({ type F[A] = Reader[T, A] })#F, U]): Free[U, T] = {
-    type F[A] = Reader[T, A]
-    Free(Ask(): F[T])
+  def ask[U <: Union, R](implicit F: Member[({ type F[A] = Reader[R, A] })#F, U]): Free[U, R] = {
+    type F[A] = Reader[R, A]
+    Free(Ask(): F[R])
   }
 
-  def local[U <: Union, T, A](free: Free[U, A])(f: T => T)(implicit F: Member[({ type F[A] = Reader[T, A] })#F, U]): Free[U, A] = {
-    def go(free: Free[U, A], value: T): Free[U, A] = loop(free, value)
+  def local[U <: Union, R, A](free: Free[U, A])(f: R => R)(implicit F: Member[({ type F[A] = Reader[R, A] })#F, U]): Free[U, A] = {
+    def go(free: Free[U, A], value: R): Free[U, A] = loop(free, value)
     @tailrec
-    def loop(free: Free[U, A], value: T): Free[U, A] =
+    def loop(free: Free[U, A], value: R): Free[U, A] =
       free match {
         case Pure(a) => Pure(a)
         case Impure(u, k) =>

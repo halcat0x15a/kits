@@ -10,7 +10,7 @@ trait Member[F[_], U <: Union] {
 
 object Member {
 
-  implicit def left[F[_], U <: Union]: Member[F, F :+: U] =
+  implicit def Left[F[_], U <: Union]: Member[F, F :+: U] =
     new Member[F, F :+: U] {
       def inject[A](fa: F[A]): (F :+: U) { type T = A } = Inl(fa)
       def project[A](u: (F :+: U) { type T = A }): Option[F[A]] =
@@ -20,7 +20,7 @@ object Member {
         }
     }
 
-  implicit def right[F[_], G[_], U <: Union](implicit member: Member[F, U]): Member[F, G :+: U] =
+  implicit def Right[F[_], G[_], U <: Union](implicit member: Member[F, U]): Member[F, G :+: U] =
     new Member[F, G :+: U] {
       def inject[A](fa: F[A]): (G :+: U) { type T = A } = Inr(member.inject(fa))
       def project[A](u: (G :+: U) { type T = A }): Option[F[A]] =

@@ -31,18 +31,9 @@ class MonoidExample extends FunSuite {
   test("append") {
     assert(kits.Monoid.append(List(0, 1), List(2, 3)) == List(0, 1, 2, 3))
     assert(kits.Monoid.append("foo", "bar") == "foobar")
-    locally {
-      import kits.Monoid.sum
-      assert(kits.Monoid.append(2, 3) == 5)
-    }
-    locally {
-      import kits.Monoid.prod
-      assert(kits.Monoid.append(2, 3) == 6)
-    }
-    locally {
-      import kits.Monoid.option
-      assert(kits.Monoid.append(Some("foo"), None) == Some("foo"))
-    }
+    assert(kits.Monoid.append(Sum(2), Sum(3)) == 5)
+    assert(kits.Monoid.append(Prod(2), Prod(3)) == 6)
+    assert(kits.Monoid.append(Some("foo"), None) == Some("foo"))
     assert(kits.Monoid.append(Map('a -> "foo", 'b -> "bar"), Map('a -> "bar", 'c -> "baz")) == Map('a -> "foobar", 'b -> "bar", 'c -> "baz"))
   }
 

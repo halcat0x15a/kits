@@ -22,7 +22,7 @@ object Functor {
 
   def map[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Functor[F]): F[B] = F.map(fa)(f)
 
-  implicit val Identity: Monad[Identity] with Traverse[Identity] =
+  implicit val IdentityFunctor: Monad[Identity] with Traverse[Identity] =
     new Monad[Identity] with Traverse[Identity] {
       def pure[A](a: A): Identity[A] = a
       override def map[A, B](fa: Identity[A])(f: A => B): Identity[B] = f(fa)
@@ -31,7 +31,7 @@ object Functor {
       def traverse[F[_]: Applicative, A, B](fa: Identity[A])(f: A => F[B]): F[Identity[B]] = f(fa)
     }
 
-  implicit val Function0: Monad[Function0] with Traverse[Function0] =
+  implicit val Function0Functor: Monad[Function0] with Traverse[Function0] =
     new Monad[Function0] with Traverse[Function0] {
       def pure[A](a: A): Function0[A] = () => a
       override def map[A, B](fa: Function0[A])(f: A => B): Function0[B] = () => f(fa())
@@ -40,7 +40,7 @@ object Functor {
       def traverse[F[_], A, B](fa: Function0[A])(f: A => F[B])(implicit F: Applicative[F]): F[Function0[B]] = F.map(f(fa()))(b => () => b)
     }
 
-  implicit val Option: MonadPlus[Option] with Traverse[Option] =
+  implicit val OptionFunctor: MonadPlus[Option] with Traverse[Option] =
     new MonadPlus[Option] with Traverse[Option] {
       def zero[A]: Option[A] = None
       def pure[A](a: A): Option[A] = Some(a)
@@ -52,7 +52,7 @@ object Functor {
         fa.fold(F.pure(zero[B]))(a => F.map(f(a))(pure))
     }
 
-  implicit val List: MonadPlus[List] with Traverse[List] =
+  implicit val ListFunctor: MonadPlus[List] with Traverse[List] =
     new MonadPlus[List] with Traverse[List] {
       def zero[A]: List[A] = Nil
       def pure[A](a: A): List[A] = a :: Nil
@@ -64,10 +64,10 @@ object Functor {
         fa.foldRight(F.pure(zero[B]))((a, ga) => F.map(f(a), ga)(_ :: _))
     }
 
-  implicit val Vector: MonadPlus[Vector] with Traverse[Vector] =
+  implicit val VectorFunctor: MonadPlus[Vector] with Traverse[Vector] =
     new MonadPlus[Vector] with Traverse[Vector] {
-      def zero[A]: Vector[A] = scala.collection.immutable.Vector.empty
-      def pure[A](a: A): Vector[A] = scala.collection.immutable.Vector(a)
+      def zero[A]: Vector[A] = Vector.empty
+      def pure[A](a: A): Vector[A] = Vector(a)
       def plus[A](x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
       override def map[A, B](fa: Vector[A])(f: A => B): Vector[B] = fa.map(f)
       override def filter[A](fa: Vector[A])(p: A => Boolean): Vector[A] = fa.filter(p)
@@ -76,10 +76,10 @@ object Functor {
         fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map(ga, f(a))(_ :+ _))
     }
 
-  implicit val IndexedSeq: MonadPlus[IndexedSeq] with Traverse[IndexedSeq] =
+  implicit val IndexedSeqFunctor: MonadPlus[IndexedSeq] with Traverse[IndexedSeq] =
     new MonadPlus[IndexedSeq] with Traverse[IndexedSeq] {
-      def zero[A]: IndexedSeq[A] = scala.collection.immutable.IndexedSeq.empty
-      def pure[A](a: A): IndexedSeq[A] = scala.collection.immutable.IndexedSeq(a)
+      def zero[A]: IndexedSeq[A] = IndexedSeq.empty
+      def pure[A](a: A): IndexedSeq[A] = IndexedSeq(a)
       def plus[A](x: IndexedSeq[A], y: IndexedSeq[A]): IndexedSeq[A] = x ++ y
       override def map[A, B](fa: IndexedSeq[A])(f: A => B): IndexedSeq[B] = fa.map(f)
       override def filter[A](fa: IndexedSeq[A])(p: A => Boolean): IndexedSeq[A] = fa.filter(p)
@@ -88,7 +88,7 @@ object Functor {
         fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map(ga, f(a))(_ :+ _))
     }
 
-  implicit def Either[E]: Monad[({ type F[A] = Either[E, A] })#F] with Traverse[({ type F[A] = Either[E, A] })#F] =
+  implicit def EitherFunctor[E]: Monad[({ type F[A] = Either[E, A] })#F] with Traverse[({ type F[A] = Either[E, A] })#F] =
     new Monad[({ type F[A] = Either[E, A] })#F] with Traverse[({ type F[A] = Either[E, A] })#F] {
       def pure[A](a: A): Either[E, A] = Right(a)
       override def map[A, B](fa: Either[E, A])(f: A => B): Either[E, B] = fa.right.map(f)
@@ -97,17 +97,17 @@ object Functor {
         fa.fold(e => F.pure(Left(e)), a => F.map(f(a))(pure))
     }
 
-  implicit def Map[K]: Traverse[({ type F[A] = Map[K, A] })#F] =
+  implicit def MapFunctor[K]: Traverse[({ type F[A] = Map[K, A] })#F] =
     new Traverse[({ type F[A] = Map[K, A] })#F] {
       override def map[A, B](fa: Map[K, A])(f: A => B): Map[K, B] = fa.mapValues(f)
       def traverse[F[_], A, B](fa: Map[K, A])(f: A => F[B])(implicit F: Applicative[F]): F[Map[K, B]] =
-        fa.foldLeft(F.pure(scala.collection.immutable.Map.empty[K, B])) { case (ga, (k, a)) => F.map(ga, f(a))((a, b) => a + (k -> b)) }
+        fa.foldLeft(F.pure(Map.empty[K, B])) { case (ga, (k, a)) => F.map(ga, f(a))((a, b) => a + (k -> b)) }
     }
 
-  implicit val Set: MonadPlus[Set] with Traverse[Set] =
+  implicit val SetFunctor: MonadPlus[Set] with Traverse[Set] =
     new MonadPlus[Set] with Traverse[Set] {
-      def zero[A]: Set[A] = scala.collection.immutable.Set.empty
-      def pure[A](a: A): Set[A] = scala.collection.immutable.Set(a)
+      def zero[A]: Set[A] = Set.empty
+      def pure[A](a: A): Set[A] = Set(a)
       def plus[A](x: Set[A], y: Set[A]): Set[A] = x ++ y
       override def map[A, B](fa: Set[A])(f: A => B): Set[B] = fa.map(f)
       override def filter[A](fa: Set[A])(p: A => Boolean): Set[A] = fa.filter(p)
@@ -116,21 +116,21 @@ object Functor {
         fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map(ga, f(a))(_ + _))
     }
 
-  implicit val Try: Monad[Try] =
+  implicit val TryFunctor: Monad[Try] =
     new Monad[Try] {
       def pure[A](a: A): Try[A] = Success(a)
       override def map[A, B](fa: Try[A])(f: A => B): Try[B] = fa.map(f)
       def flatMap[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
     }
 
-  implicit def Future(implicit executor: ExecutionContext): Monad[Future] =
+  implicit def FutureFunctor(implicit executor: ExecutionContext): Monad[Future] =
     new Monad[Future] {
-      def pure[A](a: A): Future[A] = scala.concurrent.Future.successful(a)
+      def pure[A](a: A): Future[A] = Future.successful(a)
       override def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)
       def flatMap[A, B](fa: Future[A])(f: A => Future[B]): Future[B] = fa.flatMap(f)
     }
 
-  implicit val TailRec: Monad[TailRec] =
+  implicit val TailRecFunctor: Monad[TailRec] =
     new Monad[TailRec] {
       def pure[A](a: A): TailRec[A] = done(a)
       override def map[A, B](fa: TailRec[A])(f: A => B): TailRec[B] = fa.map(f)
