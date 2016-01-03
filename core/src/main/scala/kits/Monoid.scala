@@ -1,34 +1,10 @@
 package kits
 
-trait Monoid[A] { A =>
+trait Monoid[A] {
 
   def empty: A
 
   def append(x: A, y: A): A
-
-  def multiply(a: A, n: Int): A = {
-    @scala.annotation.tailrec
-    def go(acc: A, n: Int): A =
-      if (n <= 0)
-        empty
-      else if (n == 1)
-        acc
-      else
-        go(append(acc, a), n - 1)
-    go(a, n)
-  }
-
-  lazy val applicative: Applicative[({ type F[B] = A })#F] =
-    new Applicative[({ type F[B] = A })#F] {
-      def pure[B](b: B): A = A.empty
-      def ap[B, C](fb: A)(f: A): A = A.append(f, fb)
-    }
-
-  lazy val dual: Monoid[A] =
-    new Monoid[A] {
-      def empty: A = A.empty
-      def append(x: A, y: A): A = A.append(y, x)
-    }
 
 }
 
@@ -37,8 +13,6 @@ object Monoid {
   def apply[A](implicit A: Monoid[A]): Monoid[A] = A
 
   def append[A](x: A, y: A)(implicit A: Monoid[A]): A = A.append(x, y)
-
-  def multiply[A](a: A, n: Int)(implicit A: Monoid[A]): A = A.multiply(a, n)
 
   implicit val conj: Monoid[Boolean] =
     new Monoid[Boolean] {
@@ -131,6 +105,10 @@ object Monoid {
         }
     }
 
-  implicit def monadPlus[F[_], A](implicit F: MonadPlus[F]): Monoid[F[A]] = F.monoid
+  implicit def monadPlus[F[_], A](implicit F: MonadPlus[F]): Monoid[F[A]] =
+    new Monoid[F[A]] {
+      lazy val empty: F[A] = F.zero
+      def append(x: F[A], y: F[A]): F[A] = F.plus(x, y)
+    }
 
 }

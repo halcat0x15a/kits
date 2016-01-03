@@ -20,4 +20,12 @@ object Monad {
 
   def flatten[F[_], A](ffa: F[F[A]])(implicit F: Monad[F]): F[A] = F.flatten(ffa)
 
+  implicit class Ops[F[_], A](val self: F[A])(implicit F: Monad[F]) {
+
+    def map[B](f: A => B): F[B] = F.map(self)(f)
+
+    def flatMap[B](fa: F[A])(f: A => F[B]): F[B] = F.flatMap(self)(f)
+
+  }
+
 }

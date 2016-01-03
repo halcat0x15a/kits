@@ -2,7 +2,7 @@ package kits
 
 import scala.collection.immutable.IndexedSeq
 import scala.concurrent.{Future, ExecutionContext}
-import scala.util.Try
+import scala.util.{Try, Success}
 import scala.util.control.TailCalls._
 
 trait Functor[F[_]] { F =>
@@ -118,7 +118,7 @@ object Functor {
 
   implicit val Try: Monad[Try] =
     new Monad[Try] {
-      def pure[A](a: A): Try[A] = scala.util.Try(a)
+      def pure[A](a: A): Try[A] = Success(a)
       override def map[A, B](fa: Try[A])(f: A => B): Try[B] = fa.map(f)
       def flatMap[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
     }

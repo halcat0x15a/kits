@@ -18,12 +18,6 @@ trait Applicative[F[_]] extends Functor[F] { F =>
       def ap[A, B](fga: F[G[A]])(f: F[G[A => B]]): F[G[B]] = F.map(fga, f)(G.ap(_)(_))
     }
 
-  lazy val dual: Applicative[F] =
-    new Applicative[F] {
-      def pure[A](a: A): F[A] = F.pure(a)
-      def ap[A, B](fa: F[A])(f: F[A => B]): F[B] = F.map(f, fa)(_(_))
-    }
-
 }
 
 object Applicative {
@@ -36,8 +30,10 @@ object Applicative {
 
   def map[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] = F.map(fa, fb, fc)(f)
 
-  implicit def monoid[A](implicit A: Monoid[A]): Applicative[({ type F[B] = A })#F] = A.applicative
-
-  implicit def monadPlus[M[_], A](implicit M: MonadPlus[M]): Applicative[({ type F[B] = M[A] })#F] = M.applicative
+  implicit def monoid[A](implicit A: Monoid[A]): Applicative[({ type F[B] = A })#F] =
+    new Applicative[({ type F[B] = A })#F] {
+      def pure[B](b: B): A = A.empty
+      def ap[B, C](fb: A)(f: A): A = A.append(f, fb)
+    }
 
 }
