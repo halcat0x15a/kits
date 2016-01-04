@@ -1,6 +1,6 @@
 lazy val commonSettings = Seq(
   organization := "org.halcat",
-  version := "0.6.0-SNAPSHOT",
+  version := "0.6.0",
   scalaVersion := "2.11.7",
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "2.2.5" % "test",
@@ -43,6 +43,6 @@ lazy val commonSettings = Seq(
 
 lazy val root = project in file(".") aggregate (core, free)
 
-lazy val core = project in file("core") settings (commonSettings: _*)
+lazy val core = project in file("core") settings (commonSettings: _*) settings (name := "kits-core")
 
-lazy val free = project in file("free") settings (commonSettings: _*) dependsOn core
+lazy val free = project in file("free") settings (commonSettings: _*) settings (name := "kits-free") dependsOn core
