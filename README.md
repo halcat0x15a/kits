@@ -14,5 +14,5 @@ libraryDependencies += "org.halcat" %% "kits-free" % "0.6.0"
 
 ## Resouces
 
-* [ScalaDoc](https://halcat0x15a.github.com/kits/api/index.html)
+* [ScalaDoc](http://halcat.org/kits/latest/api/index.html)
 * [Tutorial](https://github.com/halcat0x15a/kits/blob/master/TUTORIAL.md)

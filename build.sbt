@@ -1,3 +1,5 @@
+import com.typesafe.sbt.SbtGit.GitKeys._
+
 lazy val commonSettings = Seq(
   organization := "org.halcat",
   version := "0.6.0",
@@ -7,7 +9,6 @@ lazy val commonSettings = Seq(
     "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
   ),
   scalacOptions ++= Seq("-feature", "-language:higherKinds"),
-  target in Compile in doc := baseDirectory.value / "api",
   publishMavenStyle := true,
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
@@ -41,8 +42,21 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val root = project in file(".") aggregate (core, free)
+lazy val root = (project in file(".")).
+  settings(commonSettings: _*).
+  settings(unidocSettings: _*).
+  settings(site.settings ++ ghpages.settings: _*).
+  settings(
+    site.addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), "latest/api"),
+    gitRemoteRepo := "git@github.com:halcat0x15a/kits.git"
+  ).
+  aggregate(core, free)
 
-lazy val core = project in file("core") settings (commonSettings: _*) settings (name := "kits-core")
+lazy val core = (project in file("core")).
+  settings(commonSettings: _*).
+  settings(name := "kits-core")
 
-lazy val free = project in file("free") settings (commonSettings: _*) settings (name := "kits-free") dependsOn core
+lazy val free = (project in file("free")).
+  settings(commonSettings: _*).
+  settings(name := "kits-free").
+  dependsOn(core)
