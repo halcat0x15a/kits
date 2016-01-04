@@ -1,0 +1,504 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>kits - kits</title>
+          <meta name="description" content="kits - kits" />
+          <meta name="keywords" content="kits kits" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../lib/template.js"></script>
+      <script type="text/javascript" src="../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../index.html';
+            var hash = 'kits.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../lib/package_big.png" />
+        
+        <h1>kits</h1><span class="permalink">
+      <a href="../index.html#kits.package" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">kits</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="kits"><span>kits</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="kits.Applicative" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Applicative[F[_]]extendsFunctor[F]"></a>
+      <a id="Applicative[F[_]]:Applicative[F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Applicative.html"><span class="name">Applicative</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Applicative.F">F</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Applicative[F[_]]extendsFunctor[F]" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Conj" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Conj=Boolean{typeConj}"></a>
+      <a id="Conj:Conj"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Conj</span><span class="result"> = <span class="extype" name="scala.Boolean">Boolean</span> { type Conj }</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Conj=Boolean{typeConj}" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Disj" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Disj=Boolean{typeDisj}"></a>
+      <a id="Disj:Disj"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Disj</span><span class="result"> = <span class="extype" name="scala.Boolean">Boolean</span> { type Disj }</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Disj=Boolean{typeDisj}" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Functor" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Functor[F[_]]extendsAnyRef"></a>
+      <a id="Functor[F[_]]:Functor[F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Functor.html"><span class="name">Functor</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Functor[F[_]]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Identity" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Identity[A]=A"></a>
+      <a id="Identity[A]:Identity[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Identity</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> = <span class="extype" name="kits.Identity.A">A</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Identity[A]=A" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Monad" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Monad[F[_]]extendsApplicative[F]"></a>
+      <a id="Monad[F[_]]:Monad[F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Monad.html"><span class="name">Monad</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="Applicative.html" class="extype" name="kits.Applicative">Applicative</a>[<span class="extype" name="kits.Monad.F">F</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Monad[F[_]]extendsApplicative[F]" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.MonadPlus" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="MonadPlus[F[_]]extendsMonad[F]"></a>
+      <a id="MonadPlus[F[_]]:MonadPlus[F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="MonadPlus.html"><span class="name">MonadPlus</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="Monad.html" class="extype" name="kits.Monad">Monad</a>[<span class="extype" name="kits.MonadPlus.F">F</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@MonadPlus[F[_]]extendsMonad[F]" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Monoid" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Monoid[A]extendsAnyRef"></a>
+      <a id="Monoid[A]:Monoid[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Monoid.html"><span class="name">Monoid</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Monoid[A]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Prod" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Prod[A]=A{typeProd}"></a>
+      <a id="Prod[A]:Prod[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Prod</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> = <span class="extype" name="kits.Prod.A">A</span> { type Prod }</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Prod[A]=A{typeProd}" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Sum" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Sum[A]=A{typeSum}"></a>
+      <a id="Sum[A]:Sum[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Sum</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> = <span class="extype" name="kits.Sum.A">A</span> { type Sum }</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Sum[A]=A{typeSum}" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Traverse" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Traverse[F[_]]extendsFunctor[F]"></a>
+      <a id="Traverse[F[_]]:Traverse[F]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Traverse.html"><span class="name">Traverse</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="Functor.html" class="extype" name="kits.Functor">Functor</a>[<span class="extype" name="kits.Traverse.F">F</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Traverse[F[_]]extendsFunctor[F]" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="kits.Applicative" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Applicative"></a>
+      <a id="Applicative:Applicative"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Applicative$.html"><span class="name">Applicative</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Applicative" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits#Conj" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Conj(bool:Boolean):kits.package.Conj"></a>
+      <a id="Conj(Boolean):Conj"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Conj</span><span class="params">(<span name="bool">bool: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="#Conj=Boolean{typeConj}" class="extmbr" name="kits.Conj">Conj</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Conj(bool:Boolean):kits.package.Conj" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits#Disj" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Disj(bool:Boolean):kits.package.Disj"></a>
+      <a id="Disj(Boolean):Disj"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Disj</span><span class="params">(<span name="bool">bool: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <a href="#Disj=Boolean{typeDisj}" class="extmbr" name="kits.Disj">Disj</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Disj(bool:Boolean):kits.package.Disj" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Functor" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Functor"></a>
+      <a id="Functor:Functor"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Functor$.html"><span class="name">Functor</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Functor" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Monad" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Monad"></a>
+      <a id="Monad:Monad"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Monad$.html"><span class="name">Monad</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Monad" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.MonadPlus" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MonadPlus"></a>
+      <a id="MonadPlus:MonadPlus"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="MonadPlus$.html"><span class="name">MonadPlus</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@MonadPlus" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Monoid" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Monoid"></a>
+      <a id="Monoid:Monoid"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Monoid$.html"><span class="name">Monoid</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Monoid" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits#Prod" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Prod[A](a:A):kits.package.Prod[A]"></a>
+      <a id="Prod[A](A):Prod[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Prod</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="a">a: <span class="extype" name="kits.Prod.A">A</span></span>)</span><span class="result">: <a href="#Prod[A]=A{typeProd}" class="extmbr" name="kits.Prod">Prod</a>[<span class="extype" name="kits.Prod.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Prod[A](a:A):kits.package.Prod[A]" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits#Sum" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Sum[A](a:A):kits.package.Sum[A]"></a>
+      <a id="Sum[A](A):Sum[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Sum</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="a">a: <span class="extype" name="kits.Sum.A">A</span></span>)</span><span class="result">: <a href="#Sum[A]=A{typeSum}" class="extmbr" name="kits.Sum">Sum</a>[<span class="extype" name="kits.Sum.A">A</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Sum[A](a:A):kits.package.Sum[A]" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.Traverse" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Traverse"></a>
+      <a id="Traverse:Traverse"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Traverse$.html"><span class="name">Traverse</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@Traverse" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="kits.free" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="free"></a>
+      <a id="free:free"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="free/package.html"><span class="name">free</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../index.html#kits.package@free" title="Permalink" target="_top">
+        <img src="../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
