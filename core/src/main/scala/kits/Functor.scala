@@ -88,6 +88,18 @@ object Functor {
         fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map(ga, f(a))(_ :+ _))
     }
 
+  implicit val StreamFunctor: MonadPlus[Stream] with Traverse[Stream] =
+    new MonadPlus[Stream] with Traverse[Stream] {
+      def zero[A]: Stream[A] = Stream.empty
+      def pure[A](a: A): Stream[A] = Stream(a)
+      def plus[A](x: Stream[A], y: Stream[A]): Stream[A] = x #::: y
+      override def map[A, B](fa: Stream[A])(f: A => B): Stream[B] = fa.map(f)
+      override def filter[A](fa: Stream[A])(p: A => Boolean): Stream[A] = fa.filter(p)
+      def flatMap[A, B](fa: Stream[A])(f: A => Stream[B]): Stream[B] = fa.flatMap(f)
+      def traverse[F[_], A, B](fa: Stream[A])(f: A => F[B])(implicit F: Applicative[F]): F[Stream[B]] =
+        fa.foldRight(F.pure(zero[B]))((a, ga) => F.map(f(a), ga)(_ #:: _))
+    }
+
   implicit def EitherFunctor[E]: Monad[({ type F[A] = Either[E, A] })#F] with Traverse[({ type F[A] = Either[E, A] })#F] =
     new Monad[({ type F[A] = Either[E, A] })#F] with Traverse[({ type F[A] = Either[E, A] })#F] {
       def pure[A](a: A): Either[E, A] = Right(a)
