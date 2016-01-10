@@ -2,7 +2,7 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 
 lazy val commonSettings = Seq(
   organization := "org.halcat",
-  version := "0.6.1",
+  version := "0.7.0-SNAPSHOT",
   scalaVersion := "2.11.7",
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "2.2.5" % "test",
