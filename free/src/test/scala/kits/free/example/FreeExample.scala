@@ -8,7 +8,7 @@ import org.scalatest.FunSuite
 
 class FreeExample extends FunSuite {
 
-  test("reader") {
+  test("Reader") {
     type ReaderInt[A] = Reader[Int, A]
     def add1[U <: Union](implicit reader: Member[ReaderInt, U]): Free[U, Int] =
       for {
@@ -20,7 +20,7 @@ class FreeExample extends FunSuite {
     assert(Free.run(Reader.run(add11[ReaderInt :+: Void], 10)) == 21)
   }
 
-  test("writer") {
+  test("Writer") {
     type ReaderString[A] = Reader[String, A]
     type WriterString[A] = Writer[String, A]
     def rdwr[U <: Union](implicit reader: Member[ReaderString, U], writer: Member[WriterString, U]): Free[U, String] =
@@ -33,7 +33,7 @@ class FreeExample extends FunSuite {
     assert(Free.run(Reader.run(Writer.run(rdwr[WriterString :+: ReaderString :+: Void]), "hoge")) == ("beginend", "hoge"))
   }
 
-  test("error") {
+  test("Error") {
     type ErrorInt[A] = Error[Int, A]
     def tooBig[U <: Union](n: Int)(implicit error: Member[ErrorInt, U]): Free[U, Int] =
       if (n > 5)
@@ -44,7 +44,7 @@ class FreeExample extends FunSuite {
     assert(Free.run(Error.run(tooBig[ErrorInt :+: Void](7))) == Left(7))
   }
 
-  test("state") {
+  test("State") {
     type StateInt[A] = State[Int, A]
     def putN[U <: Union](implicit state: Member[StateInt, U]): Free[U, (Int, Int)] =
       for {
@@ -56,9 +56,9 @@ class FreeExample extends FunSuite {
     assert(Free.run(State.run(putN[StateInt :+: Void], 0)) == (20, (10, 20)))
   }
 
-  test("choice") {
+  test("Choice") {
     import MonadPlus.Ops
-    import Choice.MonadPlus
+    import Choice.FreeMonadPlus
     type ChoiceVector[A] = Choice[Vector, A]
     def even[U <: Union](implicit choice: Member[ChoiceVector, U]): Free[U, Int] = {
       type F[A] = Free[U, A]

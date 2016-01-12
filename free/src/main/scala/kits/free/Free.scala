@@ -36,7 +36,7 @@ object Free {
       case Pure(a) => a
     }
 
-  implicit def Monad[U <: Union]: Monad[({ type F[A] = Free[U, A] })#F] =
+  implicit def FreeMonad[U <: Union]: Monad[({ type F[A] = Free[U, A] })#F] =
     new Monad[({ type F[A] = Free[U, A] })#F] {
       def pure[A](a: A): Free[U, A] = Pure(a)
       override def map[A, B](fa: Free[U, A])(f: A => B): Free[U, B] = fa.map(f)

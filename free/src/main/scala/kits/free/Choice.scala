@@ -47,7 +47,7 @@ object Choice {
     Free(Plus(): F[Boolean]).flatMap(if (_) x else y)
   }
 
-  implicit def MonadPlus[U <: Union, M[_]](implicit F: Member[({ type F[A] = Choice[M, A] })#F, U]): MonadPlus[({ type F[A] = Free[U, A] })#F] =
+  implicit def FreeMonadPlus[U <: Union, M[_]](implicit F: Member[({ type F[A] = Choice[M, A] })#F, U]): MonadPlus[({ type F[A] = Free[U, A] })#F] =
     new MonadPlus[({ type F[A] = Free[U, A] })#F] {
       def zero[A]: Free[U, A] = Choice.zero
       def pure[A](a: A): Free[U, A] = Pure(a)
