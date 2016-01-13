@@ -9,6 +9,9 @@ trait MonadPlus[F[_]] extends Monad[F] {
   def filter[A](fa: F[A])(p: A => Boolean): F[A] =
     flatMap(fa)(a => if (p(a)) pure(a) else zero)
 
+  def guard(test: Boolean): F[Unit] =
+    if (test) pure(()) else zero
+
 }
 
 object MonadPlus {
