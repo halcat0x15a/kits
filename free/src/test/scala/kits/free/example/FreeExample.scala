@@ -50,8 +50,6 @@ class FreeExample extends FunSuite {
   }
 
   test("Choice") {
-    import MonadPlus.Ops
-    import Choice.FreeMonadPlus
     def even[U <: Union](implicit choice: Member[Choice[Vector], U]): Free[U, Int] = {
       type F[A] = Free[U, A]
       for {
