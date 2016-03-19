@@ -40,8 +40,8 @@ class FreeExample extends FunSuite {
         Error.fail(n)
       else
         Pure(n)
-    assert(Free.run(Error.run(tooBig[ErrorInt :+: Void](3))) == Right(3))
-    assert(Free.run(Error.run(tooBig[ErrorInt :+: Void](7))) == Left(7))
+    assert(Free.run(Error.toEither(tooBig[ErrorInt :+: Void](3))) == Right(3))
+    assert(Free.run(Error.toEither(tooBig[ErrorInt :+: Void](7))) == Left(7))
   }
 
   test("State") {

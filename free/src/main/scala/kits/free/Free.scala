@@ -2,6 +2,8 @@ package kits
 
 package free
 
+import scala.annotation.tailrec
+
 sealed abstract class Free[U <: Union, +A] {
 
   def map[B](f: A => B): Free[U, B]
@@ -26,14 +28,50 @@ case class Impure[U <: Union, A, B](union: U { type T = A }, arrows: Arrows[U, A
 
 }
 
+case class Lazy[U <: Union, A](free: () => Free[U, A]) extends Free[U, A] {
+
+  def map[B](f: A => B): Free[U, B] = Lazy(() => free().map(f))
+
+  def flatMap[B](f: A => Free[U, B]): Free[U, B] = Lazy(() => free().flatMap(f))
+
+}
+
 object Free {
 
-  def apply[F[_], A, U <: Union](fa: F[A])(implicit member: Member[F, U]): Free[U, A] =
-    Impure(member.inject(fa), Arrows.singleton(Pure(_: A)))
+  def apply[F[_], A, U <: Union](fa: F[A])(implicit F: Member[F, U]): Free[U, A] = Impure(F.inject(fa), Arrows.singleton(Pure(_: A)))
 
+  @tailrec
   def run[A](free: Free[Void, A]): A =
     (free: @unchecked) match {
       case Pure(a) => a
+      case Lazy(f) => run(f())
+    }
+
+  @tailrec
+  def resume[U <: Union, A](free: Free[U, A]): Free[U, A] =
+    free match {
+      case Pure(_) => free
+      case Impure(_, _) => free
+      case Lazy(f) => resume(f())
+    }
+
+  def fold[F[_], A, B, U <: Union](free: Free[F :+: U, A])(f: A => Free[U, B])(g: F[Any] => (Any => Free[U, B]) => Free[U, B]): Free[U, B] = accum(free, ())((a, _) => f(a))(fa => _ => k => g(fa)(a => k(a, ())))
+
+  def accum[F[_], A, B, S, U <: Union](free: Free[F :+: U, A], state: S)(f: (A, S) => Free[U, B])(g: F[Any] => S => ((Any, S) => Free[U, B]) => Free[U, B]): Free[U, B] =
+    (resume(free): @unchecked) match {
+      case Pure(a) => f(a, state)
+      case Impure(Inl(fa), k) => g(fa)(state)((x, s) => Lazy(() => accum(k(x), s)(f)(g)))
+      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => accum(k(x), state)(f)(g)))
+    }
+
+  def intercept[F[_], A, B, U <: Union](free: Free[U, A])(f: A => Free[U, B])(g: F[Any] => (Any => Free[U, B]) => Free[U, B])(implicit F: Member[F, U]): Free[U, B] =
+    (resume(free): @unchecked) match {
+      case Pure(a) => f(a)
+      case Impure(u, k) =>
+        F.project(u) match {
+          case Some(fa) => g(fa)(x => intercept(k(x))(f)(g))
+          case None => Impure(u, Arrows.singleton((x: Any) => intercept(k(x))(f)(g)))
+        }
     }
 
   implicit def FreeMonad[U <: Union]: Monad[({ type F[A] = Free[U, A] })#F] =

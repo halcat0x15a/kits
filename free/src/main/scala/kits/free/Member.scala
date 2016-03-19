@@ -1,4 +1,6 @@
-package kits.free
+package kits
+
+package free
 
 trait Member[F[_], U <: Union] {
 

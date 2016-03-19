@@ -2,8 +2,6 @@ package kits
 
 package free
 
-import scala.annotation.tailrec
-
 sealed abstract class Choice[M[_], +A]
 
 object Choice {
@@ -14,27 +12,10 @@ object Choice {
 
   def run[U <: Union, M[_], A](free: Free[({ type F[A] = Choice[M, A] })#F :+: U, A])(implicit M: MonadPlus[M]): Free[U, M[A]] = {
     type F[A] = Choice[M, A]
-    def go(free: Free[F :+: U, A], stack: List[Free[F :+: U, A]], acc: M[A]): Free[U, M[A]] = loop(free, stack, acc)
-    @tailrec
-    def loop(free: Free[F :+: U, A], stack: List[Free[F :+: U, A]], acc: M[A]): Free[U, M[A]] =
-      free match {
-        case Pure(a) =>
-          val r = M.plus(acc, M.pure(a))
-          stack match {
-            case Nil => Pure(r)
-            case h :: t => loop(h, t, r)
-          }
-        case Impure(Inl(Zero()), _) =>
-          stack match {
-            case Nil => Pure(acc)
-            case h :: t => loop(h, t, acc)
-          }
-        case Impure(Inl(Plus()), k) =>
-          loop(k(true), k(false) :: stack, acc)
-        case Impure(Inr(u), k) =>
-          Impure(u, Arrows.singleton((x: Any) => go(k(x), stack, acc)))
-      }
-    loop(free, Nil, M.zero)
+    Free.fold(free: Free[F :+: U, A])(a => Pure(M.pure(a))) {
+      case Zero() => _ => Pure(M.zero)
+      case Plus() => k => for (x <- k(true); y <- k(false)) yield M.plus(x, y)
+    }
   }
 
   def zero[U <: Union, M[_]](implicit F: Member[({ type F[A] = Choice[M, A] })#F, U]): Free[U, Nothing] = {

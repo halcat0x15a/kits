@@ -2,8 +2,6 @@ package kits
 
 package free
 
-import scala.annotation.tailrec
-
 case class Lift[M[_], A](value: M[A])
 
 object Lift {

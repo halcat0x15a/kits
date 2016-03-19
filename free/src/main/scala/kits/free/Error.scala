@@ -1,21 +1,19 @@
 package kits.free
 
-import scala.annotation.tailrec
-
 sealed abstract class Error[E, +A]
 
 object Error {
 
   case class Fail[E](value: E) extends Error[E, Nothing]
 
-  def run[U <: Union, E, A](free: Free[({ type F[A] = Error[E, A] })#F :+: U, A]): Free[U, Either[E, A]] = {
+  def run[U <: Union, E, A, B](free: Free[({ type F[A] = Error[E, A] })#F :+: U, A])(f: A => B)(g: E => B): Free[U, B] = {
     type F[A] = Error[E, A]
-    (free: Free[F :+: U, A]) match {
-      case Pure(a) => Pure(Right(a))
-      case Impure(Inl(Fail(e)), k) => Pure(Left(e))
-      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => run(k(x))))
+    Free.fold(free: Free[F :+: U, A])(a => Pure(f(a))) {
+      case Fail(e) => _ => Pure(g(e))
     }
   }
+
+  def toEither[U <: Union, E, A](free: Free[({ type F[A] = Error[E, A] })#F :+: U, A]): Free[U, Either[E, A]] = run(free)(Right(_): Either[E, A])(Left(_))
 
   def fail[U <: Union, E](value: E)(implicit F: Member[({ type F[A] = Error[E, A] })#F, U]): Free[U, Nothing] = {
     type F[A] = Error[E, A]
@@ -23,17 +21,12 @@ object Error {
   }
 
   def recover[U <: Union, E, A](free: Free[U, A])(handle: E => Free[U, A])(implicit F: Member[({ type F[A] = Error[E, A] })#F, U]): Free[U, A] = {
-    @tailrec
-    def loop(free: Free[U, A]): Free[U, A] =
-      free match {
-        case Pure(a) => Pure(a)
-        case Impure(u, k) =>
-          F.project(u) match {
-            case Some(Fail(e)) => loop(handle(e))
-            case None => Impure(u, Arrows.singleton((x: Any) => recover(k(x))(handle)))
-          }
+    type F[A] = Error[E, A]
+    Free.intercept(free)(a => Pure(a)) { (fa: F[Any]) =>
+      fa match {
+        case Fail(e) => _ => handle(e)
       }
-    loop(free)
+    }
   }
 
 }

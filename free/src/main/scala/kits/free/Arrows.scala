@@ -12,7 +12,7 @@ sealed abstract class Arrows[U <: Union, -A, +B] {
       arrows.view match {
         case One(h) => h(value)
         case Cons(h, t) =>
-          h(value) match {
+          (Free.resume(h(value)): @unchecked) match {
             case Pure(value) => go(t, value)
             case Impure(union, arrows) => Impure(union, arrows ++ t)
           }
