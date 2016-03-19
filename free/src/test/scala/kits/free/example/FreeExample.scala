@@ -70,4 +70,27 @@ class FreeExample extends FunSuite {
     assert(Free.run(Choice.run(even[ChoiceVector :+: Void])) == Vector(2, 4, 6, 8, 10))
   }
 
+  test("stack safe") {
+    type StateInt[A] = State[Int, A]
+    def f[U <: Union](n: Int)(implicit state: Member[StateInt, U]): Free[U, Int] =
+      if (n > 0)
+        State.modify((_: Int) + 1).flatMap(_ => f(n - 1))
+      else
+        State.get
+    assert(Free.run(State.eval(f[StateInt :+: Void](10000), 0)) == 10000)
+    type ReaderString[A] = Reader[String, A]
+    type WriterVectorString[A] = Writer[Vector[String], A]
+    def g[U <: Union](n: Int)(implicit reader: Member[ReaderString, U], writer: Member[WriterVectorString, U]): Free[U, Unit] =
+      if (n > 0)
+        for {
+          s <- Reader.ask
+          _ <- Writer.tell(Vector(s))
+          _ <- g(n - 1)
+        } yield ()
+      else
+        Pure(())
+    assert(Free.run(Reader.run(Writer.run(g[WriterVectorString :+: ReaderString :+: Void](10000)), "hoge"))._1.size == 10000)
+    
+  }
+
 }
