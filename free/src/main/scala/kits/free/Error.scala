@@ -6,12 +6,10 @@ object Error {
 
   case class Fail[E](value: E) extends Error[E] { type T = Nothing }
 
-  def run[U <: Union, E, A, B](free: Free[Error[E] :+: U, A])(f: A => B)(g: E => B): Free[U, B] =
-    Free.fold(free)(a => Pure(f(a))) {
-      case Fail(e) => _ => Pure(g(e))
+  def run[U <: Union, E, A](free: Free[Error[E] :+: U, A]): Free[U, Either[E, A]] =
+    Free.fold(free)(a => Pure(Right(a): Either[E, A])) {
+      case Fail(e) => _ => Pure(Left(e))
     }
-
-  def toEither[U <: Union, E, A](free: Free[Error[E] :+: U, A]): Free[U, Either[E, A]] = run(free)(Right(_): Either[E, A])(Left(_))
 
   def fail[U <: Union, E](value: E)(implicit F: Member[Error[E], U]): Free[U, Nothing] = Free(F.inject[Nothing](Fail(value)))
 
