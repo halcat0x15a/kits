@@ -9,88 +9,76 @@ import org.scalatest.FunSuite
 class FreeExample extends FunSuite {
 
   test("Reader") {
-    type ReaderInt[A] = Reader[Int, A]
-    def add1[U <: Union](implicit reader: Member[ReaderInt, U]): Free[U, Int] =
-      for {
-        a <- Reader.ask
-      } yield a + 1
-    assert(Free.run(Reader.run(add1[ReaderInt :+: Void], 10)) == 11)
-    def add11[U <: Union](implicit reader: Member[ReaderInt, U]): Free[U, Int] =
+    def add1[U <: Union](implicit reader: Member[Reader[Int], U]): Free[U, Int] =
+      for (a <- Reader.ask) yield a + 1
+    assert(Free.run(Reader.run(add1[Reader[Int] :+: Void], 10)) == 11)
+    def add11[U <: Union](implicit reader: Member[Reader[Int], U]): Free[U, Int] =
       Reader.local(add1)(((_: Int) + 10))
-    assert(Free.run(Reader.run(add11[ReaderInt :+: Void], 10)) == 21)
+    assert(Free.run(Reader.run(add11[Reader[Int] :+: Void], 10)) == 21)
   }
 
   test("Writer") {
-    type ReaderString[A] = Reader[String, A]
-    type WriterString[A] = Writer[String, A]
-    def rdwr[U <: Union](implicit reader: Member[ReaderString, U], writer: Member[WriterString, U]): Free[U, String] =
+    def rdwr[U <: Union](implicit reader: Member[Reader[Int], U], writer: Member[Writer[Vector[String]], U]): Free[U, Int] =
       for {
-        _ <- Writer.tell("begin")
-        s <- Reader.ask
-        _ <- Writer.tell("end")
-      } yield s
-    assert(Free.run(Writer.run(Reader.run(rdwr[ReaderString :+: WriterString :+: Void], "hoge"))) == ("beginend", "hoge"))
-    assert(Free.run(Reader.run(Writer.run(rdwr[WriterString :+: ReaderString :+: Void]), "hoge")) == ("beginend", "hoge"))
+        _ <- Writer.tell(Vector("begin"))
+        n <- Reader.ask
+        _ <- Writer.tell(Vector("end"))
+      } yield n
+    assert(Free.run(Writer.run(Reader.run(rdwr[Reader[Int] :+: Writer[Vector[String]] :+: Void], 10))) == (Vector("begin", "end"), 10))
+    assert(Free.run(Reader.run(Writer.run(rdwr[Writer[Vector[String]] :+: Reader[Int] :+: Void]), 10)) == (Vector("begin", "end"), 10))
   }
 
   test("Error") {
-    type ErrorInt[A] = Error[Int, A]
-    def tooBig[U <: Union](n: Int)(implicit error: Member[ErrorInt, U]): Free[U, Int] =
-      if (n > 5)
+    def tooBig[U <: Union](n: Int)(implicit error: Member[Error[Int], U]): Free[U, Int] =
+      if (n <= 5)
         Error.fail(n)
       else
         Pure(n)
-    assert(Free.run(Error.toEither(tooBig[ErrorInt :+: Void](3))) == Right(3))
-    assert(Free.run(Error.toEither(tooBig[ErrorInt :+: Void](7))) == Left(7))
+    assert(Free.run(Error.toEither(tooBig[Error[Int] :+: Void](3))) == Left(3))
+    assert(Free.run(Error.toEither(tooBig[Error[Int] :+: Void](7))) == Right(7))
   }
 
   test("State") {
-    type StateInt[A] = State[Int, A]
-    def putN[U <: Union](implicit state: Member[StateInt, U]): Free[U, (Int, Int)] =
+    def add10And20[U <: Union](implicit state: Member[State[Int], U]): Free[U, Int] =
       for {
         _ <- State.put(10)
         x <- State.get
         _ <- State.put(20)
         y <- State.get
-      } yield (x, y)
-    assert(Free.run(State.run(putN[StateInt :+: Void], 0)) == (20, (10, 20)))
+      } yield x + y
+    assert(Free.run(State.run(add10And20[State[Int] :+: Void], 0)) == (20, 30))
   }
 
   test("Choice") {
     import MonadPlus.Ops
     import Choice.FreeMonadPlus
-    type ChoiceVector[A] = Choice[Vector, A]
-    def even[U <: Union](implicit choice: Member[ChoiceVector, U]): Free[U, Int] = {
+    def even[U <: Union](implicit choice: Member[Choice[Vector], U]): Free[U, Int] = {
       type F[A] = Free[U, A]
       for {
         n <- Traverse.foldMap(1 to 10)(n => Pure(n): F[Int])
         if n % 2 == 0
       } yield n
     }
-    assert(Free.run(Choice.run(even[ChoiceVector :+: Void])) == Vector(2, 4, 6, 8, 10))
+    assert(Free.run(Choice.run(even[Choice[Vector] :+: Void])) == Vector(2, 4, 6, 8, 10))
   }
 
-  test("stack safe") {
-    type StateInt[A] = State[Int, A]
-    def f[U <: Union](n: Int)(implicit state: Member[StateInt, U]): Free[U, Int] =
+  test("Stack safe") {
+    def count[U <: Union](n: Int)(implicit state: Member[State[Int], U]): Free[U, Int] =
       if (n > 0)
-        State.modify((_: Int) + 1).flatMap(_ => f(n - 1))
+        State.modify((_: Int) + 1).flatMap(_ => count(n - 1))
       else
         State.get
-    assert(Free.run(State.eval(f[StateInt :+: Void](10000), 0)) == 10000)
-    type ReaderString[A] = Reader[String, A]
-    type WriterVectorString[A] = Writer[Vector[String], A]
-    def g[U <: Union](n: Int)(implicit reader: Member[ReaderString, U], writer: Member[WriterVectorString, U]): Free[U, Unit] =
+    assert(Free.run(State.eval(count[State[Int] :+: Void](10000), 0)) == 10000)
+    def rdwr[U <: Union](n: Int)(implicit reader: Member[Reader[String], U], writer: Member[Writer[Vector[String]], U]): Free[U, Unit] =
       if (n > 0)
         for {
           s <- Reader.ask
           _ <- Writer.tell(Vector(s))
-          _ <- g(n - 1)
+          _ <- rdwr(n - 1)
         } yield ()
       else
         Pure(())
-    assert(Free.run(Reader.run(Writer.run(g[WriterVectorString :+: ReaderString :+: Void](10000)), "hoge"))._1.size == 10000)
-    
+    assert(Free.run(Reader.run(Writer.run(rdwr[Writer[Vector[String]] :+: Reader[String] :+: Void](10000)), "hoge"))._1.size == 10000)
   }
 
 }

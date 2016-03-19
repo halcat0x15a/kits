@@ -1,33 +1,24 @@
 package kits.free
 
-sealed abstract class Reader[R, +A]
+sealed abstract class Reader[R] { type T }
 
 object Reader {
 
-  case class Ask[R]() extends Reader[R, R]
+  case class Ask[R]() extends Reader[R] { type T = R }
 
-  def run[U <: Union, R, A](free: Free[({ type F[A] = Reader[R, A] })#F :+: U, A], value: R): Free[U, A] = {
-    type F[A] = Reader[R, A]
-    Free.fold(free: Free[F :+: U, A])(a => Pure(a)) {
+  def run[U <: Union, R, A](free: Free[Reader[R] :+: U, A], value: R): Free[U, A] =
+    Free.fold(free)(a => Pure(a)) {
       case Ask() => k => k(value)
     }
-  }
 
-  def ask[U <: Union, R](implicit reader: Member[({ type F[A] = Reader[R, A] })#F, U]): Free[U, R] = {
-    type F[A] = Reader[R, A]
-    Free(Ask(): F[R])
-  }
+  def ask[U <: Union, R](implicit F: Member[Reader[R], U]): Free[U, R] = Free(F.inject(Ask()))
 
-  def local[U <: Union, R, A](free: Free[U, A])(f: R => R)(implicit reader: Member[({ type F[A] = Reader[R, A] })#F, U]): Free[U, A] = {
-    type F[A] = Reader[R, A]
-    ask flatMap { r0 =>
+  def local[U <: Union, R, A](free: Free[U, A])(f: R => R)(implicit F: Member[Reader[R], U]): Free[U, A] =
+    ask.flatMap { r0 =>
       val r = f(r0)
-      Free.intercept(free)(a => Pure(a)) { (fa: F[Any]) =>
-        fa match {
-          case Ask() => k => k(r)
-        }
-      }
+      Free.intercept(free)(a => Pure(a))((_: Reader[R]) match {
+        case Ask() => k => k(r)
+      })
     }
-  }
 
 }

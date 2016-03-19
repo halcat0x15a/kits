@@ -38,7 +38,7 @@ case class Lazy[U <: Union, A](free: () => Free[U, A]) extends Free[U, A] {
 
 object Free {
 
-  def apply[F[_], A, U <: Union](fa: F[A])(implicit F: Member[F, U]): Free[U, A] = Impure(F.inject(fa), Arrows.singleton(Pure(_: A)))
+  def apply[F <: { type T }, A, U <: Union](union: U { type T = A }): Free[U, A] = Impure(union, Arrows.singleton(Pure(_: A)))
 
   @tailrec
   def run[A](free: Free[Void, A]): A =
@@ -55,16 +55,16 @@ object Free {
       case Lazy(f) => resume(f())
     }
 
-  def fold[F[_], A, B, U <: Union](free: Free[F :+: U, A])(f: A => Free[U, B])(g: F[Any] => (Any => Free[U, B]) => Free[U, B]): Free[U, B] = accum(free, ())((a, _) => f(a))(fa => _ => k => g(fa)(a => k(a, ())))
+  def fold[F <: { type T }, A, B, U <: Union](free: Free[F :+: U, A])(f: A => Free[U, B])(g: F => (Any => Free[U, B]) => Free[U, B]): Free[U, B] = accum(free, ())((a, _) => f(a))(fa => _ => k => g(fa)(a => k(a, ())))
 
-  def accum[F[_], A, B, S, U <: Union](free: Free[F :+: U, A], state: S)(f: (A, S) => Free[U, B])(g: F[Any] => S => ((Any, S) => Free[U, B]) => Free[U, B]): Free[U, B] =
+  def accum[F <: { type T }, A, B, S, U <: Union](free: Free[F :+: U, A], state: S)(f: (A, S) => Free[U, B])(g: F => S => ((Any, S) => Free[U, B]) => Free[U, B]): Free[U, B] =
     (resume(free): @unchecked) match {
       case Pure(a) => f(a, state)
       case Impure(Inl(fa), k) => g(fa)(state)((x, s) => Lazy(() => accum(k(x), s)(f)(g)))
       case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => accum(k(x), state)(f)(g)))
     }
 
-  def intercept[F[_], A, B, U <: Union](free: Free[U, A])(f: A => Free[U, B])(g: F[Any] => (Any => Free[U, B]) => Free[U, B])(implicit F: Member[F, U]): Free[U, B] =
+  def intercept[F <: { type T }, A, B, U <: Union](free: Free[U, A])(f: A => Free[U, B])(g: F => (Any => Free[U, B]) => Free[U, B])(implicit F: Member[F, U]): Free[U, B] =
     (resume(free): @unchecked) match {
       case Pure(a) => f(a)
       case Impure(u, k) =>

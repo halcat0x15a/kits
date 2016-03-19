@@ -2,21 +2,20 @@ package kits
 
 package free
 
-case class Lift[M[_], A](value: M[A])
+sealed abstract class Lift[M[_]] {
+  type T
+  def value: M[T]
+}
 
 object Lift {
 
-  def run[U <: Union, M[_], A](free: Free[({ type F[A] = Lift[M, A] })#F :+: Void, A])(implicit M: Monad[M]): M[A] = {
-    type F[A] = Lift[M, A]
-    (free: Free[F :+: Void, A] @unchecked) match {
-      case Pure(a) => M.pure(a)
-      case Impure(Inl(Lift(v)), k) => M.flatMap(v)(a => run(k(a)))
-    }
-  }
+  def apply[U <: Union, M[_], A](ma: M[A])(implicit F: Member[Lift[M], U]): Free[U, A] =
+    Free(F.inject(new Lift[M] { type T = A; val value = ma }))
 
-  def lift[U <: Union, M[_], A](value: M[A])(implicit F: Member[({ type F[A] = Lift[M, A] })#F, U]): Free[U, A] = {
-    type F[A] = Lift[M, A]
-    Free(Lift(value): F[A])
-  }
+  def run[U <: Union, M[_], A](free: Free[Lift[M] :+: Void, A])(implicit M: Monad[M]): M[A] =
+    (Free.resume(free): @unchecked) match {
+      case Pure(a) => M.pure(a)
+      case Impure(Inl(lift), k) => M.flatMap(lift.value)(a => run(k(a)))
+    }
 
 }
