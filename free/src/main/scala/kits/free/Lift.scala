@@ -2,10 +2,7 @@ package kits
 
 package free
 
-sealed abstract class Lift[M[_]] {
-  type T
-  def value: M[T]
-}
+sealed abstract class Lift[M[_]] { type T; def value: M[T] }
 
 object Lift {
 
@@ -13,7 +10,7 @@ object Lift {
     Free(F.inject(new Lift[M] { type T = A; val value = ma }))
 
   def run[U <: Union, M[_], A](free: Free[Lift[M] :+: Void, A])(implicit M: Monad[M]): M[A] =
-    (Free.resume(free): @unchecked) match {
+    (free.resume: @unchecked) match {
       case Pure(a) => M.pure(a)
       case Impure(Inl(lift), k) => M.flatMap(lift.value)(a => run(k(a)))
     }

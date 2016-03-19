@@ -9,7 +9,7 @@ object State {
   case class Put[S](state: S) extends State[S] { type T = Unit }
 
   def run[U <: Union, S, A](free: Free[State[S] :+: U, A], state: S): Free[U, (S, A)] =
-    Free.accum(free, state)((a, s) => Pure((s, a))) {
+    Free.handleRelay(free, state)((a, s) => Pure((s, a))) {
       case Get() => s => k => k(s, s)
       case Put(s) => _ => k => k((), s)
     }

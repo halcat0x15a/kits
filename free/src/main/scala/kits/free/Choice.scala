@@ -11,7 +11,7 @@ object Choice {
   case class Plus[M[_]]() extends Choice[M] { type T = Boolean }
 
   def run[U <: Union, M[_], A](free: Free[Choice[M] :+: U, A])(implicit M: MonadPlus[M]): Free[U, M[A]] =
-    Free.fold(free)(a => Pure(M.pure(a))) {
+    Free.handleRelay(free)(a => Pure(M.pure(a))) {
       case Zero() => _ => Pure(M.zero)
       case Plus() => k => for (x <- k(true); y <- k(false)) yield M.plus(x, y)
     }

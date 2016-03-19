@@ -12,6 +12,13 @@ sealed abstract class Free[U <: Union, +A] {
 
   def withFilter[M[_]](p: A => Boolean)(implicit F: Member[Choice[M], U]): Free[U, A] = flatMap(a => if (p(a)) Pure(a) else Choice.zero)
 
+  @tailrec
+  final def resume: Free[U, A] =
+    this match {
+      case Lazy(f) => f().resume
+      case _ => this
+    }
+
 }
 
 case class Pure[U <: Union, A](value: A) extends Free[U, A] {
@@ -42,37 +49,28 @@ object Free {
 
   def apply[F <: { type T }, A, U <: Union](union: U { type T = A }): Free[U, A] = Impure(union, Arrows.singleton(Pure(_: A)))
 
-  @tailrec
   def run[A](free: Free[Void, A]): A =
-    (free: @unchecked) match {
+    (free.resume: @unchecked) match {
       case Pure(a) => a
-      case Lazy(f) => run(f())
     }
 
-  @tailrec
-  def resume[U <: Union, A](free: Free[U, A]): Free[U, A] =
-    free match {
-      case Pure(_) => free
-      case Impure(_, _) => free
-      case Lazy(f) => resume(f())
-    }
+  def handleRelay[F <: { type T }, A, B, U <: Union](free: Free[F :+: U, A])(f: A => Free[U, B])(g: F => (Any => Free[U, B]) => Free[U, B]): Free[U, B] =
+    handleRelay(free, ())((a, _) => f(a))(fa => _ => k => g(fa)(a => k(a, ())))
 
-  def fold[F <: { type T }, A, B, U <: Union](free: Free[F :+: U, A])(f: A => Free[U, B])(g: F => (Any => Free[U, B]) => Free[U, B]): Free[U, B] = accum(free, ())((a, _) => f(a))(fa => _ => k => g(fa)(a => k(a, ())))
-
-  def accum[F <: { type T }, A, B, S, U <: Union](free: Free[F :+: U, A], state: S)(f: (A, S) => Free[U, B])(g: F => S => ((Any, S) => Free[U, B]) => Free[U, B]): Free[U, B] =
-    (resume(free): @unchecked) match {
+  def handleRelay[F <: { type T }, A, B, S, U <: Union](free: Free[F :+: U, A], state: S)(f: (A, S) => Free[U, B])(g: F => S => ((Any, S) => Free[U, B]) => Free[U, B]): Free[U, B] =
+    (free.resume: @unchecked) match {
       case Pure(a) => f(a, state)
-      case Impure(Inl(fa), k) => g(fa)(state)((x, s) => Lazy(() => accum(k(x), s)(f)(g)))
-      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => accum(k(x), state)(f)(g)))
+      case Impure(Inl(fa), k) => g(fa)(state)((x, s) => Lazy(() => handleRelay(k(x), s)(f)(g)))
+      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => handleRelay(k(x), state)(f)(g)))
     }
 
-  def intercept[F <: { type T }, A, B, U <: Union](free: Free[U, A])(f: A => Free[U, B])(g: F => (Any => Free[U, B]) => Free[U, B])(implicit F: Member[F, U]): Free[U, B] =
-    (resume(free): @unchecked) match {
+  def interpose[F <: { type T }, A, B, U <: Union](free: Free[U, A])(f: A => Free[U, B])(g: F => (Any => Free[U, B]) => Free[U, B])(implicit F: Member[F, U]): Free[U, B] =
+    (free.resume: @unchecked) match {
       case Pure(a) => f(a)
       case Impure(u, k) =>
         F.project(u) match {
-          case Some(fa) => g(fa)(x => intercept(k(x))(f)(g))
-          case None => Impure(u, Arrows.singleton((x: Any) => intercept(k(x))(f)(g)))
+          case Some(fa) => g(fa)(x => interpose(k(x))(f)(g))
+          case None => Impure(u, Arrows.singleton((x: Any) => interpose(k(x))(f)(g)))
         }
     }
 
