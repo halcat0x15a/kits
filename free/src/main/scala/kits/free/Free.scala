@@ -15,7 +15,7 @@ sealed abstract class Free[U <: Union, +A] {
   @tailrec
   final def resume: Free[U, A] =
     this match {
-      case Lazy(f) => f().resume
+      case Free.Lazy(f) => f().resume
       case _ => this
     }
 
@@ -37,17 +37,22 @@ case class Impure[U <: Union, A, B](union: U { type T = A }, arrows: Arrows[U, A
 
 }
 
-case class Lazy[U <: Union, A](free: () => Free[U, A]) extends Free[U, A] {
-
-  def map[B](f: A => B): Free[U, B] = Lazy(() => free().map(f))
-
-  def flatMap[B](f: A => Free[U, B]): Free[U, B] = Lazy(() => free().flatMap(f))
-
-}
-
 object Free {
 
-  def apply[F <: { type T }, A, U <: Union](union: U { type T = A }): Free[U, A] = Impure(union, Arrows.singleton(Pure(_: A)))
+  case class Lazy[U <: Union, A](free: () => Free[U, A]) extends Free[U, A] {
+
+    def map[B](f: A => B): Free[U, B] = Lazy(() => free().map(f))
+
+    def flatMap[B](f: A => Free[U, B]): Free[U, B] = Lazy(() => free().flatMap(f))
+
+  }
+
+  def apply[U <: Union, A](union: U { type T = A }): Free[U, A] = Impure(union, Arrows.singleton(Pure(_: A)))
+
+  def delay[U <: Union, A](free: => Free[U, A]): Free[U, A] = {
+    lazy val f = free
+    Lazy(() => f)
+  }
 
   def run[A](free: Free[Void, A]): A =
     (free.resume: @unchecked) match {
@@ -60,7 +65,7 @@ object Free {
   def handleRelay[F <: { type T }, A, B, S, U <: Union](free: Free[F :+: U, A], state: S)(f: (A, S) => Free[U, B])(g: F => S => ((Any, S) => Free[U, B]) => Free[U, B]): Free[U, B] =
     (free.resume: @unchecked) match {
       case Pure(a) => f(a, state)
-      case Impure(Inl(fa), k) => g(fa)(state)((x, s) => Lazy(() => handleRelay(k(x), s)(f)(g)))
+      case Impure(Inl(fa), k) => g(fa)(state)((x, s) => delay(handleRelay(k(x), s)(f)(g)))
       case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => handleRelay(k(x), state)(f)(g)))
     }
 
@@ -69,7 +74,7 @@ object Free {
       case Pure(a) => f(a)
       case Impure(u, k) =>
         F.project(u) match {
-          case Some(fa) => g(fa)(x => interpose(k(x))(f)(g))
+          case Some(fa) => g(fa)(x => delay(interpose(k(x))(f)(g)))
           case None => Impure(u, Arrows.singleton((x: Any) => interpose(k(x))(f)(g)))
         }
     }

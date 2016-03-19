@@ -18,7 +18,7 @@ object Writer {
   def listen[U <: Union, W, A](free: Free[U, A])(implicit F: Member[Writer[W], U], W: Monoid[W]): Free[U, (W, A)] =
     Free.interpose(free)(a => Pure((W.empty, a)))((_: Writer[W]) match {
       case Tell(v) => k => k(()).map { case (w, a) => (W.append(v, w), a) }
-    }) flatMap {
+    }).flatMap {
       case r@(w, _) => tell(w).map(_ => r)
     }
 

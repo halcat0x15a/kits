@@ -4,14 +4,12 @@ import scala.annotation.tailrec
 
 sealed abstract class Arrows[U <: Union, -A, +B] {
 
-  import Arrows._
-
   def apply(a: A): Free[U, B] = {
     @tailrec
     def go(arrows: Arrows[U, Any, B], value: Any): Free[U, B] =
       arrows.view match {
-        case One(h) => h(value)
-        case Cons(h, t) =>
+        case Arrows.One(h) => h(value)
+        case Arrows.Cons(h, t) =>
           (h(value).resume: @unchecked) match {
             case Pure(value) => go(t, value)
             case Impure(union, arrows) => Impure(union, arrows ++ t)
@@ -20,11 +18,11 @@ sealed abstract class Arrows[U <: Union, -A, +B] {
     go(this.asInstanceOf[Arrows[U, Any, B]], a)
   }
 
-  def :+[C](f: B => Free[U, C]): Arrows[U, A, C] = Node(this, Leaf(f))
+  def :+[C](f: B => Free[U, C]): Arrows[U, A, C] = Arrows.Node(this, Arrows.Leaf(f))
 
-  def ++[C](that: Arrows[U, B, C]): Arrows[U, A, C] = Node(this, that)
+  def ++[C](that: Arrows[U, B, C]): Arrows[U, A, C] = Arrows.Node(this, that)
 
-  def view: View[U, A, B]
+  def view: Arrows.View[U, A, B]
 
 }
 
