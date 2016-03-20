@@ -12,6 +12,8 @@ trait Member[F <: { type T }, U <: Union] {
 
 object Member {
 
+  def apply[F <: { type T }, U <: Union](implicit F: Member[F, U]): Member[F, U] = F
+
   implicit def LeftMember[F <: { type T }, U <: Union]: Member[F, F :+: U] =
     new Member[F, F :+: U] {
       def inject[A](fa: F { type T = A }): (F :+: U) { type T = A } = Inl(fa)
