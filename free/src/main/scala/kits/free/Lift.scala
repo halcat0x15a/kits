@@ -2,7 +2,15 @@ package kits
 
 package free
 
-sealed abstract class Lift[M[_]] { type T; def value: M[T] }
+sealed abstract class Lift[M[_]] {
+
+  type T
+
+  def value: M[T]
+
+  type Member[U <: Union] = kits.free.Member[Lift[M], U]
+
+}
 
 object Lift {
 

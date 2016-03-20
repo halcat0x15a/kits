@@ -2,7 +2,13 @@ package kits
 
 package free
 
-sealed abstract class Choice[M[_]] { type T }
+sealed abstract class Choice[M[_]] {
+
+  type T
+
+  type Member[U <: Union] = kits.free.Member[Choice[M], U]
+
+}
 
 object Choice {
 
@@ -20,12 +26,12 @@ object Choice {
 
   def plus[U <: Union, M[_], A](x: Free[U, A], y: Free[U, A])(implicit F: Member[Choice[M], U]): Free[U, A] = Free[U, Boolean](F.inject(Plus())).flatMap(if (_) x else y)
 
-  def reflect[U <: Union, M[_], A](option: Option[(A, Free[U, A])])(implicit F: Member[Choice[M], U]): Free[U, A] =
+  def reflect[U <: Union: Choice[M]#Member, M[_], A](option: Option[(A, Free[U, A])]): Free[U, A] =
     option.fold(zero: Free[U, A]) {
       case (a, free) => plus(Pure(a), free)
     }
 
-  def split[U <: Union, M[_], A](free: Free[U, A])(implicit F: Member[Choice[M], U]): Free[U, Option[(A, Free[U, A])]] =
+  def split[U <: Union: Choice[M]#Member, M[_], A](free: Free[U, A]): Free[U, Option[(A, Free[U, A])]] =
     Free.interpose(free)(a => Pure(Some((a, zero)): Option[(A, Free[U, A])]))((_: Choice[M]) match {
       case Zero() => _ => Pure(None)
       case Plus() => k => for (x <- k(true); y <- k(false)) yield x.fold(y) { case (a, f) => Some((a, plus(f, reflect(y)))) }

@@ -9,16 +9,16 @@ import org.scalatest.FunSuite
 class FreeExample extends FunSuite {
 
   test("Reader") {
-    def add1[U <: Union](implicit reader: Member[Reader[Int], U]): Free[U, Int] =
+    def add1[U <: Union: Reader[Int]#Member]: Free[U, Int] =
       for (a <- Reader.ask) yield a + 1
     assert(Free.run(Reader.run(add1[Reader[Int] :+: Void], 10)) == 11)
-    def add11[U <: Union](implicit reader: Member[Reader[Int], U]): Free[U, Int] =
+    def add11[U <: Union: Reader[Int]#Member]: Free[U, Int] =
       Reader.local(add1)(((_: Int) + 10))
     assert(Free.run(Reader.run(add11[Reader[Int] :+: Void], 10)) == 21)
   }
 
   test("Writer") {
-    def rdwr[U <: Union](implicit reader: Member[Reader[Int], U], writer: Member[Writer[Vector[String]], U]): Free[U, Int] =
+    def rdwr[U <: Union: Reader[Int]#Member: Writer[Vector[String]]#Member]: Free[U, Int] =
       for {
         _ <- Writer.tell(Vector("begin"))
         n <- Reader.ask
@@ -29,7 +29,7 @@ class FreeExample extends FunSuite {
   }
 
   test("Error") {
-    def tooBig[U <: Union](n: Int)(implicit error: Member[Error[Int], U]): Free[U, Int] =
+    def tooBig[U <: Union: Error[Int]#Member](n: Int): Free[U, Int] =
       if (n <= 5)
         Error.fail(n)
       else
@@ -39,7 +39,7 @@ class FreeExample extends FunSuite {
   }
 
   test("State") {
-    def add10And20[U <: Union](implicit state: Member[State[Int], U]): Free[U, Int] =
+    def add10And20[U <: Union: State[Int]#Member]: Free[U, Int] =
       for {
         _ <- State.put(10)
         x <- State.get
@@ -50,7 +50,7 @@ class FreeExample extends FunSuite {
   }
 
   test("Choice") {
-    def even[U <: Union](implicit choice: Member[Choice[Vector], U]): Free[U, Int] = {
+    def even[U <: Union: Choice[Vector]#Member]: Free[U, Int] = {
       type F[A] = Free[U, A]
       for {
         n <- Traverse.foldMap(1 to 10)(n => Pure(n): F[Int])
@@ -61,13 +61,13 @@ class FreeExample extends FunSuite {
   }
 
   test("Stack safe") {
-    def count[U <: Union](n: Int)(implicit state: Member[State[Int], U]): Free[U, Int] =
+    def count[U <: Union: State[Int]#Member](n: Int): Free[U, Int] =
       if (n > 0)
         State.modify((_: Int) + 1).flatMap(_ => count(n - 1))
       else
         State.get
     assert(Free.run(State.eval(count[State[Int] :+: Void](10000), 0)) == 10000)
-    def rdwr[U <: Union](n: Int)(implicit reader: Member[Reader[String], U], writer: Member[Writer[Vector[String]], U]): Free[U, Unit] =
+    def rdwr[U <: Union: Reader[String]#Member: Writer[Vector[String]]#Member](n: Int): Free[U, Unit] =
       if (n > 0)
         for {
           s <- Reader.ask

@@ -2,7 +2,13 @@ package kits
 
 package free
 
-sealed abstract class Writer[W] { type T }
+sealed abstract class Writer[W] {
+
+  type T
+
+  type Member[U <: Union] = kits.free.Member[Writer[W], U]
+
+}
 
 object Writer {
 
@@ -15,14 +21,14 @@ object Writer {
 
   def tell[U <: Union, W](value: W)(implicit F: Member[Writer[W], U]): Free[U, Unit] = Free(F.inject(Tell(value)))
 
-  def listen[U <: Union, W, A](free: Free[U, A])(implicit F: Member[Writer[W], U], W: Monoid[W]): Free[U, (W, A)] =
+  def listen[U <: Union: Writer[W]#Member, W, A](free: Free[U, A])(implicit W: Monoid[W]): Free[U, (W, A)] =
     Free.interpose(free)(a => Pure((W.empty, a)))((_: Writer[W]) match {
       case Tell(v) => k => k(()).map { case (w, a) => (W.append(v, w), a) }
     }).flatMap {
       case r@(w, _) => tell(w).map(_ => r)
     }
 
-  def pass[U <: Union, W: Monoid, A](free: Free[U, (W => W, A)])(implicit F: Member[Writer[W], U]): Free[U, A] =
+  def pass[U <: Union: Writer[W]#Member, W: Monoid, A](free: Free[U, (W => W, A)]): Free[U, A] =
     listen(free).flatMap {
       case (w, (f, a)) => tell(f(w)).map(_ => a)
     }

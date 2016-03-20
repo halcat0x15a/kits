@@ -1,6 +1,12 @@
 package kits.free
 
-sealed abstract class State[S] { type T }
+sealed abstract class State[S] {
+
+  type T
+
+  type Member[U <: Union] = kits.free.Member[State[S], U]
+
+}
 
 object State {
 
@@ -22,6 +28,6 @@ object State {
 
   def put[U <: Union, S](state: S)(implicit F: Member[State[S], U]): Free[U, Unit] = Free(F.inject(Put(state)))
 
-  def modify[U <: Union, S](f: S => S)(implicit F: Member[State[S], U]): Free[U, Unit] = get.flatMap(a => put(f(a)))
+  def modify[U <: Union: State[S]#Member, S](f: S => S): Free[U, Unit] = get.flatMap(a => put(f(a)))
 
 }
