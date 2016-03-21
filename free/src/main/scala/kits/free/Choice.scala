@@ -1,38 +1,40 @@
-package kits.free
+package kits
 
-sealed abstract class Choice {
+package free
+
+sealed abstract class Choice[M[_]] {
 
   type T
 
-  type Member[U <: Union] = kits.free.Member[Choice, U]
+  type Member[U <: Union] = kits.free.Member[Choice[M], U]
 
 }
 
 object Choice {
 
-  case object Zero extends Choice { type T = Nothing }
+  case class Zero[M[_]]() extends Choice[M] { type T = Nothing }
 
-  case object Plus extends Choice { type T = Boolean }
+  case class Plus[M[_]]() extends Choice[M] { type T = Boolean }
 
-  def run[U <: Union, A](free: Free[Choice :+: U, A]): Free[U, Vector[A]] =
-    Free.handleRelay(free)(a => Pure(Vector(a))) {
-      case Zero => _ => Pure(Vector.empty)
-      case Plus => k => for (x <- k(true); y <- k(false)) yield x ++ y
+  def run[U <: Union, M[_], A](free: Free[Choice[M] :+: U, A])(implicit M: MonadPlus[M]): Free[U, M[A]] =
+    Free.handleRelay(free)(a => Pure(M.pure(a))) {
+      case Zero() => _ => Pure(M.zero)
+      case Plus() => k => for (x <- k(true); y <- k(false)) yield M.plus(x, y)
     }
 
-  def zero[U <: Union](implicit F: Member[Choice, U]): Free[U, Nothing] = Free(F.inject[Nothing](Zero))
+  def zero[U <: Union, M[_]](implicit F: Member[Choice[M], U]): Free[U, Nothing] = Free(F.inject[Nothing](Zero()))
 
-  def plus[U <: Union, A](x: Free[U, A], y: Free[U, A])(implicit F: Member[Choice, U]): Free[U, A] = Free[U, Boolean](F.inject(Plus)).flatMap(if (_) x else y)
+  def plus[U <: Union, M[_], A](x: Free[U, A], y: Free[U, A])(implicit F: Member[Choice[M], U]): Free[U, A] = Free[U, Boolean](F.inject(Plus())).flatMap(if (_) x else y)
 
-  def reflect[U <: Union: Choice#Member, A](option: Option[(A, Free[U, A])]): Free[U, A] =
+  def reflect[U <: Union: Choice[M]#Member, M[_], A](option: Option[(A, Free[U, A])]): Free[U, A] =
     option.fold(zero: Free[U, A]) {
       case (a, free) => plus(Pure(a), free)
     }
 
-  def split[U <: Union: Choice#Member, A](free: Free[U, A]): Free[U, Option[(A, Free[U, A])]] =
-    Free.interpose(free)(a => Pure(Some((a, zero)): Option[(A, Free[U, A])]))((_: Choice) match {
-      case Zero => _ => Pure(None)
-      case Plus => k => for (x <- k(true); y <- k(false)) yield x.fold(y) { case (a, f) => Some((a, plus(f, reflect(y)))) }
+  def split[U <: Union: Choice[M]#Member, M[_], A](free: Free[U, A]): Free[U, Option[(A, Free[U, A])]] =
+    Free.interpose(free)(a => Pure(Some((a, zero)): Option[(A, Free[U, A])]))((_: Choice[M]) match {
+      case Zero() => _ => Pure(None)
+      case Plus() => k => for (x <- k(true); y <- k(false)) yield x.fold(y) { case (a, f) => Some((a, plus(f, reflect(y)))) }
     })
 
 }

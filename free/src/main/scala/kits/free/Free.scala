@@ -10,7 +10,7 @@ sealed abstract class Free[U <: Union, +A] {
 
   def flatMap[B](f: A => Free[U, B]): Free[U, B]
 
-  def withFilter(p: A => Boolean)(implicit F: Member[Choice, U]): Free[U, A] = flatMap(a => if (p(a)) Pure(a) else Choice.zero)
+  def withFilter[M[_]](p: A => Boolean)(implicit F: Member[Choice[M], U]): Free[U, A] = flatMap(a => if (p(a)) Pure(a) else Choice.zero)
 
   @tailrec
   final def resume: Free[U, A] =
@@ -86,7 +86,7 @@ object Free {
       def flatMap[A, B](fa: Free[U, A])(f: A => Free[U, B]): Free[U, B] = fa.flatMap(f)
     }
 
-  implicit def FreeMonadPlus[U <: Union](implicit F: Member[Choice, U]): MonadPlus[({ type F[A] = Free[U, A] })#F] =
+  implicit def FreeMonadPlus[U <: Union, M[_]](implicit F: Member[Choice[M], U]): MonadPlus[({ type F[A] = Free[U, A] })#F] =
     new MonadPlus[({ type F[A] = Free[U, A] })#F] {
       def zero[A]: Free[U, A] = Choice.zero
       def pure[A](a: A): Free[U, A] = Pure(a)

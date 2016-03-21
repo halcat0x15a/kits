@@ -14,9 +14,9 @@ object Writer {
 
   case class Tell[W](value: W) extends Writer[W] { type T = Unit }
 
-  def run[U <: Union, W, A](free: Free[Writer[W] :+: U, A]): Free[U, (Vector[W], A)] =
-    Free.handleRelay(free)(a => Pure((Vector.empty[W], a))) {
-      case Tell(v) => k => k(()).map { case (w, a) => (v +: w, a) }
+  def run[U <: Union, W, A](free: Free[Writer[W] :+: U, A])(implicit W: Monoid[W]): Free[U, (W, A)] =
+    Free.handleRelay(free)(a => Pure((W.empty, a))) {
+      case Tell(v) => k => k(()).map { case (w, a) => (W.append(v, w), a) }
     }
 
   def tell[U <: Union, W](value: W)(implicit F: Member[Writer[W], U]): Free[U, Unit] = Free(F.inject(Tell(value)))
