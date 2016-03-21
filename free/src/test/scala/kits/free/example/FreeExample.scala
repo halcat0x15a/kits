@@ -9,74 +9,60 @@ import org.scalatest.FunSuite
 class FreeExample extends FunSuite {
 
   test("Reader") {
-    def add1[U <: Union: Reader[Int]#Member]: Free[U, Int] =
-      for (a <- Reader.ask) yield a + 1
-    assert(Free.run(Reader.run(add1[Reader[Int] :+: Void], 10)) == 11)
-    def add11[U <: Union: Reader[Int]#Member]: Free[U, Int] =
-      Reader.local(add1)(((_: Int) + 10))
-    assert(Free.run(Reader.run(add11[Reader[Int] :+: Void], 10)) == 21)
+    def e1[U <: Union: Reader[Int]#Member]: Free[U, Int] = for (a <- Reader.ask) yield a + 1
+    val r1 = e1[Reader[Int] :+: Void] |> Reader.run(10) |> Free.run
+    assert(r1 == 11)
+    def e2[U <: Union: Reader[Int]#Member]: Free[U, Int] = Reader.local(e1)((_: Int) + 10)
+    val r2 = e2[Reader[Int] :+: Void] |> Reader.run(10) |> Free.run
+    assert(r2 == 21)
   }
 
   test("Writer") {
-    def rdwr[U <: Union: Reader[Int]#Member: Writer[Vector[String]]#Member]: Free[U, Int] =
+    def e1[U <: Union: Reader[Int]#Member: Writer[String]#Member]: Free[U, Int] =
       for {
-        _ <- Writer.tell(Vector("begin"))
+        _ <- Writer.tell("begin")
         n <- Reader.ask
-        _ <- Writer.tell(Vector("end"))
+        _ <- Writer.tell("end")
       } yield n
-    assert(Free.run(Writer.run(Reader.run(rdwr[Reader[Int] :+: Writer[Vector[String]] :+: Void], 10))) == (Vector("begin", "end"), 10))
-    assert(Free.run(Reader.run(Writer.run(rdwr[Writer[Vector[String]] :+: Reader[Int] :+: Void]), 10)) == (Vector("begin", "end"), 10))
+    val r1 = e1[Reader[Int] :+: Writer[String] :+: Void] |> Reader.run(10) |> Writer.run |> Free.run
+    assert(r1 == (Vector("begin", "end"), 10))
+    val r2 = e1[Writer[String] :+: Reader[Int] :+: Void] |> Writer.run |> Reader.run(10) |> Free.run
+    assert(r2 == (Vector("begin", "end"), 10))
   }
 
   test("Error") {
-    def tooBig[U <: Union: Error[Int]#Member](n: Int): Free[U, Int] =
-      if (n <= 5)
+    def e1[U <: Union: Error[Int]#Member](n: Int): Free[U, Int] =
+      if (n > 5)
         Error.fail(n)
       else
         Pure(n)
-    assert(Free.run(Error.run(tooBig[Error[Int] :+: Void](3))) == Left(3))
-    assert(Free.run(Error.run(tooBig[Error[Int] :+: Void](7))) == Right(7))
+    val r1 = e1[Error[Int] :+: Void](3) |> Error.run |> Free.run
+    assert(r1 == Right(3))
+    val r2 = e1[Error[Int] :+: Void](7) |> Error.run |> Free.run
+    assert(r2 == Left(7))
   }
 
   test("State") {
-    def add10And20[U <: Union: State[Int]#Member]: Free[U, Int] =
+    def e1[U <: Union: State[Int]#Member]: Free[U, Int] =
       for {
-        _ <- State.put(10)
         x <- State.get
         _ <- State.put(20)
         y <- State.get
       } yield x + y
-    assert(Free.run(State.run(add10And20[State[Int] :+: Void], 0)) == (20, 30))
+    val r1 = e1[State[Int] :+: Void] |> State.run(10) |> Free.run
+    assert(r1 == (20, 30))
   }
 
   test("Choice") {
-    def even[U <: Union: Choice[Vector]#Member]: Free[U, Int] = {
+    def e1[U <: Union: Choice#Member]: Free[U, Int] = {
       type F[A] = Free[U, A]
       for {
         n <- Traverse.foldMap(1 to 10)(n => Pure(n): F[Int])
         if n % 2 == 0
       } yield n
     }
-    assert(Free.run(Choice.run(even[Choice[Vector] :+: Void])) == Vector(2, 4, 6, 8, 10))
-  }
-
-  test("Stack safe") {
-    def count[U <: Union: State[Int]#Member](n: Int): Free[U, Int] =
-      if (n > 0)
-        State.modify((_: Int) + 1).flatMap(_ => count(n - 1))
-      else
-        State.get
-    assert(Free.run(State.eval(count[State[Int] :+: Void](10000), 0)) == 10000)
-    def rdwr[U <: Union: Reader[String]#Member: Writer[Vector[String]]#Member](n: Int): Free[U, Unit] =
-      if (n > 0)
-        for {
-          s <- Reader.ask
-          _ <- Writer.tell(Vector(s))
-          _ <- rdwr(n - 1)
-        } yield ()
-      else
-        Pure(())
-    assert(Free.run(Reader.run(Writer.run(rdwr[Writer[Vector[String]] :+: Reader[String] :+: Void](10000)), "hoge"))._1.size == 10000)
+    val r1 = e1[Choice :+: Void] |> Choice.run |> Free.run
+    assert(r1 == Vector(2, 4, 6, 8, 10))
   }
 
 }

@@ -14,15 +14,15 @@ object State {
 
   case class Put[S](state: S) extends State[S] { type T = Unit }
 
-  def run[U <: Union, S, A](free: Free[State[S] :+: U, A], state: S): Free[U, (S, A)] =
+  def run[U <: Union, S, A](state: S)(free: Free[State[S] :+: U, A]): Free[U, (S, A)] =
     Free.handleRelay(free, state)((a, s) => Pure((s, a))) {
       case Get() => s => k => k(s, s)
       case Put(s) => _ => k => k((), s)
     }
 
-  def eval[U <: Union, S, A](free: Free[State[S] :+: U, A], state: S): Free[U, A] = run(free, state).map(_._2)
+  def eval[U <: Union, S, A](free: Free[State[S] :+: U, A], state: S): Free[U, A] = run(state)(free).map(_._2)
 
-  def exec[U <: Union, S, A](free: Free[State[S] :+: U, A], state: S): Free[U, S] = run(free, state).map(_._1)
+  def exec[U <: Union, S, A](free: Free[State[S] :+: U, A], state: S): Free[U, S] = run(state)(free).map(_._1)
 
   def get[U <: Union, S](implicit F: Member[State[S], U]): Free[U, S] = Free(F.inject(Get()))
 

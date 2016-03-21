@@ -12,7 +12,7 @@ object Reader {
 
   case class Ask[R]() extends Reader[R] { type T = R }
 
-  def run[U <: Union, R, A](free: Free[Reader[R] :+: U, A], value: R): Free[U, A] =
+  def run[U <: Union, R, A](value: R)(free: Free[Reader[R] :+: U, A]): Free[U, A] =
     Free.handleRelay(free)(a => Pure(a)) {
       case Ask() => k => k(value)
     }
