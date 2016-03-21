@@ -18,6 +18,8 @@ object Writer {
     Free.handleRelay(free)(a => Pure((W.empty, a))) {
       case Tell(v) => k => k(()).map { case (w, a) => (W.append(v, w), a) }
     }
+  
+  def exec[U <: Union, W: Monoid, A](free: Free[Writer[W] :+: U, A]): Free[U, W] = run(free).map(_._1)
 
   def tell[U <: Union, W](value: W)(implicit F: Member[Writer[W], U]): Free[U, Unit] = Free(F.inject(Tell(value)))
 

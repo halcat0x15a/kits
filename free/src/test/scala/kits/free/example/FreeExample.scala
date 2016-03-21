@@ -23,11 +23,11 @@ class FreeExample extends FunSuite {
         _ <- Writer.tell("foo")
         _ <- Writer.tell("bar")
       } yield ()
-    val r1 = Free.run(Writer.run(e1[Writer[String] :+: Void]))
-    assert(r1 == ("foobar", ()))
+    val r1 = Free.run(Writer.exec(e1[Writer[String] :+: Void]))
+    assert(r1 == "foobar")
     def e2[U <: Union: Writer[String]#Member]: Free[U, Unit] = Writer.listen(e1).flatMap { case (w, _) => Writer.tell(w) }
-    val r2 = Free.run(Writer.run(e2[Writer[String] :+: Void]))
-    assert(r2 == ("foobarfoobar", ()))
+    val r2 = Free.run(Writer.exec(e2[Writer[String] :+: Void]))
+    assert(r2 == "foobarfoobar")
     def e3[U <: Union: Reader[Int]#Member: Writer[Vector[String]]#Member]: Free[U, Int] =
       for {
         _ <- Writer.tell(Vector("begin"))
