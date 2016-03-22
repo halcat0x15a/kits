@@ -15,9 +15,9 @@ object State {
   case class Put[S](state: S) extends State[S] { type T = Unit }
 
   def run[U <: Union, S, A](free: Free[State[S] :+: U, A], state: S): Free[U, (S, A)] =
-    Free.handleRelay(free, state)((a, s) => Pure((s, a))) {
-      case Get() => s => k => k(s, s)
-      case Put(s) => _ => k => k((), s)
+    Free.handleRelay(free, state)((a, s) => Right(Pure((s, a)): Free[U, (S, A)])) {
+      case (Get(), s) => k => Left((k(s), s))
+      case (Put(s), _) => k => Left((k(()), s))
     }
 
   def eval[U <: Union, S, A](free: Free[State[S] :+: U, A], state: S): Free[U, A] = run(free, state).map(_._2)

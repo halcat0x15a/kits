@@ -18,7 +18,7 @@ object Lift {
     Free(F.inject(new Lift[M] { type T = A; val value = ma }))
 
   def run[U <: Union, M[_], A](free: Free[Lift[M] :+: Void, A])(implicit M: Monad[M]): M[A] =
-    (free.resume: @unchecked) match {
+    (free: @unchecked) match {
       case Pure(a) => M.pure(a)
       case Impure(Inl(lift), k) => M.flatMap(lift.value)(a => run(k(a)))
     }

@@ -2,7 +2,7 @@ package kits.free
 
 import scala.annotation.tailrec
 
-sealed abstract class Arrows[U <: Union, -A, +B] {
+sealed abstract class Arrows[U <: Union, -A, +B] extends (A => Free[U, B]) {
 
   def apply(a: A): Free[U, B] = {
     @tailrec
@@ -10,7 +10,7 @@ sealed abstract class Arrows[U <: Union, -A, +B] {
       arrows.view match {
         case Arrows.One(h) => h(value)
         case Arrows.Cons(h, t) =>
-          (h(value).resume: @unchecked) match {
+          h(value) match {
             case Pure(value) => go(t, value)
             case Impure(union, arrows) => Impure(union, arrows ++ t)
           }
