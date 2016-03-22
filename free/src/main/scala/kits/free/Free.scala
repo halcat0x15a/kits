@@ -54,7 +54,7 @@ object Free {
       case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => handleRelay(k(x), state)(f)(g)))
     }
 
-  def handleRelay[F <: { type T }, U <: Union, A, B](free: Free[F :+: U, A])(f: A => Either[Free[F :+: U, A], Free[U, B]])(g: F => (Any => Free[F :+: U, A]) => Either[Free[F :+: U, A], Free[U, B]]): Free[U, B] = handleRelay(free, ())((a, _) => f(a).left.map(a => (a, ())))((fa, _) => k => g(fa)(k).left.map(a => (a, ())))
+  def handleRelay[F <: { type T }, U <: Union, A, B](free: Free[F :+: U, A])(f: A => Free[U, B])(g: F => (Any => Free[F :+: U, A]) => Either[Free[F :+: U, A], Free[U, B]]): Free[U, B] = handleRelay(free, ())((a, _) => Right(f(a)))((fa, _) => k => g(fa)(k).left.map(a => (a, ())))
 
   def interpose[F <: { type T }, U <: Union, A, B, S](free: Free[U, A], state: S)(f: (A, S) => Either[(Free[U, A], S), Free[U, B]])(g: (F, S) => (Any => Free[U, A]) => Either[(Free[U, A], S), Free[U, B]])(implicit F: Member[F, U]): Free[U, B] =
     free match {
@@ -70,12 +70,11 @@ object Free {
               case Right(free) => free
               case Left((free, state)) => interpose(free, state)(f)(g)
             }
-          case None =>
-            Impure(u, Arrows.singleton((x: Any) => interpose(k(x), state)(f)(g)))
+          case None => Impure(u, Arrows.singleton((x: Any) => interpose(k(x), state)(f)(g)))
         }
     }
 
-  def interpose[F <: { type T }, U <: Union, A, B](free: Free[U, A])(f: A => Either[Free[U, A], Free[U, B]])(g: F => (Any => Free[U, A]) => Either[Free[U, A], Free[U, B]])(implicit F: Member[F, U]): Free[U, B] = interpose(free, ())((a, _) => f(a).left.map(a => (a, ())))((fa: F, _) => k => g(fa)(k).left.map(a => (a, ())))
+  def interpose[F <: { type T }, U <: Union, A, B](free: Free[U, A])(f: A => Free[U, B])(g: F => (Any => Free[U, A]) => Either[Free[U, A], Free[U, B]])(implicit F: Member[F, U]): Free[U, B] = interpose(free, ())((a, _) => Right(f(a)))((fa: F, _) => k => g(fa)(k).left.map(a => (a, ())))
 
   implicit def FreeMonad[U <: Union]: Monad[({ type F[A] = Free[U, A] })#F] =
     new Monad[({ type F[A] = Free[U, A] })#F] {
