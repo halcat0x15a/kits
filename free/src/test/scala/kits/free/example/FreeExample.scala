@@ -78,4 +78,29 @@ class FreeExample extends FunSuite {
     assert(r1 == Vector(2, 4, 6, 8, 10))
   }
 
+  test("Stack safe") {
+    def e1[U <: Union: State[Int]#Member](n: Int): Free[U, Unit] =
+      if (n <= 0)
+        Pure(())
+      else
+        for {
+          x <- State.get
+          _ <- State.put(x + 1)
+          _ <- e1(n - 1)
+        } yield ()
+    val r1 = Free.run(State.exec(e1[State[Int] :+: Void](10000), 0))
+    assert(r1 == 10000)
+    def e2[U <: Union: Reader[String]#Member: Writer[String]#Member](n: Int): Free[U, Unit] =
+      if (n <= 0)
+        Pure(())
+      else
+        for {
+          x <- Reader.ask
+          _ <- Writer.tell(x)
+          _ <- e2(n - 1)
+        } yield ()
+    val r2 = Free.run(Reader.run(Writer.exec(e2[Writer[String] :+: Reader[String] :+: Void](10000)), "0"))
+    assert(r2.length == 10000)
+  }
+
 }
