@@ -47,4 +47,16 @@ object Choice {
     })
   }
 
+  def ifte[U <: Union: Choice[M]#Member, M[_], A, B](t: Free[U, A])(th: A => Free[U, B])(el: Free[U, B]): Free[U, B] =
+    split(t).flatMap {
+      case None => el
+      case Some((a, free)) => plus(th(a), free.flatMap(th))
+    }
+
+  def once[U <: Union: Choice[M]#Member, M[_], A, B](free: Free[U, A]): Free[U, A] =
+    split(free).flatMap {
+      case None => zero
+      case Some((a, _)) => Pure(a)
+    }
+
 }
