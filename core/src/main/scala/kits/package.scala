@@ -18,10 +18,4 @@ package object kits {
 
   def Prod[A](a: A): Prod[A] = a.asInstanceOf[Prod[A]]
 
-  implicit class Pipe[A](val self: A) extends AnyVal {
-
-    def |>[B](f: A => B): B = f(self)
-
-  }
-
 }
