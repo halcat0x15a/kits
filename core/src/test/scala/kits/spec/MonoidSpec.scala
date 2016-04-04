@@ -8,14 +8,6 @@ import org.scalatest.prop.Checkers
 
 class MonoidSpec extends FunSpec with Checkers {
 
-  implicit def arbConj: Arbitrary[Conj] = Arbitrary(Arbitrary.arbitrary[Boolean].map(Conj))
-
-  implicit def arbDisj: Arbitrary[Disj] = Arbitrary(Arbitrary.arbitrary[Boolean].map(Disj))
-
-  implicit def arbSum[A](implicit A: Arbitrary[A]): Arbitrary[Sum[A]] = Arbitrary(A.arbitrary.map(Sum))
-
-  implicit def arbProd[A](implicit A: Arbitrary[A]): Arbitrary[Prod[A]] = Arbitrary(A.arbitrary.map(Prod))
-
   def law[A: Arbitrary](implicit A: Monoid[A]): Unit = {
     it("rightIdentity") {
       check { a: A =>
@@ -36,10 +28,12 @@ class MonoidSpec extends FunSpec with Checkers {
 
   describe("Monoid") {
     describe("Conj") {
-      law[Conj]
+      import kits.Monoid.ConjMonoid
+      law[Boolean]
     }
     describe("Disj") {
-      law[Disj]
+      import kits.Monoid.DisjMonoid
+      law[Boolean]
     }
     describe("String") {
       law[String]
@@ -69,10 +63,12 @@ class MonoidSpec extends FunSpec with Checkers {
       law[Set[AnyVal]]
     }
     describe("Sum") {
-      law[Sum[Int]]
+      import kits.Monoid.SumMonoid
+      law[Int]
     }
     describe("Prod") {
-      law[Prod[Int]]
+      import kits.Monoid.ProdMonoid
+      law[Int]
     }
   }
 

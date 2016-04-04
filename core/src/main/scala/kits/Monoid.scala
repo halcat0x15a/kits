@@ -14,33 +14,33 @@ object Monoid {
 
   def append[A](x: A, y: A)(implicit A: Monoid[A]): A = A.append(x, y)
 
-  implicit val ConjMonoid: Monoid[Conj] =
-    new Monoid[Conj] {
-      lazy val empty: Conj = Conj(true)
-      def append(x: Conj, y: Conj): Conj = Conj(x && y)
+  implicit val ConjMonoid: Monoid[Boolean] =
+    new Monoid[Boolean] {
+      val empty: Boolean = true
+      def append(x: Boolean, y: Boolean): Boolean = x && y
     }
 
-  implicit val DisjMonoid: Monoid[Disj] =
-    new Monoid[Disj] {
-      lazy val empty: Disj = Disj(false)
-      def append(x: Disj, y: Disj): Disj = Disj(x || y)
+  implicit val DisjMonoid: Monoid[Boolean] =
+    new Monoid[Boolean] {
+      val empty: Boolean = false
+      def append(x: Boolean, y: Boolean): Boolean = x || y
     }
 
   implicit val StringMonoid: Monoid[String] =
     new Monoid[String] {
-      lazy val empty: String = ""
+      val empty: String = ""
       def append(x: String, y: String): String = x + y
     }
 
   implicit val UnitMonoid: Monoid[Unit] =
     new Monoid[Unit] {
-      lazy val empty: Unit = ()
+      val empty: Unit = ()
       def append(x: Unit, y: Unit): Unit = ()
     }
 
   implicit def PairMonoid[A, B](implicit A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
     new Monoid[(A, B)] {
-      lazy val empty: (A, B) = (A.empty, B.empty)
+      val empty: (A, B) = (A.empty, B.empty)
       def append(x: (A, B), y: (A, B)): (A, B) =
         (x, y) match {
           case ((ax, bx), (ay, by)) => (A.append(ax, ay), B.append(bx, by))
@@ -49,7 +49,7 @@ object Monoid {
 
   implicit def TripleMonoid[A, B, C](implicit A: Monoid[A], B: Monoid[B], C: Monoid[C]): Monoid[(A, B, C)] =
     new Monoid[(A, B, C)] {
-      lazy val empty: (A, B, C) = (A.empty, B.empty, C.empty)
+      val empty: (A, B, C) = (A.empty, B.empty, C.empty)
       def append(x: (A, B, C), y: (A, B, C)): (A, B, C) =
         (x, y) match {
           case ((ax, bx, cx), (ay, by, cy)) => (A.append(ax, ay), B.append(bx, by), C.append(cx, cy))
@@ -58,7 +58,7 @@ object Monoid {
 
   implicit def OptionMonoid[A](implicit A: Monoid[A]): Monoid[Option[A]] =
     new Monoid[Option[A]] {
-      lazy val empty: Option[A] = None
+      val empty: Option[A] = None
       def append(x: Option[A], y: Option[A]): Option[A] =
         (x, y) match {
           case (None, None) => None
@@ -70,28 +70,28 @@ object Monoid {
 
   implicit def MapMonoid[K, V](implicit V: Monoid[V]): Monoid[Map[K, V]] =
     new Monoid[Map[K, V]] {
-      lazy val empty: Map[K, V] = Map.empty
+      val empty: Map[K, V] = Map.empty
       def append(x: Map[K, V], y: Map[K, V]): Map[K, V] =
         x.foldLeft(y) {
           case (a, (k, v)) => a.updated(k, a.get(k).fold(v)(V.append(v, _)))
         }
     }
 
-  implicit def SumMonoid[A](implicit A: Numeric[A]): Monoid[Sum[A]] =
-    new Monoid[Sum[A]] {
-      lazy val empty: Sum[A] = Sum(A.zero)
-      def append(x: Sum[A], y: Sum[A]): Sum[A] = Sum(A.plus(x, y))
+  implicit def SumMonoid[A](implicit A: Numeric[A]): Monoid[A] =
+    new Monoid[A] {
+      val empty: A = A.zero
+      def append(x: A, y: A): A = A.plus(x, y)
     }
 
-  implicit def ProdMonoid[A](implicit A: Numeric[A]): Monoid[Prod[A]] =
-    new Monoid[Prod[A]] {
-      lazy val empty: Prod[A] = Prod(A.one)
-      def append(x: Prod[A], y: Prod[A]): Prod[A] = Prod(A.times(x, y))
+  implicit def ProdMonoid[A](implicit A: Numeric[A]): Monoid[A] =
+    new Monoid[A] {
+      val empty: A = A.one
+      def append(x: A, y: A): A = A.times(x, y)
     }
 
   implicit def OrderingMonoid[A]: Monoid[Ordering[A]] =
     new Monoid[Ordering[A]] {
-      lazy val empty: Ordering[A] =
+      val empty: Ordering[A] =
         new Ordering[A] {
           def compare(a: A, b: A): Int = 0
         }
@@ -107,7 +107,7 @@ object Monoid {
 
   implicit def MonadPlusMonoid[F[_], A](implicit F: MonadPlus[F]): Monoid[F[A]] =
     new Monoid[F[A]] {
-      lazy val empty: F[A] = F.zero
+      val empty: F[A] = F.zero
       def append(x: F[A], y: F[A]): F[A] = F.plus(x, y)
     }
 
