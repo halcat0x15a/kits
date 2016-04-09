@@ -37,7 +37,8 @@ object Choice {
 
   def split[U <: Union: Choice[M]#Member, M[_], A](free: Free[U, A]): Free[U, Option[(A, Free[U, A])]] = {
     type F[A] = Free[U, A]
-    Free.interpose(free, Nil: List[F[A]])((a, stack) => Right(Pure(Some((a, Traverse.fold(stack)))): Free[U, Option[(A, Free[U, A])]]))((fa: Choice[M], stack) => fa match {
+    import Traverse.Ops
+    Free.interpose(free, Nil: List[F[A]])((a, stack) => Right(Pure(Some((a, stack.foldMap(a => a: F[A])))): Free[U, Option[(A, Free[U, A])]]))((fa: Choice[M], stack) => fa match {
       case Zero() => _ =>
         stack match {
           case Nil => Right(Pure(None))

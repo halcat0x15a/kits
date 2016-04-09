@@ -1,5 +1,7 @@
 package kits
 
+import scala.language.implicitConversions
+
 trait Applicative[F[_]] extends Functor[F] { F =>
 
   def pure[A](a: A): F[A]
@@ -18,19 +20,23 @@ trait Applicative[F[_]] extends Functor[F] { F =>
       def ap[A, B](fga: F[G[A]])(f: F[G[A => B]]): F[G[B]] = F.map(fga, f)(G.ap(_)(_))
     }
 
+  class ApplicativeOps[A](self: F[A]) extends FunctorOps(self) {
+
+    def ap[B](f: F[A => B]): F[B] = F.ap(self)(f)
+
+    def map[B, C](fb: F[B])(f: (A, B) => C): F[C] = F.map(self, fb)(f)
+
+    def map[B, C, D](fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = F.map(self, fb, fc)(f)
+
+  }
+
 }
 
 object Applicative {
 
-  def apply[F[_]](implicit F: Applicative[F]): Applicative[F] = F
+  implicit def Ops[A](self: A)(implicit A: Unify[Applicative, A]): Applicative[A.F]#ApplicativeOps[A.A] = new A.TC.ApplicativeOps[A.A](A(self))
 
-  def ap[F[_], A, B](fa: F[A])(f: F[A => B])(implicit F: Applicative[F]): F[B] = F.ap(fa)(f)
-
-  def map[F[_], A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C)(implicit F: Applicative[F]): F[C] = F.map(fa, fb)(f)
-
-  def map[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] = F.map(fa, fb, fc)(f)
-
-  implicit def monoid[A](implicit A: Monoid[A]): Applicative[({ type F[B] = A })#F] =
+  implicit def Monoid[A](implicit A: Monoid[A]): Applicative[({ type F[B] = A })#F] =
     new Applicative[({ type F[B] = A })#F] {
       def pure[B](b: B): A = A.empty
       def ap[B, C](fb: A)(f: A): A = A.append(f, fb)

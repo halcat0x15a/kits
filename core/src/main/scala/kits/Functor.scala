@@ -1,5 +1,7 @@
 package kits
 
+import scala.language.implicitConversions
+
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.{Try, Success}
 import scala.util.control.TailCalls._
@@ -13,9 +15,17 @@ trait Functor[F[_]] { F =>
       def map[A, B](fga: F[G[A]])(f: A => B): F[G[B]] = F.map(fga)(G.map(_)(f))
     }
 
+  class FunctorOps[A](self: F[A]) {
+
+    def map[B](f: A => B): F[B] = F.map(self)(f)
+
+  }
+
 }
 
 object Functor {
+
+  implicit def Ops[A](self: A)(implicit A: Unify[Functor, A]): Functor[A.F]#FunctorOps[A.A] = new A.TC.FunctorOps[A.A](A(self))
 
   implicit val Identity: Monad[Identity] with Traverse[Identity] =
     new Monad[Identity] with Traverse[Identity] {

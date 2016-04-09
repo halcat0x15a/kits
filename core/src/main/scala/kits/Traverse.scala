@@ -1,5 +1,7 @@
 package kits
 
+import scala.language.implicitConversions
+
 trait Traverse[F[_]] extends Functor[F] { F =>
 
   def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
@@ -9,8 +11,8 @@ trait Traverse[F[_]] extends Functor[F] { F =>
   def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] = traverse(fga)(identity)
 
   def foldMap[A, B: Monoid](fa: F[A])(f: A => B): B = {
-    type G[A] = B
-    traverse(fa)(a => f(a): G[B])
+    type F[A] = B
+    traverse(fa)(a => f(a): F[A])
   }
 
   def fold[A: Monoid](fa: F[A]): A = foldMap(fa)(identity)
@@ -21,16 +23,22 @@ trait Traverse[F[_]] extends Functor[F] { F =>
         F.traverse(fga)(G.traverse(_)(f))
     }
 
+  class TraverseOps[A](self: F[A]) extends FunctorOps(self) {
+
+    def traverse[B](f: A => B)(implicit B: Unify[Applicative, B]): B.F[F[B.A]] = F.traverse(self)(a => B(f(a)))(B.TC)
+
+    def sequence(implicit A: Unify[Applicative, A]): A.F[F[A.A]] = F.traverse(self)(a => A(a))(A.TC)
+
+    def foldMap[B: Monoid](f: A => B): B = F.foldMap(self)(f)
+
+    def fold(implicit A: Monoid[A]): A = F.fold(self)
+
+  }
+
 }
 
 object Traverse {
 
-  def traverse[F[_], G[_]: Applicative, A, B](fa: F[A])(f: A => G[B])(implicit F: Traverse[F]): G[F[B]] = F.traverse(fa)(f)
-
-  def sequence[F[_], G[_]: Applicative, A](fga: F[G[A]])(implicit F: Traverse[F]): G[F[A]] = F.sequence(fga)
-
-  def foldMap[F[_], A, B: Monoid](fa: F[A])(f: A => B)(implicit F: Traverse[F]): B = F.foldMap(fa)(f)
-
-  def fold[F[_], A: Monoid](fa: F[A])(implicit F: Traverse[F]): A = F.fold(fa)
+  implicit def Ops[A](self: A)(implicit A: Unify[Traverse, A]): Traverse[A.F]#TraverseOps[A.A] = new A.TC.TraverseOps[A.A](A(self))
 
 }
