@@ -14,8 +14,6 @@ trait Monad[F[_]] extends Applicative[F] {
 
 object Monad {
 
-  def apply[F[_]](implicit F: Monad[F]): Monad[F] = F
-
   def flatMap[F[_], A, B](fa: F[A])(f: A => F[B])(implicit F: Monad[F]): F[B] = F.flatMap(fa)(f)
 
   def flatten[F[_], A](ffa: F[F[A]])(implicit F: Monad[F]): F[A] = F.flatten(ffa)

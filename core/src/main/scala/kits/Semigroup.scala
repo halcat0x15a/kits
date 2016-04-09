@@ -8,35 +8,31 @@ trait Semigroup[A] {
 
 object Semigroup {
 
-  def apply[A](implicit A: Monoid[A]): Monoid[A] = A
-
-  def append[A](x: A, y: A)(implicit A: Monoid[A]): A = A.append(x, y)
-
-  implicit val ConjMonoid: Monoid[Boolean] =
+  implicit val Conj: Monoid[Boolean] =
     new Monoid[Boolean] {
       val empty: Boolean = true
       def append(x: Boolean, y: Boolean): Boolean = x && y
     }
 
-  implicit val DisjMonoid: Monoid[Boolean] =
+  implicit val Disj: Monoid[Boolean] =
     new Monoid[Boolean] {
       val empty: Boolean = false
       def append(x: Boolean, y: Boolean): Boolean = x || y
     }
 
-  implicit val StringMonoid: Monoid[String] =
+  implicit val String: Monoid[String] =
     new Monoid[String] {
       val empty: String = ""
       def append(x: String, y: String): String = x + y
     }
 
-  implicit val UnitMonoid: Monoid[Unit] =
+  implicit val Unit: Monoid[Unit] =
     new Monoid[Unit] {
       val empty: Unit = ()
       def append(x: Unit, y: Unit): Unit = ()
     }
 
-  implicit def PairMonoid[A, B](implicit A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
+  implicit def Pair[A, B](implicit A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
     new Monoid[(A, B)] {
       val empty: (A, B) = (A.empty, B.empty)
       def append(x: (A, B), y: (A, B)): (A, B) =
@@ -45,7 +41,7 @@ object Semigroup {
         }
     }
 
-  implicit def TripleMonoid[A, B, C](implicit A: Monoid[A], B: Monoid[B], C: Monoid[C]): Monoid[(A, B, C)] =
+  implicit def Triple[A, B, C](implicit A: Monoid[A], B: Monoid[B], C: Monoid[C]): Monoid[(A, B, C)] =
     new Monoid[(A, B, C)] {
       val empty: (A, B, C) = (A.empty, B.empty, C.empty)
       def append(x: (A, B, C), y: (A, B, C)): (A, B, C) =
@@ -54,7 +50,7 @@ object Semigroup {
         }
     }
 
-  implicit def OptionMonoid[A](implicit A: Semigroup[A]): Monoid[Option[A]] =
+  implicit def Option[A](implicit A: Semigroup[A]): Monoid[Option[A]] =
     new Monoid[Option[A]] {
       val empty: Option[A] = None
       def append(x: Option[A], y: Option[A]): Option[A] =
@@ -66,38 +62,38 @@ object Semigroup {
         }
     }
 
-  implicit def MapMonoid[K, V](implicit V: Semigroup[V]): Monoid[Map[K, V]] =
+  implicit def Map[K, V](implicit V: Semigroup[V]): Monoid[Map[K, V]] =
     new Monoid[Map[K, V]] {
-      val empty: Map[K, V] = Map.empty
+      val empty: Map[K, V] = scala.collection.immutable.Map.empty
       def append(x: Map[K, V], y: Map[K, V]): Map[K, V] =
         x.foldLeft(y) {
           case (a, (k, v)) => a.updated(k, a.get(k).fold(v)(V.append(v, _)))
         }
     }
 
-  implicit def MinSemigroup[A](implicit A: Ordering[A]): Semigroup[A] =
+  implicit def Min[A](implicit A: Ordering[A]): Semigroup[A] =
     new Semigroup[A] {
       def append(x: A, y: A): A = A.min(x, y)
     }
 
-  implicit def MaxSemigroup[A](implicit A: Ordering[A]): Semigroup[A] =
+  implicit def Max[A](implicit A: Ordering[A]): Semigroup[A] =
     new Semigroup[A] {
       def append(x: A, y: A): A = A.max(x, y)
     }
 
-  implicit def SumMonoid[A](implicit A: Numeric[A]): Monoid[A] =
+  implicit def Sum[A](implicit A: Numeric[A]): Monoid[A] =
     new Monoid[A] {
       val empty: A = A.zero
       def append(x: A, y: A): A = A.plus(x, y)
     }
 
-  implicit def ProdMonoid[A](implicit A: Numeric[A]): Monoid[A] =
+  implicit def Prod[A](implicit A: Numeric[A]): Monoid[A] =
     new Monoid[A] {
       val empty: A = A.one
       def append(x: A, y: A): A = A.times(x, y)
     }
 
-  implicit def OrderingMonoid[A]: Monoid[Ordering[A]] =
+  implicit def Ordering[A]: Monoid[Ordering[A]] =
     new Monoid[Ordering[A]] {
       val empty: Ordering[A] =
         new Ordering[A] {
@@ -113,7 +109,7 @@ object Semigroup {
         }
     }
 
-  implicit def MonadPlusMonoid[F[_], A](implicit F: MonadPlus[F]): Monoid[F[A]] =
+  implicit def MonadPlus[F[_], A](implicit F: MonadPlus[F]): Monoid[F[A]] =
     new Monoid[F[A]] {
       val empty: F[A] = F.zero
       def append(x: F[A], y: F[A]): F[A] = F.plus(x, y)
