@@ -17,19 +17,14 @@ object Choice {
   case class Plus[M[_]]() extends Choice[M] { type T = Boolean }
 
   def run[U <: Union, M[_], A](free: Free[Choice[M] :+: U, A])(implicit M: MonadPlus[M]): Free[U, M[A]] =
-    Free.handleRelay(free, (M.zero[A], Nil: List[Free[Choice[M] :+: U, A]]))((a, s) => s match {
-      case (ma, Nil) => Right(Pure(M.plus(ma, M.pure(a))): Free[U, M[A]])
-      case (ma, x :: xs) => Left((x, (M.plus(ma, M.pure(a)), xs)))
-    })((fa, s) => fa match {
-      case Zero() => _ =>
-        s match {
-          case (ma, Nil) => Right(Pure(ma))
-          case (ma, x :: xs) => Left((x, (ma, xs)))
-        }
-      case Plus() => k =>
-        val (ma, stack) = s
-        Left((k(true), (ma, k(false) :: stack)))
-    })
+    Free.handleRelay(free, (M.zero[A], List.empty[Free[Choice[M] :+: U, A]])) {
+      case (a, (ma, Nil)) => Right(M.plus(ma, M.pure(a)))
+      case (a, (ma, x :: xs)) => Left((x, (M.plus(ma, M.pure(a)), xs)))
+    } {
+      case (Zero(), (ma, Nil)) => _ => Right(Pure(ma))
+      case (Zero(), (ma, x :: xs)) => _ => Left((x, (ma, xs)))
+      case (Plus(), (ma, stack)) => k => Left((k(true), (ma, k(false) :: stack)))
+    }
 
   def zero[U <: Union, M[_]](implicit F: Member[Choice[M], U]): Free[U, Nothing] = Free(F.inject[Nothing](Zero()))
 
@@ -37,7 +32,7 @@ object Choice {
 
   def split[U <: Union: Choice[M]#Member, M[_], A](free: Free[U, A]): Free[U, Option[(A, Free[U, A])]] = {
     import Traverse.Ops
-    Free.interpose(free, Nil: List[Free[U, A]])((a, stack) => Right(Pure(Some((a, stack.foldMap(a => a)))): Free[U, Option[(A, Free[U, A])]]))((fa: Choice[M], stack) => fa match {
+    Free.interpose(free, List.empty[Free[U, A]])((a, stack) => Right(Some((a, stack.foldMap(x => x))): Option[(A, Free[U, A])]))((fa: Choice[M], stack) => fa match {
       case Zero() => _ =>
         stack match {
           case Nil => Right(Pure(None))

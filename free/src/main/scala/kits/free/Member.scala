@@ -24,13 +24,13 @@ object Member {
         }
     }
 
-  implicit def RightMember[F <: { type T }, G <: { type T }, U <: Union](implicit member: Member[F, U]): Member[F, G :+: U] =
+  implicit def RightMember[F <: { type T }, G <: { type T }, U <: Union](implicit F: Member[F, U]): Member[F, G :+: U] =
     new Member[F, G :+: U] {
-      def inject[A](fa: F { type T = A }): (G :+: U) { type T = A } = Inr(member.inject(fa))
+      def inject[A](fa: F { type T = A }): (G :+: U) { type T = A } = Inr(F.inject(fa))
       def project[A](u: (G :+: U) { type T = A }): Option[F { type T = A }] =
         u match {
           case Inl(_) => None
-          case Inr(u) => member.project(u)
+          case Inr(u) => F.project(u)
         }
     }
 
