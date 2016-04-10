@@ -67,13 +67,12 @@ class FreeExample extends FunSuite {
   }
 
   test("Choice") {
-    def e1[U <: Union: Choice[Vector]#Member]: Free[U, Int] = {
-      type F[A] = Free[U, A]
+    import Traverse.Ops
+    def e1[U <: Union: Choice[Vector]#Member]: Free[U, Int] =
       for {
-        n <- Traverse.foldMap(1 to 10)(n => Pure(n): F[Int])
+        n <- (1 to 10).toIndexedSeq.foldMap(n => Pure(n): Free[U, Int])
         if n % 2 == 0
       } yield n
-    }
     val r1 = Free.run(Choice.run(e1[Choice[Vector] :+: Void]))
     assert(r1 == Vector(2, 4, 6, 8, 10))
   }

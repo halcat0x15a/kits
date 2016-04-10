@@ -1,24 +1,22 @@
 package kits
 
-trait Semigroup[A] {
+import scala.language.implicitConversions
+
+trait Semigroup[A] { A =>
 
   def append(x: A, y: A): A
+
+  class SemigroupOps(self: A) {
+
+    def append(xs: A*): A = xs.foldLeft(self)(A.append)
+
+  }
 
 }
 
 object Semigroup {
 
-  implicit val Conj: Monoid[Boolean] =
-    new Monoid[Boolean] {
-      val empty: Boolean = true
-      def append(x: Boolean, y: Boolean): Boolean = x && y
-    }
-
-  implicit val Disj: Monoid[Boolean] =
-    new Monoid[Boolean] {
-      val empty: Boolean = false
-      def append(x: Boolean, y: Boolean): Boolean = x || y
-    }
+  implicit def Ops[A](self: A)(implicit A: Semigroup[A]): Semigroup[A]#SemigroupOps = new A.SemigroupOps(self)
 
   implicit val String: Monoid[String] =
     new Monoid[String] {
@@ -79,18 +77,6 @@ object Semigroup {
   implicit def Max[A](implicit A: Ordering[A]): Semigroup[A] =
     new Semigroup[A] {
       def append(x: A, y: A): A = A.max(x, y)
-    }
-
-  implicit def Sum[A](implicit A: Numeric[A]): Monoid[A] =
-    new Monoid[A] {
-      lazy val empty: A = A.zero
-      def append(x: A, y: A): A = A.plus(x, y)
-    }
-
-  implicit def Prod[A](implicit A: Numeric[A]): Monoid[A] =
-    new Monoid[A] {
-      lazy val empty: A = A.one
-      def append(x: A, y: A): A = A.times(x, y)
     }
 
   implicit def Ordering[A]: Monoid[Ordering[A]] =

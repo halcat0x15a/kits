@@ -2,6 +2,7 @@ package kits
 
 import scala.language.implicitConversions
 
+import scala.collection.immutable.IndexedSeq
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.{Try, Success}
 import scala.util.control.TailCalls._
@@ -66,7 +67,7 @@ object Functor {
       override def filter[A](fa: List[A])(p: A => Boolean): List[A] = fa.filter(p)
       def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: List[A])(f: A => F[B])(implicit F: Applicative[F]): F[List[B]] =
-        fa.foldRight(F.pure(zero[B]))((a, ga) => F.map(f(a), ga)(_ :: _))
+        fa.foldRight(F.pure(zero[B]))((a, ga) => F.map2(f(a), ga)(_ :: _))
     }
 
   implicit val Vector: MonadPlus[Vector] with Traverse[Vector] =
@@ -78,7 +79,7 @@ object Functor {
       override def filter[A](fa: Vector[A])(p: A => Boolean): Vector[A] = fa.filter(p)
       def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: Vector[A])(f: A => F[B])(implicit F: Applicative[F]): F[Vector[B]] =
-        fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map(ga, f(a))(_ :+ _))
+        fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map2(ga, f(a))(_ :+ _))
     }
 
   implicit val IndexedSeq: MonadPlus[IndexedSeq] with Traverse[IndexedSeq] =
@@ -90,7 +91,7 @@ object Functor {
       override def filter[A](fa: IndexedSeq[A])(p: A => Boolean): IndexedSeq[A] = fa.filter(p)
       def flatMap[A, B](fa: IndexedSeq[A])(f: A => IndexedSeq[B]): IndexedSeq[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: IndexedSeq[A])(f: A => F[B])(implicit F: Applicative[F]): F[IndexedSeq[B]] =
-        fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map(ga, f(a))(_ :+ _))
+        fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map2(ga, f(a))(_ :+ _))
     }
 
   implicit val Stream: MonadPlus[Stream] with Traverse[Stream] =
@@ -102,7 +103,7 @@ object Functor {
       override def filter[A](fa: Stream[A])(p: A => Boolean): Stream[A] = fa.filter(p)
       def flatMap[A, B](fa: Stream[A])(f: A => Stream[B]): Stream[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: Stream[A])(f: A => F[B])(implicit F: Applicative[F]): F[Stream[B]] =
-        fa.foldRight(F.pure(zero[B]))((a, ga) => F.map(f(a), ga)(_ #:: _))
+        fa.foldRight(F.pure(zero[B]))((a, ga) => F.map2(f(a), ga)(_ #:: _))
     }
 
   implicit def Either[E]: Monad[({ type F[A] = Either[E, A] })#F] with Traverse[({ type F[A] = Either[E, A] })#F] =
@@ -118,7 +119,7 @@ object Functor {
     new Traverse[({ type F[A] = Map[K, A] })#F] {
       override def map[A, B](fa: Map[K, A])(f: A => B): Map[K, B] = fa.mapValues(f)
       def traverse[F[_], A, B](fa: Map[K, A])(f: A => F[B])(implicit F: Applicative[F]): F[Map[K, B]] =
-        fa.foldLeft(F.pure(scala.collection.immutable.Map.empty[K, B])) { case (ga, (k, a)) => F.map(ga, f(a))((a, b) => a + (k -> b)) }
+        fa.foldLeft(F.pure(scala.collection.immutable.Map.empty[K, B])) { case (ga, (k, a)) => F.map2(ga, f(a))((a, b) => a + (k -> b)) }
     }
 
   implicit val Set: MonadPlus[Set] with Traverse[Set] =
@@ -130,7 +131,7 @@ object Functor {
       override def filter[A](fa: Set[A])(p: A => Boolean): Set[A] = fa.filter(p)
       def flatMap[A, B](fa: Set[A])(f: A => Set[B]): Set[B] = fa.flatMap(f)
       def traverse[F[_], A, B](fa: Set[A])(f: A => F[B])(implicit F: Applicative[F]): F[Set[B]] =
-        fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map(ga, f(a))(_ + _))
+        fa.foldLeft(F.pure(zero[B]))((ga, a) => F.map2(ga, f(a))(_ + _))
     }
 
   implicit val Try: Monad[Try] =
