@@ -14,6 +14,8 @@ trait Applicative[F[_]] extends Functor[F] { F =>
 
   def map[A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = ap(fc)(map(fa, fb)((a, b) => f(a, b, _)))
 
+  def traverse[G[_], A, B](ga: G[A])(f: A => F[B])(implicit G: Traverse[G]): F[G[B]] = G.traverse(ga)(f)(F)
+
   def compose[G[_]](implicit G: Applicative[G]): Applicative[({ type H[A] = F[G[A]] })#H] =
     new Applicative[({ type H[A] = F[G[A]] })#H] {
       def pure[A](a: A): F[G[A]] = F.pure(G.pure(a))
@@ -34,12 +36,6 @@ trait Applicative[F[_]] extends Functor[F] { F =>
 
 object Applicative {
 
-  implicit def Ops[A](self: A)(implicit A: Unify[Applicative, A]): Applicative[A.F]#ApplicativeOps[A.A] = new A.TC.ApplicativeOps[A.A](A(self))
-
-  implicit def Monoid[A](implicit A: Monoid[A]): Applicative[({ type F[B] = A })#F] =
-    new Applicative[({ type F[B] = A })#F] {
-      def pure[B](b: B): A = A.empty
-      def ap[B, C](fb: A)(f: A): A = A.append(f, fb)
-    }
+  implicit def Ops[A](self: A)(implicit A: Unify[Applicative, A]): Applicative[A.F]#ApplicativeOps[A.A] = new A.TC.ApplicativeOps[A.A](A.to(self))
 
 }

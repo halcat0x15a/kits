@@ -76,14 +76,14 @@ object Free {
 
   def interpose[F <: { type T }, U <: Union, A, B](free: Free[U, A])(f: A => Free[U, B])(g: F => (Any => Free[U, A]) => Either[Free[U, A], Free[U, B]])(implicit F: Member[F, U]): Free[U, B] = interpose(free, ())((a, _) => Right(f(a)))((fa: F, _) => k => g(fa)(k).left.map(a => (a, ())))
 
-  implicit def FreeMonad[U <: Union]: Monad[({ type F[A] = Free[U, A] })#F] =
+  implicit def Monad[U <: Union]: Monad[({ type F[A] = Free[U, A] })#F] =
     new Monad[({ type F[A] = Free[U, A] })#F] {
       def pure[A](a: A): Free[U, A] = Pure(a)
       override def map[A, B](fa: Free[U, A])(f: A => B): Free[U, B] = fa.map(f)
       def flatMap[A, B](fa: Free[U, A])(f: A => Free[U, B]): Free[U, B] = fa.flatMap(f)
     }
 
-  implicit def FreeMonadPlus[U <: Union: Choice[M]#Member, M[_]]: MonadPlus[({ type F[A] = Free[U, A] })#F] =
+  implicit def MonadPlus[U <: Union: Choice[M]#Member, M[_]]: MonadPlus[({ type F[A] = Free[U, A] })#F] =
     new MonadPlus[({ type F[A] = Free[U, A] })#F] {
       def zero[A]: Free[U, A] = Choice.zero
       def pure[A](a: A): Free[U, A] = Pure(a)

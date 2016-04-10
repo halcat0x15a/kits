@@ -25,7 +25,7 @@ trait Functor[F[_]] { F =>
 
 object Functor {
 
-  implicit def Ops[A](self: A)(implicit A: Unify[Functor, A]): Functor[A.F]#FunctorOps[A.A] = new A.TC.FunctorOps[A.A](A(self))
+  implicit def Ops[A](self: A)(implicit A: Unify[Functor, A]): Functor[A.F]#FunctorOps[A.A] = new A.TC.FunctorOps[A.A](A.to(self))
 
   implicit val Identity: Monad[Identity] with Traverse[Identity] =
     new Monad[Identity] with Traverse[Identity] {

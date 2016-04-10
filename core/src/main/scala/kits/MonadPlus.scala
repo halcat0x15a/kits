@@ -24,6 +24,6 @@ trait MonadPlus[F[_]] extends Monad[F] { F =>
 
 object MonadPlus {
 
-  implicit def Ops[A](self: A)(implicit A: Unify[MonadPlus, A]): MonadPlus[A.F]#MonadPlusOps[A.A] = new A.TC.MonadPlusOps[A.A](A(self))
+  implicit def Ops[A](self: A)(implicit A: Unify[MonadPlus, A]): MonadPlus[A.F]#MonadPlusOps[A.A] = new A.TC.MonadPlusOps[A.A](A.to(self))
 
 }
