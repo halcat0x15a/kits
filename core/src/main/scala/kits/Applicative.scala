@@ -36,6 +36,23 @@ trait Applicative[F[_]] extends Functor[F] { F =>
 
 object Applicative {
 
-  implicit def Ops[A](self: A)(implicit A: Unify[Applicative, A]): Applicative[A.F]#ApplicativeOps[A.A] = new A.TC.ApplicativeOps[A.A](A.to(self))
+  object Implicits {
+
+    implicit def ApplicativeOps[A](self: A)(implicit A: Unify[Applicative, A]): Applicative[A.F]#ApplicativeOps[A.A] = new A.TC.ApplicativeOps(A.to(self))
+
+  }
+
+  implicit def Either[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Either[E, A] })#F] =
+    new Applicative[({ type F[A] = Either[E, A] })#F] {
+      def pure[A](a: A): Either[E, A] = Right(a)
+      def ap[A, B](fa: Either[E, A])(f: Either[E, A => B]): Either[E, B] =
+        (f, fa) match {
+          case (Right(f), Right(a)) => Right(f(a))
+          case (Left(x), Left(y)) => Left(E.append(x, y))
+          case (Left(e), _) => Left(e)
+          case (_, Left(e)) => Left(e)
+        }
+      override def map[A, B](fa: Either[E, A])(f: A => B): Either[E, B] = fa.right.map(f)
+    }
 
 }

@@ -31,7 +31,7 @@ object Choice {
   def plus[U <: Union, M[_], A](x: Free[U, A], y: Free[U, A])(implicit F: Member[Choice[M], U]): Free[U, A] = Free[U, Boolean](F.inject(Plus())).flatMap(if (_) x else y)
 
   def split[U <: Union: Choice[M]#Member, M[_], A](free: Free[U, A]): Free[U, Option[(A, Free[U, A])]] = {
-    import Traverse.Ops
+    import Traverse.Implicits._
     Free.interpose(free, List.empty[Free[U, A]])((a, stack) => Right(Some((a, stack.foldMap(x => x))): Option[(A, Free[U, A])]))((fa: Choice[M], stack) => fa match {
       case Zero() => _ =>
         stack match {

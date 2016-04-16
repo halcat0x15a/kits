@@ -36,6 +36,10 @@ trait Traverse[F[_]] extends Functor[F] { F =>
 
 object Traverse {
 
-  implicit def Ops[A](self: A)(implicit A: Unify[Traverse, A]): Traverse[A.F]#TraverseOps[A.A] = new A.TC.TraverseOps[A.A](A.to(self))
+  object Implicits {
+
+    implicit def TraverseOps[A](self: A)(implicit A: Unify[Traverse, A]): Traverse[A.F]#TraverseOps[A.A] = new A.TC.TraverseOps(A.to(self))
+
+  }
 
 }

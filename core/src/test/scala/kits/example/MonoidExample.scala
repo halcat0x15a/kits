@@ -29,7 +29,7 @@ class MonoidExample extends FunSuite {
   }
 
   test("append") {
-    import kits.Semigroup.Ops
+    import kits.Semigroup.Implicits._
     assert(List(0, 1).append(List(2, 3)) == List(0, 1, 2, 3))
     assert("foo".append("bar", "baz") == "foobarbaz")
     assert {

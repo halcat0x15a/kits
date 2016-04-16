@@ -24,6 +24,10 @@ trait Monad[F[_]] extends Applicative[F] { F =>
 
 object Monad {
 
-  implicit def Ops[A](self: A)(implicit A: Unify[Monad, A]): Monad[A.F]#MonadOps[A.A] = new A.TC.MonadOps[A.A](A.to(self))
+  object Implicits {
+
+    implicit def MonadOps[A](self: A)(implicit A: Unify[Monad, A]): Monad[A.F]#MonadOps[A.A] = new A.TC.MonadOps(A.to(self))
+
+  }
 
 }

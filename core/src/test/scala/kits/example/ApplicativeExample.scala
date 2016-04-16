@@ -35,7 +35,7 @@ class ApplicativeExample extends FunSuite {
   }
 
   test("map") {
-    import kits.Applicative.Ops
+    import kits.Applicative.Implicits._
     assert(List(1, 2).map2(List(3))(_ + _) == List(4, 5))
     assert(Option("foo").map3(None, Some("bar"))(_ + _ + _) == None)
   }

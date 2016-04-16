@@ -16,7 +16,11 @@ trait Semigroup[A] { A =>
 
 object Semigroup {
 
-  implicit def Ops[A](self: A)(implicit A: Semigroup[A]): Semigroup[A]#SemigroupOps = new A.SemigroupOps(self)
+  object Implicits {
+
+    implicit def SemigroupOps[A](self: A)(implicit A: Semigroup[A]): Semigroup[A]#SemigroupOps = new A.SemigroupOps(self)
+
+  }
 
   implicit val String: Monoid[String] =
     new Monoid[String] {
