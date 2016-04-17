@@ -14,7 +14,7 @@ trait Unify[TC[_[_]], FA] {
 
 }
 
-private[kits] abstract class LowPriorityUnifyImplicits {
+trait LowPriorityUnifyImplicits {
 
   implicit def FAB[TC0[_[_]], L, H >: L, F0[_ >: L <: H, _], A0 >: L <: H, B0](implicit TC0: TC0[({ type F[A] = F0[A0, A] })#F]): Unify[TC0, F0[A0, B0]] { type F[A] = F0[A0, A]; type A = B0 } =
     new Unify[TC0, F0[A0, B0]] {

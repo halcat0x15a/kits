@@ -39,7 +39,7 @@ class ApplicativeSpec extends FunSpec with Checkers {
       law[Option, AnyVal]
     }
     describe("Either") {
-      law[({ type F[A] = Either[AnyVal, A] })#F, AnyVal]
+      law[({ type F[A] = Either[String, A] })#F, AnyVal]
     }
     describe("List") {
       law[List, AnyVal]

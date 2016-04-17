@@ -8,7 +8,7 @@ trait Applicative[F[_]] extends Functor[F] { F =>
 
   def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
 
-  def map[A, B](fa: F[A])(f: A => B): F[B] = ap(fa)(pure(f))
+  override def map[A, B](fa: F[A])(f: A => B): F[B] = ap(fa)(pure(f))
 
   def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = ap(fb)(map(fa)(a => f(a, _)))
 
@@ -43,16 +43,24 @@ object Applicative {
   }
 
   implicit def Either[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Either[E, A] })#F] =
-    new Applicative[({ type F[A] = Either[E, A] })#F] {
-      def pure[A](a: A): Either[E, A] = Right(a)
-      def ap[A, B](fa: Either[E, A])(f: Either[E, A => B]): Either[E, B] =
-        (f, fa) match {
-          case (Right(f), Right(a)) => Right(f(a))
-          case (Left(x), Left(y)) => Left(E.append(x, y))
-          case (Left(e), _) => Left(e)
-          case (_, Left(e)) => Left(e)
-        }
-      override def map[A, B](fa: Either[E, A])(f: A => B): Either[E, B] = fa.right.map(f)
+    new Applicative.EitherApplicative[E] with Functor.EitherFunctor[E] {
+      val monoid = E
     }
+
+  trait EitherApplicative[E] extends Applicative[({ type F[A] = Either[E, A] })#F] { self: Functor.EitherFunctor[E] =>
+
+    def monoid: Monoid[E]
+
+    override final def pure[A](a: A): Either[E, A] = Right(a)
+
+    override final def ap[A, B](fa: Either[E, A])(f: Either[E, A => B]): Either[E, B] =
+      (f, fa) match {
+        case (Right(f), Right(a)) => Right(f(a))
+        case (Left(x), Left(y)) => Left(monoid.append(x, y))
+        case (Left(e), _) => Left(e)
+        case (_, Left(e)) => Left(e)
+      }
+
+  }
 
 }
