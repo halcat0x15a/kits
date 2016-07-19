@@ -12,10 +12,14 @@ object Reader {
 
   case class Ask[R]() extends Reader[R] { type T = R }
 
-  def run[U <: Union, R, A](free: Free[Reader[R] :+: U, A], value: R): Free[U, A] =
-    Free.handleRelay(free)(a => a) {
-      case Ask() => k => Left(k(value))
-    }
+  def run[R](value: R) = new Run {
+    type Sum[U <: Union] = Reader[R] :+: U
+    type F[A] = A
+    def run[U <: Union, A](free: Free[Reader[R] :+: U, A]): Free[U, A] =
+      Free.handleRelay(free)(a => a) {
+        case Ask() => k => Left(k(value))
+      }
+  }
 
   def ask[U <: Union, R](implicit F: Member[Reader[R], U]): Free[U, R] = Free(F.inject(Ask()))
 

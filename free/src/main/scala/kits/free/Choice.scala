@@ -16,15 +16,19 @@ object Choice {
 
   case class Plus[M[_]]() extends Choice[M] { type T = Boolean }
 
-  def run[U <: Union, M[_], A](free: Free[Choice[M] :+: U, A])(implicit M: MonadPlus[M]): Free[U, M[A]] =
-    Free.handleRelay(free, (M.zero[A], List.empty[Free[Choice[M] :+: U, A]])) {
-      case (a, (ma, Nil)) => Right(M.plus(ma, M.pure(a)))
-      case (a, (ma, x :: xs)) => Left((x, (M.plus(ma, M.pure(a)), xs)))
-    } {
-      case (Zero(), (ma, Nil)) => _ => Right(Pure(ma))
-      case (Zero(), (ma, x :: xs)) => _ => Left((x, (ma, xs)))
-      case (Plus(), (ma, stack)) => k => Left((k(true), (ma, k(false) :: stack)))
-    }
+  def run[M[_]](implicit M: MonadPlus[M]) = new Run {
+    type Sum[U <: Union] = Choice[M] :+: U
+    type F[A] = M[A]
+    def run[U <: Union, A](free: Free[Choice[M] :+: U, A]): Free[U, M[A]] =
+      Free.handleRelay(free, (M.zero[A], List.empty[Free[Choice[M] :+: U, A]])) {
+        case (a, (ma, Nil)) => Right(M.plus(ma, M.pure(a)))
+        case (a, (ma, x :: xs)) => Left((x, (M.plus(ma, M.pure(a)), xs)))
+      } {
+        case (Zero(), (ma, Nil)) => _ => Right(Pure(ma))
+        case (Zero(), (ma, x :: xs)) => _ => Left((x, (ma, xs)))
+        case (Plus(), (ma, stack)) => k => Left((k(true), (ma, k(false) :: stack)))
+      }
+  }
 
   def zero[U <: Union, M[_]](implicit F: Member[Choice[M], U]): Free[U, Nothing] = Free(F.inject[Nothing](Zero()))
 
