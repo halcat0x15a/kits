@@ -8,13 +8,13 @@ sealed abstract class Lift[M[_]] {
 
   def value: M[T]
 
-  type Member[U <: Union] = kits.free.Member[Lift[M], U]
+  type Member[U] = kits.free.Member[Lift[M], U]
 
 }
 
 object Lift {
 
-  def apply[U <: Union, M[_], A](ma: M[A])(implicit F: Member[Lift[M], U]): Free[U, A] =
+  def apply[U, M[_], A](ma: M[A])(implicit F: Member[Lift[M], U]): Free[U, A] =
     Free(F.inject(new Lift[M] { type T = A; val value = ma }))
 
   def run[M[_], A](free: Free[Lift[M] :+: Void, A])(implicit M: Monad[M]): M[A] =
