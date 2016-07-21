@@ -68,7 +68,7 @@ class FreeExample extends FunSuite {
 
   test("Choice") {
     import kits.Traverse.Implicits._
-    def e1[U: Choice[Vector]#Member] =
+    def e1[U: Choice#Member] =
       for {
         n <- (1 to 10).toIndexedSeq.foldMap(n => Pure(n): Free[U, Int])
         if n % 2 == 0
