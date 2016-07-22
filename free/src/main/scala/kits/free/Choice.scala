@@ -58,4 +58,6 @@ object Choice {
       case Some((a, _)) => Pure(a)
     }
 
+  def fromSeq[U: Choice#Member, A](seq: Seq[A]): Free[U, A] = seq.foldLeft(zero: Free[U, A])((free, a) => plus(free, Pure(a)))
+
 }

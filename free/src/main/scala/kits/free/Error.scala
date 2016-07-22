@@ -1,5 +1,7 @@
 package kits.free
 
+import scala.util.{Failure, Success, Try}
+
 sealed abstract class Error[E] {
 
   type T
@@ -27,5 +29,15 @@ object Error {
     Free.interpose(free)(a => a)((_: Error[E]) match {
       case Fail(e) => _ => Right(handle(e))
     })
+
+  def fromOption[U: Error[Unit]#Member, A](option: Option[A]): Free[U, A] = option.fold(fail(()): Free[U, A])(a => Pure(a))
+
+  def fromEither[U: Error[E]#Member, E, A](either: Either[E, A]): Free[U, A] = either.fold(e => fail(e), a => Pure(a))
+
+  def fromTry[U: Error[Throwable]#Member, A](t: Try[A]): Free[U, A] =
+    t match {
+      case Success(a) => Pure(a)
+      case Failure(e) => fail(e)
+    }
 
 }

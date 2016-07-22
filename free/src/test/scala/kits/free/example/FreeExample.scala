@@ -1,6 +1,4 @@
-package kits
-
-package free
+package kits.free
 
 package example
 
@@ -67,10 +65,9 @@ class FreeExample extends FunSuite {
   }
 
   test("Choice") {
-    import kits.Traverse.Implicits._
     def e1[U: Choice#Member] =
       for {
-        n <- (1 to 10).toIndexedSeq.foldMap(n => Pure(n): Free[U, Int])
+        n <- Choice.fromSeq(1 to 10)
         if n % 2 == 0
       } yield n
     val r1 = Choice.run[Vector].apply(e1)
