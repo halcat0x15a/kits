@@ -3,6 +3,7 @@ package kits.free
 package example
 
 import org.scalatest.FunSuite
+import scala.util.Try
 
 class FreeExample extends FunSuite {
 
@@ -28,14 +29,14 @@ class FreeExample extends FunSuite {
     assert(r2 == "foobarfoobar")
     def e3[U: Reader[Int]#Member: Writer[Vector[String]]#Member] =
       for {
-        _ <- Writer.tell(Vector("begin"))
+        _ <- Writer.tell(Vector("foo"))
         n <- Reader.ask
-        _ <- Writer.tell(Vector("end"))
+        _ <- Writer.tell(Vector("bar"))
       } yield n
     val r3 = (Writer.run[Vector[String]] compose Reader.run(10))(e3)
     val r4 = (Reader.run(10) compose Writer.run[Vector[String]])(e3)
-    assert(r3 == (Vector("begin", "end"), 10))
-    assert(r4 == (Vector("begin", "end"), 10))
+    assert(r3 == (Vector("foo", "bar"), 10))
+    assert(r4 == (Vector("foo", "bar"), 10))
   }
 
   test("Error") {
@@ -72,6 +73,17 @@ class FreeExample extends FunSuite {
       } yield n
     val r1 = Choice.run[Vector].apply(e1)
     assert(r1 == Vector(2, 4, 6, 8, 10))
+  }
+
+  test("Lift") {
+    def e1[U: Writer[String]#Member: Lift[Try]#Member] =
+      for {
+        x <- Lift(Try(1))
+        _ <- Writer.tell("foo")
+        y <- Lift(Try(2))
+      } yield x + y
+    val r1 = (Lift.exec[Try] compose Writer.run[String])(e1)
+    assert(r1 == Try(("foo", 3)))
   }
 
   test("Stack safe") {
