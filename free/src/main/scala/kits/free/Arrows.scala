@@ -20,6 +20,8 @@ sealed abstract class Arrows[U, -A, +B] extends (A => Free[U, B]) {
 
   def :+[C](f: B => Free[U, C]): Arrows[U, A, C] = Arrows.Node(this, Arrows.Leaf(f))
 
+  def +:[C](f: C => Free[U, A]): Arrows[U, C, B] = Arrows.Node(Arrows.Leaf(f), this)
+
   def ++[C](that: Arrows[U, B, C]): Arrows[U, A, C] = Arrows.Node(this, that)
 
   def view: Arrows.View[U, A, B]
@@ -28,17 +30,15 @@ sealed abstract class Arrows[U, -A, +B] extends (A => Free[U, B]) {
 
 object Arrows {
 
-  def singleton[U, A, B](arrow: A => Free[U, B]): Arrows[U, A, B] = Leaf(arrow)
-
   case class Leaf[U, A, B](arrow: A => Free[U, B]) extends Arrows[U, A, B] {
 
-    lazy val view: View[U, A, B] = One(arrow)
+    def view: View[U, A, B] = One(arrow)
 
   }
 
   case class Node[U, A, B, C](left: Arrows[U, A, B], right: Arrows[U, B, C]) extends Arrows[U, A, C] {
 
-    lazy val view: View[U, A, C] = {
+    def view: View[U, A, C] = {
       @tailrec
       def go(left: Arrows[U, A, Any], right: Arrows[U, Any, C]): View[U, A, C] =
         left match {

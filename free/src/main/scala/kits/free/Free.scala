@@ -32,7 +32,7 @@ case class Impure[U, A, B](union: U { type T = A }, arrows: Arrows[U, A, B]) ext
 
 object Free {
 
-  def apply[U, A](union: U { type T = A }): Free[U, A] = Impure(union, Arrows.singleton(Pure(_: A)))
+  def apply[U, A](union: U { type T = A }): Free[U, A] = Impure(union, Arrows.Leaf(Pure(_: A)))
 
   val exec = new Exec {
     type Sum[U] = U
@@ -55,7 +55,7 @@ object Free {
           case Right(free) => free
           case Left((free, state)) => handleRelay(free, state)(f)(g)
         }
-      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => handleRelay(k(x), state)(f)(g)))
+      case Impure(Inr(u), k) => Impure(u, Arrows.Leaf((x: Any) => handleRelay(k(x), state)(f)(g)))
     }
 
   def handleRelay[F, U, A, B](free: Free[F :+: U, A])(f: A => B)(g: F => (Any => Free[F :+: U, A]) => Either[Free[F :+: U, A], Free[U, B]]): Free[U, B] = handleRelay(free, ())((a, _) => Right(f(a)))((fa, _) => k => g(fa)(k).left.map(a => (a, ())))
@@ -74,7 +74,7 @@ object Free {
               case Right(free) => free
               case Left((free, state)) => interpose(free, state)(f)(g)
             }
-          case None => Impure(u, Arrows.singleton((x: Any) => interpose(k(x), state)(f)(g)))
+          case None => Impure(u, Arrows.Leaf((x: Any) => interpose(k(x), state)(f)(g)))
         }
     }
 

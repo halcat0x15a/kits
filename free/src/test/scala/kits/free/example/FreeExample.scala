@@ -78,9 +78,9 @@ class FreeExample extends FunSuite {
   test("Lift") {
     def e1[U: Writer[String]#Member: Lift[Try]#Member] =
       for {
-        x <- Lift(Try(1))
+        x <- Lift.wrap(Try(1))
         _ <- Writer.tell("foo")
-        y <- Lift(Try(2))
+        y <- Lift.wrap(Try(2))
       } yield x + y
     val r1 = (Lift.exec[Try] compose Writer.run[String])(e1)
     assert(r1 == Try(("foo", 3)))
