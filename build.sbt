@@ -51,7 +51,7 @@ lazy val root = (project in file(".")).
     site.addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), "latest/api"),
     gitRemoteRepo := "git@github.com:halcat0x15a/kits.git"
   ).
-  aggregate(core, free)
+  aggregate(core, free, lens)
 
 lazy val core = (project in file("core")).
   settings(commonSettings: _*).
@@ -61,3 +61,10 @@ lazy val free = (project in file("free")).
   settings(commonSettings: _*).
   settings(name := "kits-free").
   dependsOn(core)
+
+lazy val lens = (project in file("lens")).
+  settings(commonSettings: _*).
+  settings(
+    name := "kits-lens",
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
+  )
