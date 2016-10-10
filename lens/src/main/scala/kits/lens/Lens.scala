@@ -38,7 +38,7 @@ object Lens {
       def set(b: A)(a: A): A = b
     }
 
-  def withLens[A](a: A)(fs: (Lens[A, A] => A => A)*): A = fs.foldLeft(a)((a, f) => f(Lens[A])(a))
+  def withLens[A](a: A)(fs: Lens[A, A] => A => A*): A = fs.foldLeft(a)((a, f) => f(Lens[A])(a))
 
   def selectDynamic[A: c.WeakTypeTag](c: Context)(field: c.Tree): c.Tree = {
     import c.universe._
@@ -53,11 +53,12 @@ object Lens {
     q"$lens.set($value) _"
   }
 
-  private[this] def makeLens[A](c: Context)(field: c.Tree)(implicit A: c.WeakTypeTag[A]): c.Tree = {
+  private[this] def makeLens[A: c.WeakTypeTag](c: Context)(field: c.Tree): c.Tree = {
     import c.universe._
     val Lens = symbolOf[Lens[_, _]]
     val name = field match { case Literal(Constant(name: String)) => TermName(name) }
-    val B = weakTypeOf[A].member(name).info
+    val A = weakTypeOf[A]
+    val B = A.member(name).infoIn(A)
     q"""
       new $Lens[$A, $B] {
         def get(a: $A): $B = a.$name
