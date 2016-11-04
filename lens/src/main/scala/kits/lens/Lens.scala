@@ -42,9 +42,18 @@ object Lens {
 
   def selectDynamic[A: c.WeakTypeTag](c: Context)(field: c.Tree): c.Tree = {
     import c.universe._
-    val self = c.prefix.tree
-    val that = makeLens[A](c)(field)
-    q"$self.andThen($that)"
+    val MacroLens = symbolOf[MacroLens[_, _, _]]
+    val Literal(tag) = field
+    val name = tag match { case Constant(name: String) => TermName(name) }
+    val A = weakTypeOf[A]
+    val B = A.member(name).infoIn(A)
+    val Field = c.internal.constantType(tag)
+    q"""
+      new $MacroLens[$A, $B, $Field] {
+        def get(a: $A): $B = a.$name
+        def set(b: $B)(a: $A): $A = a.copy($name = b)
+      }
+    """
   }
 
   def updateDynamic[A: c.WeakTypeTag](c: Context)(field: c.Tree)(value: c.Tree): c.Tree = {
@@ -53,16 +62,33 @@ object Lens {
     q"$lens.set($value) _"
   }
 
-  private[this] def makeLens[A: c.WeakTypeTag](c: Context)(field: c.Tree): c.Tree = {
+}
+
+abstract class MacroLens[A, B, Field] extends Lens[A, B] {
+
+  override def selectDynamic(field: String): Any = macro MacroLens.selectDynamic[A, Field]
+
+}
+
+object MacroLens {
+
+  def selectDynamic[A: c.WeakTypeTag, Field: c.WeakTypeTag](c: Context)(field: c.Tree): c.Tree = {
     import c.universe._
-    val Lens = symbolOf[Lens[_, _]]
-    val name = field match { case Literal(Constant(name: String)) => TermName(name) }
+    val MacroLens = symbolOf[MacroLens[_, _, _]]
+    val ConstantType(Constant(prefix: String)) = weakTypeOf[Field]
+    val Literal(Constant(name: String)) = field
+    val tag = s"$prefix.$name"
+    val Field = c.internal.constantType(Constant(tag))
+    val fields = tag.split("\\.").collect { case field if !field.isEmpty => TermName(field) }
     val A = weakTypeOf[A]
-    val B = A.member(name).infoIn(A)
+    val B = fields.foldLeft(A) { (tpe, field) => tpe.member(field).infoIn(tpe) }
+    val gets = fields.scanLeft(q"a": c.Tree)((obj, field) => q"$obj.$field")
+    val get = gets.last
+    val set = gets.zip(fields).foldRight(q"b": c.Tree) { case ((obj, field), value) => q"$obj.copy($field = $value)" }
     q"""
-      new $Lens[$A, $B] {
-        def get(a: $A): $B = a.$name
-        def set(b: $B)(a: $A): $A = a.copy($name = b)
+      new $MacroLens[$A, $B, $Field] {
+        def get(a: $A): $B = $get
+        def set(b: $B)(a: $A): $A = $set
       }
     """
   }
