@@ -68,6 +68,8 @@ abstract class MacroLens[A, B, Field] extends Lens[A, B] {
 
   override def selectDynamic(field: String): Any = macro MacroLens.selectDynamic[A, Field]
 
+  override def updateDynamic(field: String)(value: Any): Any = macro MacroLens.updateDynamic[A, Field]
+
 }
 
 object MacroLens {
@@ -91,6 +93,12 @@ object MacroLens {
         def set(b: $B)(a: $A): $A = $set
       }
     """
+  }
+
+  def updateDynamic[A: c.WeakTypeTag, Field: c.WeakTypeTag](c: Context)(field: c.Tree)(value: c.Tree): c.Tree = {
+    import c.universe._
+    val lens = selectDynamic[A, Field](c)(field)
+    q"$lens.set($value) _"
   }
 
 }
