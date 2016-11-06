@@ -10,23 +10,25 @@ abstract class Lens[A, B] extends Dynamic { self =>
 
   def set(b: B)(a: A): A
 
-  def modify(f: B => B)(a: A): A = set(f(get(a)))(a)
+  final def modify(f: B => B)(a: A): A = set(f(get(a)))(a)
 
-  def compose[C](that: Lens[C, A]): Lens[C, B] =
+  final def compose[C](that: Lens[C, A]): Lens[C, B] =
     new Lens[C, B] {
       def get(c: C): B = self.get(that.get(c))
       def set(b: B)(c: C): C = that.set(self.set(b)(that.get(c)))(c)
     }
 
-  def andThen[C](that: Lens[B, C]): Lens[A, C] =
+  final def andThen[C](that: Lens[B, C]): Lens[A, C] =
     new Lens[A, C] {
       def get(a: A): C = that.get(self.get(a))
       def set(c: C)(a: A): A = self.set(that.set(c)(self.get(a)))(a)
     }
 
-  def selectDynamic(field: String): Any = macro Lens.selectDynamic[B]
+  final def update(a: A, b: B): A = set(b)(a)
 
-  def updateDynamic(field: String)(value: Any): Any = macro Lens.updateDynamic[B]
+  final def selectDynamic(field: String): Any = macro Lens.selectDynamic[A, B]
+
+  final def updateDynamic(field: String)(value: Any): Any = macro Lens.updateDynamic[A, B]
 
 }
 
@@ -38,67 +40,34 @@ object Lens {
       def set(b: A)(a: A): A = b
     }
 
-  def withLens[A](a: A)(fs: Lens[A, A] => A => A*): A = fs.foldLeft(a)((a, f) => f(Lens[A])(a))
+  def withLens[A](a: A)(fs: Lens[A, A] => A => A*): A = {
+    val lens = Lens[A]
+    fs.foldLeft(a)((a, f) => f(lens)(a))
+  }
 
-  def selectDynamic[A: c.WeakTypeTag](c: Context)(field: c.Tree): c.Tree = {
+  def selectDynamic[A: c.WeakTypeTag, B: c.WeakTypeTag](c: Context)(field: c.Tree): c.Tree = {
     import c.universe._
-    val MacroLens = symbolOf[MacroLens[_, _, _]]
-    val Literal(tag) = field
-    val name = tag match { case Constant(name: String) => TermName(name) }
+    val Lens = symbolOf[Lens[_, _]]
+    val name = field match { case Literal(Constant(name: String)) => TermName(name) }
     val A = weakTypeOf[A]
-    val B = A.member(name).infoIn(A)
-    val Field = c.internal.constantType(tag)
+    val B = weakTypeOf[B]
+    val C = B.member(name).infoIn(B)
+    val prefix = c.prefix
     q"""
-      new $MacroLens[$A, $B, $Field] {
-        def get(a: $A): $B = a.$name
-        def set(b: $B)(a: $A): $A = a.copy($name = b)
+      new $Lens[$A, $C] {
+        private[this] val prefix = $prefix
+        def get(a: $A): $C = prefix.get(a).$name
+        def set(c: $C)(a: $A): $A = prefix.set(prefix.get(a).copy($name = c))(a)
       }
     """
   }
 
-  def updateDynamic[A: c.WeakTypeTag](c: Context)(field: c.Tree)(value: c.Tree): c.Tree = {
+  def updateDynamic[A: c.WeakTypeTag, B: c.WeakTypeTag](c: Context)(field: c.Tree)(value: c.Tree): c.Tree = {
     import c.universe._
-    val lens = selectDynamic[A](c)(field)
-    q"$lens.set($value) _"
-  }
-
-}
-
-abstract class MacroLens[A, B, Field] extends Lens[A, B] {
-
-  override def selectDynamic(field: String): Any = macro MacroLens.selectDynamic[A, Field]
-
-  override def updateDynamic(field: String)(value: Any): Any = macro MacroLens.updateDynamic[A, Field]
-
-}
-
-object MacroLens {
-
-  def selectDynamic[A: c.WeakTypeTag, Field: c.WeakTypeTag](c: Context)(field: c.Tree): c.Tree = {
-    import c.universe._
-    val MacroLens = symbolOf[MacroLens[_, _, _]]
-    val ConstantType(Constant(prefix: String)) = weakTypeOf[Field]
-    val Literal(Constant(name: String)) = field
-    val tag = s"$prefix.$name"
-    val Field = c.internal.constantType(Constant(tag))
-    val fields = tag.split("\\.").collect { case field if !field.isEmpty => TermName(field) }
     val A = weakTypeOf[A]
-    val B = fields.foldLeft(A) { (tpe, field) => tpe.member(field).infoIn(tpe) }
-    val gets = fields.scanLeft(q"a": c.Tree)((obj, field) => q"$obj.$field")
-    val get = gets.last
-    val set = gets.zip(fields).foldRight(q"b": c.Tree) { case ((obj, field), value) => q"$obj.copy($field = $value)" }
-    q"""
-      new $MacroLens[$A, $B, $Field] {
-        def get(a: $A): $B = $get
-        def set(b: $B)(a: $A): $A = $set
-      }
-    """
-  }
-
-  def updateDynamic[A: c.WeakTypeTag, Field: c.WeakTypeTag](c: Context)(field: c.Tree)(value: c.Tree): c.Tree = {
-    import c.universe._
-    val lens = selectDynamic[A, Field](c)(field)
-    q"$lens.set($value) _"
+    val name = field match { case Literal(Constant(name: String)) => TermName(name) }
+    val prefix = c.prefix
+    q"{ (a: $A) => val prefix = $prefix; prefix.set(prefix.get(a).copy($name = $value))(a) }"
   }
 
 }
