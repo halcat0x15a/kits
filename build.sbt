@@ -4,10 +4,10 @@ lazy val commonSettings = Seq(
   organization := "org.halcat",
   version := "0.7.0-SNAPSHOT",
   scalaVersion := "2.11.8",
-  scalaBinaryVersion := "2.11",
+  crossScalaVersions := Seq("2.12.0", "2.11.8"),
   libraryDependencies ++= Seq(
-    "org.scalatest" %% "scalatest" % "2.2.5" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
   ),
   scalacOptions ++= Seq("-feature", "-language:higherKinds"),
   publishMavenStyle := true,

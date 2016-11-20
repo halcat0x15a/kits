@@ -2,13 +2,13 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Cogen}
 import org.scalatest.FunSpec
 import org.scalatest.prop.Checkers
 
 class MonadSpec extends FunSpec with Checkers {
 
-  def law[F[_], A: Arbitrary](implicit F: Monad[F], FA: Arbitrary[F[A]]): Unit = {
+  def law[F[_], A: Arbitrary: Cogen](implicit F: Monad[F], FA: Arbitrary[F[A]]): Unit = {
     it("composition") {
       check { (fa: F[A], f: A => F[A], g: A => F[A]) =>
         F.flatMap(fa)(a => F.flatMap(f(a))(g)) == F.flatMap(F.flatMap(fa)(f))(g)
@@ -28,22 +28,22 @@ class MonadSpec extends FunSpec with Checkers {
 
   describe("Monad") {
     describe("Identity") {
-      law[Identity, AnyVal]
+      law[Identity, Int]
     }
     describe("Option") {
-      law[Option, AnyVal]
+      law[Option, Int]
     }
     describe("Either") {
-      law[({ type F[A] = Either[AnyVal, A] })#F, AnyVal]
+      law[({ type F[A] = Either[Int, A] })#F, Int]
     }
     describe("List") {
-      law[List, AnyVal]
+      law[List, Int]
     }
     describe("Vector") {
-      law[Vector, AnyVal]
+      law[Vector, Int]
     }
     describe("Set") {
-      law[Set, AnyVal]
+      law[Set, Int]
     }
   }
 

@@ -2,13 +2,13 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Cogen}
 import org.scalatest.FunSpec
 import org.scalatest.prop.Checkers
 
 class TraverseSpec extends FunSpec with Checkers {
 
-  def law[F[_], G[_], A: Arbitrary](implicit F: Traverse[F], G: Applicative[G], FA: Arbitrary[F[A]], GA: Arbitrary[G[A]]): Unit = {
+  def law[F[_], G[_], A: Arbitrary: Cogen](implicit F: Traverse[F], G: Applicative[G], FA: Arbitrary[F[A]], GA: Arbitrary[G[A]]): Unit = {
     it("identity") {
       check { fa: F[A] =>
         F.traverse[Identity, A, A](fa)(identity) == fa
@@ -23,25 +23,25 @@ class TraverseSpec extends FunSpec with Checkers {
 
   describe("Traverse") {
     describe("Identity") {
-      law[Identity, Identity, AnyVal]
+      law[Identity, Identity, Int]
     }
     describe("Option") {
-      law[Option, Identity, AnyVal]
+      law[Option, Identity, Int]
     }
     describe("Either") {
-      law[({ type F[A] = Either[AnyVal, A] })#F, Identity, AnyVal]
+      law[({ type F[A] = Either[Int, A] })#F, Identity, Int]
     }
     describe("List") {
-      law[List, Identity, AnyVal]
+      law[List, Identity, Int]
     }
     describe("Vector") {
-      law[Vector, Identity, AnyVal]
+      law[Vector, Identity, Int]
     }
     describe("Map") {
-      law[({ type F[A] = Map[AnyVal, A] })#F, Identity, AnyVal]
+      law[({ type F[A] = Map[Int, A] })#F, Identity, Int]
     }
     describe("Set") {
-      law[Set, Identity, AnyVal]
+      law[Set, Identity, Int]
     }
   }
 
