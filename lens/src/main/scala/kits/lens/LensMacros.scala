@@ -46,11 +46,6 @@ class LensMacros(val c: Context) {
     q"$self.andThen($that)"
   }
 
-  def applyDynamic[A: WeakTypeTag](field: Tree)(value: Tree): Tree = {
-    val lens = selectDynamic[A](field)
-    q"$lens.get($value)"
-  }
-
   def updateDynamic[A: WeakTypeTag](field: Tree)(value: Tree): Tree = {
     val lens = selectDynamic[A](field)
     q"$lens.set($value) _"

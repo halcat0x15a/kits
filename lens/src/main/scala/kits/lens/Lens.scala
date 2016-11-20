@@ -47,11 +47,7 @@ abstract class Lens[A, B] extends Dynamic { self =>
       def set(c: C)(a: A): A = self.modify(that.set(c))(a)
     }
 
-  final def update(a: A, b: B): A = set(b)(a)
-
   final def selectDynamic(field: String): Any = macro LensMacros.selectDynamic[B]
-
-  final def applyDynamic(field: String)(value: Any): Any = macro LensMacros.applyDynamic[B]
 
   final def updateDynamic(field: String)(value: Any): Any = macro LensMacros.updateDynamic[B]
 
