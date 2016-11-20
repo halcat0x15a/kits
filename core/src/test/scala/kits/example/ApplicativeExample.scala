@@ -40,12 +40,11 @@ class ApplicativeExample extends FunSuite {
   }
 
   test("map") {
-    import kits.Applicative.Implicits._
-    assert(List(1, 2).map2(List(3))(_ + _) == List(4, 5))
-    assert(Option("foo").map3(None, Some("bar"))(_ + _ + _) == None)
-    //val hoge: Either[String, Int] = Left("hoge")
-    //val fuga: Either[String, Int] = Left("fuga")
-    //assert(kits.Applicative.map2(hoge, fuga)(_ + _) == Left("hogefuga"))
+    assert(Applicative.map2(List(1, 2), List(3))(_ + _) == List(4, 5))
+    assert(Applicative.map3(Option("foo"), None, Some("bar"))(_ + _ + _) == None)
+    val hoge: Either[String, Int] = Left("hoge")
+    val fuga: Either[String, Int] = Left("fuga")
+    assert(Applicative.map2(hoge, fuga)(_ + _) == Left("hogefuga"))
   }
 
 }

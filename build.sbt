@@ -3,13 +3,12 @@ import com.typesafe.sbt.SbtGit.GitKeys._
 lazy val commonSettings = Seq(
   organization := "org.halcat",
   version := "0.7.0-SNAPSHOT",
-  scalaVersion := "2.11.8",
-  crossScalaVersions := Seq("2.12.0", "2.11.8"),
+  scalaVersion := "2.12.0",
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
   ),
-  scalacOptions ++= Seq("-feature", "-language:higherKinds"),
+  scalacOptions ++= Seq("-feature", "-language:higherKinds", "-Ypartial-unification"),
   publishMavenStyle := true,
   publishTo := {
     val nexus = "https://oss.sonatype.org/"

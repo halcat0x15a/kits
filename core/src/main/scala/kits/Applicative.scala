@@ -1,7 +1,5 @@
 package kits
 
-import scala.language.implicitConversions
-
 trait Applicative[F[_]] extends Functor[F] { F =>
 
   def pure[A](a: A): F[A]
@@ -22,25 +20,15 @@ trait Applicative[F[_]] extends Functor[F] { F =>
       def ap[A, B](fga: F[G[A]])(f: F[G[A => B]]): F[G[B]] = F.map2(fga, f)(G.ap(_)(_))
     }
 
-  class ApplicativeOps[A](self: F[A]) extends FunctorOps(self) {
-
-    def ap[B](f: F[A => B]): F[B] = F.ap(self)(f)
-
-    def map2[B, C](fb: F[B])(f: (A, B) => C): F[C] = F.map2(self, fb)(f)
-
-    def map3[B, C, D](fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = F.map3(self, fb, fc)(f)
-
-  }
-
 }
 
 object Applicative {
 
-  object Implicits {
+  def ap[F[_], A, B](fa: F[A])(f: F[A => B])(implicit F: Applicative[F]): F[B] = F.ap(fa)(f)
 
-    implicit def ApplicativeOps[A](self: A)(implicit A: Unify[Applicative, A]): Applicative[A.F]#ApplicativeOps[A.A] = new A.TC.ApplicativeOps(A.to(self))
+  def map2[F[_], A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C)(implicit F: Applicative[F]): F[C] = F.map2(fa, fb)(f)
 
-  }
+  def map3[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] = F.map3(fa, fb, fc)(f)
 
   implicit def Either[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Either[E, A] })#F] =
     new Applicative.EitherApplicative[E] with Functor.EitherFunctor[E] {
@@ -48,11 +36,8 @@ object Applicative {
     }
 
   trait EitherApplicative[E] extends Applicative[({ type F[A] = Either[E, A] })#F] { self: Functor.EitherFunctor[E] =>
-
     def monoid: Monoid[E]
-
     override final def pure[A](a: A): Either[E, A] = Right(a)
-
     override final def ap[A, B](fa: Either[E, A])(f: Either[E, A => B]): Either[E, B] =
       (f, fa) match {
         case (Right(f), Right(a)) => Right(f(a))
@@ -60,7 +45,6 @@ object Applicative {
         case (Left(e), _) => Left(e)
         case (_, Left(e)) => Left(e)
       }
-
   }
 
 }
