@@ -2,13 +2,13 @@ package kits
 
 package spec
 
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Cogen}
 import org.scalatest.FunSpec
 import org.scalatest.prop.Checkers
 
 class ApplicativeSpec extends FunSpec with Checkers {
 
-  def law[F[_], A: Arbitrary](implicit F: Applicative[F], FA: Arbitrary[F[A]]): Unit = {
+  def law[F[_], A: Arbitrary: Cogen](implicit F: Applicative[F], FA: Arbitrary[F[A]]): Unit = {
     it("identity") {
       check { fa: F[A] =>
         F.ap(fa)(F.pure((a: A) => a)) == fa
@@ -33,22 +33,22 @@ class ApplicativeSpec extends FunSpec with Checkers {
 
   describe("Applicative") {
     describe("Identity") {
-      law[Identity, AnyVal]
+      law[Identity, Int]
     }
     describe("Option") {
-      law[Option, AnyVal]
+      law[Option, Int]
     }
     describe("Either") {
-      law[({ type F[A] = Either[String, A] })#F, AnyVal]
+      law[({ type F[A] = Either[String, A] })#F, Int]
     }
     describe("List") {
-      law[List, AnyVal]
+      law[List, Int]
     }
     describe("Vector") {
-      law[Vector, AnyVal]
+      law[Vector, Int]
     }
     describe("Set") {
-      law[Set, AnyVal]
+      law[Set, Int]
     }
   }
 
