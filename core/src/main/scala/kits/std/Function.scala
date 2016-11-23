@@ -23,3 +23,13 @@ trait Function0Monad extends Monad[Function0] { self: Function0Functor =>
   override final def flatMap[A, B](fa: Function0[A])(f: A => Function0[B]): Function0[B] = () => f(fa())()
 
 }
+
+trait Function0Monoid[A] extends Monoid[() => A] {
+
+  def monoid: Monoid[A]
+
+  def empty: () => A = () => monoid.empty
+
+  def append(x: () => A, y: () => A): () => A = () => monoid.append(x(), y())
+
+}

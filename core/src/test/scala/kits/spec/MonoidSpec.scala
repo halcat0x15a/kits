@@ -28,11 +28,11 @@ class MonoidSpec extends FunSpec with Checkers {
 
   describe("Monoid") {
     describe("Conj") {
-      import kits.Monoid.Conj
+      implicit val monoid = Monoid.Conj
       law[Boolean]
     }
     describe("Disj") {
-      import kits.Monoid.Disj
+      implicit val monoid = Monoid.Disj
       law[Boolean]
     }
     describe("String") {
@@ -63,11 +63,11 @@ class MonoidSpec extends FunSpec with Checkers {
       law[Set[AnyVal]]
     }
     describe("Sum") {
-      import kits.Monoid.Sum
+      implicit val monoid = Monoid.Sum[Int]
       law[Int]
     }
     describe("Prod") {
-      import kits.Monoid.Prod
+      implicit val monoid = Monoid.Prod[Int]
       law[Int]
     }
   }

@@ -14,8 +14,6 @@ trait Applicative[F[_]] extends Functor[F] { F =>
 
   def map3[A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = ap(fc)(map2(fa, fb)((a, b) => f(a, b, _)))
 
-  def traverse[G[_], A, B](ga: G[A])(f: A => F[B])(implicit G: Traverse[G]): F[G[B]] = G.traverse(ga)(f)(F)
-
   def compose[G[_]](implicit G: Applicative[G]): Applicative[({ type H[A] = F[G[A]] })#H] =
     new Applicative[({ type H[A] = F[G[A]] })#H] {
       def pure[A](a: A): F[G[A]] = F.pure(G.pure(a))

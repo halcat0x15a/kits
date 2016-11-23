@@ -33,6 +33,8 @@ object Monoid {
 
   def Prod[A](implicit A: Numeric[A]): Monoid[A] = new ProdMonoid[A] { val numeric = A }
 
+  implicit def Function0[A](implicit A: Monoid[A]): Monoid[() => A] = new Function0Monoid[A] { val monoid = A }
+
   implicit def Tuple2[A, B](implicit A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] = new Tuple2Monoid[A, B] { val _1 = A; val _2 = B }
 
   implicit def Tuple3[A, B, C](implicit A: Monoid[A], B: Monoid[B], C: Monoid[C]): Monoid[(A, B, C)] = new Tuple3Monoid[A, B, C] { val _1 = A; val _2 = B; val _3 = C }

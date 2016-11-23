@@ -20,6 +20,7 @@ trait VectorMonadPlus extends MonadPlus[Vector] { self: VectorFunctor =>
 
   override final def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] = fa.flatMap(f)
 
+  override final def flatten[A](ffa: Vector[Vector[A]]): Vector[A] = ffa.flatten
 }
 
 trait VectorTraverse extends Traverse[Vector] { self: VectorFunctor =>
