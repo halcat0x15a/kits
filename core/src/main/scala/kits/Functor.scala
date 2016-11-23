@@ -1,9 +1,10 @@
 package kits
 
+import kits.std._
 import scala.collection.immutable.IndexedSeq
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.Try
-import scala.util.control.TailCalls.TailRec
+import scala.util.control.TailCalls._
 
 trait Functor[F[_]] { F =>
 
@@ -20,73 +21,30 @@ object Functor {
 
   def map[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Functor[F]): F[B] = F.map(fa)(f)
 
-  implicit val Identity: Monad[Identity] with Traverse[Identity] = new Monad.IdentityMonad with Traverse.IdentityTraverse with Functor.IdentityFunctor
+  implicit val Identity: Monad[Identity] with Traverse[Identity] = new IdentityMonad with IdentityTraverse with IdentityFunctor {}
 
-  implicit val Function0: Monad[Function0] with Traverse[Function0] = new Monad.Function0Monad with Traverse.Function0Traverse with Functor.Function0Functor
+  implicit val Function0: Monad[Function0] with Traverse[Function0] = new Function0Monad with Function0Traverse with Function0Functor {}
 
-  implicit val Option: MonadPlus[Option] with Traverse[Option] = new MonadPlus.OptionMonadPlus with Traverse.OptionTraverse with Functor.OptionFunctor
+  implicit val Option: MonadPlus[Option] with Traverse[Option] = new OptionMonadPlus with OptionTraverse with OptionFunctor {}
 
-  implicit val List: MonadPlus[List] with Traverse[List] = new MonadPlus.ListMonadPlus with Traverse.ListTraverse with Functor.ListFunctor
+  implicit val List: MonadPlus[List] with Traverse[List] = new ListMonadPlus with ListTraverse with ListFunctor {}
 
-  implicit val Vector: MonadPlus[Vector] with Traverse[Vector] = new MonadPlus.VectorMonadPlus with Traverse.VectorTraverse with Functor.VectorFunctor
+  implicit val Vector: MonadPlus[Vector] with Traverse[Vector] = new VectorMonadPlus with VectorTraverse with VectorFunctor {}
 
-  implicit val IndexedSeq: MonadPlus[IndexedSeq] with Traverse[IndexedSeq] = new MonadPlus.IndexedSeqMonadPlus with Traverse.IndexedSeqTraverse with Functor.IndexedSeqFunctor
+  implicit val IndexedSeq: MonadPlus[IndexedSeq] with Traverse[IndexedSeq] = new IndexedSeqMonadPlus with IndexedSeqTraverse with IndexedSeqFunctor {}
 
-  implicit val Stream: MonadPlus[Stream] with Traverse[Stream] = new MonadPlus.StreamMonadPlus with Traverse.StreamTraverse with Functor.StreamFunctor
+  implicit val Stream: MonadPlus[Stream] with Traverse[Stream] = new StreamMonadPlus with StreamTraverse with StreamFunctor {}
 
-  implicit def Either[E]: Traverse[({ type F[A] = Either[E, A] })#F] = new Traverse.EitherTraverse[E] with Functor.EitherFunctor[E]
+  implicit def Either[E]: Traverse[({ type F[A] = Either[E, A] })#F] = new EitherTraverse[E] with EitherFunctor[E] {}
 
-  implicit def Map[K]: Traverse[({ type F[A] = Map[K, A] })#F] = new Traverse.MapTraverse[K] with Functor.MapFunctor[K]
+  implicit def Map[K]: Traverse[({ type F[A] = Map[K, A] })#F] = new MapTraverse[K] {}
 
-  implicit val Set: MonadPlus[Set] with Traverse[Set] = new MonadPlus.SetMonadPlus with Traverse.SetTraverse with Functor.SetFunctor
+  implicit val Set: MonadPlus[Set] with Traverse[Set] = new SetMonadPlus with SetTraverse with SetFunctor {}
 
-  implicit val Try: Monad[Try] = new Monad.TryMonad {}
+  implicit val Try: Monad[Try] = new TryMonad {}
 
-  implicit def Future(implicit ec: ExecutionContext): Monad[Future] =
-    new Monad.FutureMonad {
-      val executor = ec
-    }
+  implicit def Future(implicit ec: ExecutionContext): Monad[Future] = new FutureMonad { val executor = ec }
 
-  implicit val TailRec: Monad[TailRec] = new Monad.TailRecMonad {}
-
-  trait IdentityFunctor extends Functor[Identity] {
-    override final def map[A, B](fa: Identity[A])(f: A => B): Identity[B] = f(fa)
-  }
-
-  trait Function0Functor extends Functor[Function0] {
-    override final def map[A, B](fa: Function0[A])(f: A => B): Function0[B] = () => f(fa())
-  }
-
-  trait OptionFunctor extends Functor[Option] {
-    override final def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
-  }
-
-  trait ListFunctor extends Functor[List] {
-    override final def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
-  }
-
-  trait VectorFunctor extends Functor[Vector] {
-    override final def map[A, B](fa: Vector[A])(f: A => B): Vector[B] = fa.map(f)
-  }
-
-  trait IndexedSeqFunctor extends Functor[IndexedSeq] {
-    override final def map[A, B](fa: IndexedSeq[A])(f: A => B): IndexedSeq[B] = fa.map(f)
-  }
-
-  trait StreamFunctor extends Functor[Stream] {
-    override final def map[A, B](fa: Stream[A])(f: A => B): Stream[B] = fa.map(f)
-  }
-
-  trait EitherFunctor[E] extends Functor[({ type F[A] = Either[E, A] })#F] {
-    override final def map[A, B](fa: Either[E, A])(f: A => B): Either[E, B] = fa.right.map(f)
-  }
-
-  trait MapFunctor[K] extends Functor[({ type F[A] = Map[K, A] })#F] {
-    override final def map[A, B](fa: Map[K, A])(f: A => B): Map[K, B] = fa.mapValues(f)
-  }
-
-  trait SetFunctor extends Functor[Set] {
-    override final def map[A, B](fa: Set[A])(f: A => B): Set[B] = fa.map(f)
-  }
+  implicit val TailRec: Monad[TailRec] = new TailRecMonad {}
 
 }
