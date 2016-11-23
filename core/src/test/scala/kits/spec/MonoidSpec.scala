@@ -5,6 +5,7 @@ package spec
 import org.scalacheck.Arbitrary
 import org.scalatest.FunSpec
 import org.scalatest.prop.Checkers
+import scala.collection.immutable.IndexedSeq
 
 class MonoidSpec extends FunSpec with Checkers {
 
@@ -41,10 +42,10 @@ class MonoidSpec extends FunSpec with Checkers {
     describe("Unit") {
       law[Unit]
     }
-    describe("Pair") {
+    describe("Tuple2") {
       law[(String, String)]
     }
-    describe("Triple") {
+    describe("Tuple3") {
       law[(String, String, String)]
     }
     describe("Option") {
@@ -55,6 +56,12 @@ class MonoidSpec extends FunSpec with Checkers {
     }
     describe("Vector") {
       law[Vector[AnyVal]]
+    }
+    describe("IndexedSeq") {
+      law[IndexedSeq[AnyVal]]
+    }
+    describe("Stream") {
+      law[Stream[AnyVal]]
     }
     describe("Map") {
       law[Map[AnyVal, String]]

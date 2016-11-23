@@ -5,6 +5,8 @@ package spec
 import org.scalacheck.{Arbitrary, Cogen}
 import org.scalatest.FunSpec
 import org.scalatest.prop.Checkers
+import scala.collection.immutable.IndexedSeq
+import scala.util.Try
 
 class MonadSpec extends FunSpec with Checkers {
 
@@ -42,8 +44,17 @@ class MonadSpec extends FunSpec with Checkers {
     describe("Vector") {
       law[Vector, Int]
     }
+    describe("IndexedSeq") {
+      law[IndexedSeq, Int]
+    }
+    describe("Stream") {
+      law[Stream, Int]
+    }
     describe("Set") {
       law[Set, Int]
+    }
+    describe("Try") {
+      law[Try, Int]
     }
   }
 

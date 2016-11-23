@@ -5,6 +5,7 @@ package spec
 import org.scalacheck.{Arbitrary, Cogen}
 import org.scalatest.FunSpec
 import org.scalatest.prop.Checkers
+import scala.collection.immutable.IndexedSeq
 
 class TraverseSpec extends FunSpec with Checkers {
 
@@ -36,6 +37,12 @@ class TraverseSpec extends FunSpec with Checkers {
     }
     describe("Vector") {
       law[Vector, Identity, Int]
+    }
+    describe("IndexedSeq") {
+      law[IndexedSeq, Identity, Int]
+    }
+    describe("Stream") {
+      law[Stream, Identity, Int]
     }
     describe("Map") {
       law[({ type F[A] = Map[Int, A] })#F, Identity, Int]
