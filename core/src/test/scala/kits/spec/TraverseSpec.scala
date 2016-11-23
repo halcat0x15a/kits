@@ -6,6 +6,7 @@ import org.scalacheck.{Arbitrary, Cogen}
 import org.scalatest.FunSpec
 import org.scalatest.prop.Checkers
 import scala.collection.immutable.IndexedSeq
+import scala.util.Try
 
 class TraverseSpec extends FunSpec with Checkers {
 
@@ -49,6 +50,9 @@ class TraverseSpec extends FunSpec with Checkers {
     }
     describe("Set") {
       law[Set, Identity, Int]
+    }
+    describe("Try") {
+      law[Try, Identity, Int]
     }
   }
 

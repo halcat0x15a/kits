@@ -41,7 +41,7 @@ object Functor {
 
   implicit val Set: MonadPlus[Set] with Traverse[Set] = new SetMonadPlus with SetTraverse with SetFunctor {}
 
-  implicit val Try: Monad[Try] = new TryMonad {}
+  implicit val Try: Monad[Try] with Traverse[Try] = new TryMonad with TryTraverse with TryFunctor {}
 
   implicit def Future(implicit ec: ExecutionContext): Monad[Future] = new FutureMonad { val executor = ec }
 

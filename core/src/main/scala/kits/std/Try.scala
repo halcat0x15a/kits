@@ -2,14 +2,25 @@ package kits
 
 package std
 
-import scala.util.{Try, Success}
+import scala.util.{Failure, Try, Success}
 
-trait TryMonad extends Monad[Try] {
-
-  override final def pure[A](a: A): Try[A] = Success(a)
+trait TryFunctor extends Functor[Try] {
 
   override final def map[A, B](fa: Try[A])(f: A => B): Try[B] = fa.map(f)
 
+}
+
+trait TryMonad extends Monad[Try] { self: TryFunctor =>
+
+  override final def pure[A](a: A): Try[A] = Success(a)
+
   override final def flatMap[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
+
+}
+
+trait TryTraverse extends Traverse[Try] { self: TryFunctor =>
+
+  override final def traverse[F[_], A, B](fa: Try[A])(f: A => F[B])(implicit F: Applicative[F]): F[Try[B]] =
+    fa.fold(e => F.pure(Failure(e)), a => F.map(f(a))(Success(_)))
 
 }
