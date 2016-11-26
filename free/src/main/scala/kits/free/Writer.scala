@@ -4,15 +4,13 @@ package free
 
 sealed abstract class Writer[W] {
 
-  type T
-
   type Member[U] = kits.free.Member[Writer[W], U]
 
 }
 
 object Writer {
 
-  case class Tell[W](value: W) extends Writer[W] { type T = Unit }
+  case class Tell[W](value: W) extends Writer[W]
 
   def run[W](implicit W: Monoid[W]) = new Run {
     type Sum[U] = Writer[W] :+: U

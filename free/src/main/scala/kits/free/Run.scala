@@ -19,7 +19,7 @@ trait Run { self =>
   def andThen(that: Run) = new Run {
     type Sum[U] = self.Sum[that.Sum[U]]
     type F[A] = that.F[self.F[A]]
-    def run[U, A](free: Free[Sum[U], A]): Free[U, F[A]] = that.run(self.run(free))
+    def run[U, A](free: Free[Sum[U], A]): Free[U, F[A]] = that.run[U, self.F[A]](self.run(free))
   }
 
   def andThen(that: Exec) = new Exec {

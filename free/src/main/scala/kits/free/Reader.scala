@@ -2,15 +2,13 @@ package kits.free
 
 sealed abstract class Reader[R] {
 
-  type T
-
   type Member[U] = kits.free.Member[Reader[R], U]
 
 }
 
 object Reader {
 
-  case class Ask[R]() extends Reader[R] { type T = R }
+  case class Ask[R]() extends Reader[R]
 
   def run[R](value: R) = new Run {
     type Sum[U] = Reader[R] :+: U

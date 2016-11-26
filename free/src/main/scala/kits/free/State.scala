@@ -2,17 +2,15 @@ package kits.free
 
 sealed abstract class State[S] {
 
-  type T
-
   type Member[U] = kits.free.Member[State[S], U]
 
 }
 
 object State {
 
-  case class Get[S]() extends State[S] { type T = S }
+  case class Get[S]() extends State[S]
 
-  case class Put[S](state: S) extends State[S] { type T = Unit }
+  case class Put[S](state: S) extends State[S]
 
   def run[S](state: S) = new Run {
     type Sum[U] = State[S] :+: U

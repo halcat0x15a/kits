@@ -4,8 +4,6 @@ package free
 
 sealed abstract class Lift[M[_]] {
 
-  type T
-
   type Member[U] = kits.free.Member[Lift[M], U]
 
 }

@@ -4,7 +4,7 @@ package free
 
 import scala.annotation.tailrec
 
-sealed abstract class Free[U, +A] {
+sealed abstract class Free[U, A] {
 
   def map[B](f: A => B): Free[U, B]
 
@@ -22,7 +22,7 @@ case class Pure[U, A](value: A) extends Free[U, A] {
 
 }
 
-case class Impure[U, A, B](union: U { type T = A }, arrows: Arrows[U, A, B]) extends Free[U, B] {
+case class Impure[U, A, B](union: U, arrows: Arrows[U, A, B]) extends Free[U, B] {
 
   def map[C](f: B => C): Free[U, C] = Impure(union, arrows :+ (x => Pure(f(x))))
 
@@ -32,7 +32,7 @@ case class Impure[U, A, B](union: U { type T = A }, arrows: Arrows[U, A, B]) ext
 
 object Free {
 
-  def apply[U, A](union: U { type T = A }): Free[U, A] = Impure(union, Arrows.Leaf(Pure(_: A)))
+  def apply[U, A](union: U): Free[U, A] = Impure(union, Arrows.Leaf(Pure(_: A)))
 
   val exec = new Exec {
     type Sum[U] = U

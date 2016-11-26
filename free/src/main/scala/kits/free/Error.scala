@@ -4,15 +4,13 @@ import scala.util.{Failure, Success, Try}
 
 sealed abstract class Error[E] {
 
-  type T
-
   type Member[U] = kits.free.Member[Error[E], U]
 
 }
 
 object Error {
 
-  case class Fail[E](value: E) extends Error[E] { type T = Nothing }
+  case class Fail[E](value: E) extends Error[E]
 
   def run[E] = new Run {
     type Sum[U] = Error[E] :+: U
@@ -23,7 +21,7 @@ object Error {
       }
   }
 
-  def fail[U, E](value: E)(implicit F: Member[Error[E], U]): Free[U, Nothing] = Free(F.inject[Nothing](Fail(value)))
+  def fail[U, E, A](value: E)(implicit F: Member[Error[E], U]): Free[U, A] = Free(F.inject(Fail(value)))
 
   def recover[U: Error[E]#Member, E, A](free: Free[U, A])(handle: E => Free[U, A]): Free[U, A] =
     Free.interpose(free)(a => a)((_: Error[E]) match {

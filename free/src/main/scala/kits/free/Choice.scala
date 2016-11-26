@@ -4,17 +4,15 @@ package free
 
 sealed abstract class Choice {
 
-  type T
-
   type Member[U] = kits.free.Member[Choice, U]
 
 }
 
 object Choice {
 
-  case object Zero extends Choice { type T = Nothing }
+  case object Zero extends Choice
 
-  case object Plus extends Choice { type T = Boolean }
+  case object Plus extends Choice
 
   def run[M[_]](implicit M: MonadPlus[M]) = new Run {
     type Sum[U] = Choice :+: U
@@ -30,7 +28,7 @@ object Choice {
       }
   }
 
-  def zero[U](implicit F: Member[Choice, U]): Free[U, Nothing] = Free(F.inject[Nothing](Zero))
+  def zero[U, A](implicit F: Member[Choice, U]): Free[U, A] = Free(F.inject(Zero))
 
   def plus[U, A](x: Free[U, A], y: Free[U, A])(implicit F: Member[Choice, U]): Free[U, A] = Free[U, Boolean](F.inject(Plus)).flatMap(if (_) x else y)
 

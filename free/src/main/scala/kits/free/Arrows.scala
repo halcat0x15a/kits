@@ -2,9 +2,9 @@ package kits.free
 
 import scala.annotation.tailrec
 
-sealed abstract class Arrows[U, -A, +B] extends (A => Free[U, B]) {
+sealed abstract class Arrows[U, A, B] extends (A => Free[U, B]) {
 
-  def apply(a: A): Free[U, B] = {
+  final def apply(a: A): Free[U, B] = {
     @tailrec
     def go(arrows: Arrows[U, Any, B], value: Any): Free[U, B] =
       arrows.view match {
@@ -18,11 +18,11 @@ sealed abstract class Arrows[U, -A, +B] extends (A => Free[U, B]) {
     go(this.asInstanceOf[Arrows[U, Any, B]], a)
   }
 
-  def :+[C](f: B => Free[U, C]): Arrows[U, A, C] = Arrows.Node(this, Arrows.Leaf(f))
+  final def :+[C](f: B => Free[U, C]): Arrows[U, A, C] = Arrows.Node(this, Arrows.Leaf(f))
 
-  def +:[C](f: C => Free[U, A]): Arrows[U, C, B] = Arrows.Node(Arrows.Leaf(f), this)
+  final def +:[C](f: C => Free[U, A]): Arrows[U, C, B] = Arrows.Node(Arrows.Leaf(f), this)
 
-  def ++[C](that: Arrows[U, B, C]): Arrows[U, A, C] = Arrows.Node(this, that)
+  final def ++[C](that: Arrows[U, B, C]): Arrows[U, A, C] = Arrows.Node(this, that)
 
   def view: Arrows.View[U, A, B]
 
@@ -45,7 +45,7 @@ object Arrows {
           case Leaf(h) => Cons(h, right)
           case Node(l, r) => go(l, Node(r, right))
         }
-      go(left, right.asInstanceOf[Arrows[U, Any, C]])
+      go(left.asInstanceOf[Arrows[U, A, Any]], right.asInstanceOf[Arrows[U, Any, C]])
     }
 
   }
