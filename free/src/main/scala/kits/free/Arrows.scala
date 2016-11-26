@@ -24,31 +24,26 @@ sealed abstract class Arrows[U, A, B] extends (A => Free[U, B]) {
 
   final def ++[C](that: Arrows[U, B, C]): Arrows[U, A, C] = Arrows.Node(this, that)
 
-  def view: Arrows.View[U, A, B]
+  def view: Arrows.View[U, A, B] = {
+    @tailrec
+    def go(left: Arrows[U, A, Any], right: Arrows[U, Any, B]): Arrows.View[U, A, B] =
+      left match {
+        case Arrows.Leaf(h) => Arrows.Cons(h, right)
+        case Arrows.Node(l, r) => go(l, Arrows.Node(r, right))
+      }
+    this match {
+      case Arrows.Leaf(arrow) => Arrows.One(arrow)
+      case Arrows.Node(left, right) => go(left.asInstanceOf[Arrows[U, A, Any]], right.asInstanceOf[Arrows[U, Any, B]])
+    }
+  }
 
 }
 
 object Arrows {
 
-  case class Leaf[U, A, B](arrow: A => Free[U, B]) extends Arrows[U, A, B] {
+  case class Leaf[U, A, B](arrow: A => Free[U, B]) extends Arrows[U, A, B]
 
-    def view: View[U, A, B] = One(arrow)
-
-  }
-
-  case class Node[U, A, B, C](left: Arrows[U, A, B], right: Arrows[U, B, C]) extends Arrows[U, A, C] {
-
-    def view: View[U, A, C] = {
-      @tailrec
-      def go(left: Arrows[U, A, Any], right: Arrows[U, Any, C]): View[U, A, C] =
-        left match {
-          case Leaf(h) => Cons(h, right)
-          case Node(l, r) => go(l, Node(r, right))
-        }
-      go(left.asInstanceOf[Arrows[U, A, Any]], right.asInstanceOf[Arrows[U, Any, C]])
-    }
-
-  }
+  case class Node[U, A, B, C](left: Arrows[U, A, B], right: Arrows[U, B, C]) extends Arrows[U, A, C]
 
   sealed abstract class View[U, -A, +B]
   
