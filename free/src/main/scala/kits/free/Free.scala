@@ -34,14 +34,10 @@ object Free {
 
   def apply[U, A](union: U): Free[U, A] = Impure(union, Arrows.Leaf(Pure(_: A)))
 
-  val exec = new Exec {
-    type Sum[U] = U
-    type F[A] = A
-    def exec[A](free: Free[Void, A]): A =
-      (free: @unchecked) match {
-        case Pure(a) => a
-      }
-  }
+  def run[A](free: Free[Void, A]): A =
+    (free: @unchecked) match {
+      case Pure(a) => a
+    }
 
   def handleRelay[F, U, A, B, S](free: Free[F :+: U, A], state: S)(f: (A, S) => Either[(Free[F :+: U, A], S), B])(g: (F, S) => (Any => Free[F :+: U, A]) => Either[(Free[F :+: U, A], S), Free[U, B]]): Free[U, B] =
     free match {
@@ -97,5 +93,11 @@ object Free {
     }
 
   implicit def Monoid[U: Choice#Member, A]: Monoid[Free[U, A]] = MonadPlus[U].monoid
+
+  val exec = new Exec {
+    type Succ[U] = U
+    type Result[A] = A
+    def exec[A](free: Free[Void, A]): A = run(free)
+  }
 
 }

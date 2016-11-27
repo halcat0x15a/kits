@@ -12,14 +12,10 @@ object Writer {
 
   case class Tell[W](value: W) extends Writer[W]
 
-  def run[W](implicit W: Monoid[W]) = new Run {
-    type Sum[U] = Writer[W] :+: U
-    type F[A] = (W, A)
-    def run[U, A](free: Free[Writer[W] :+: U, A]): Free[U, (W, A)] =
-      Free.handleRelay(free, W.empty)((a, w) => Right((w, a))) {
-        case (Tell(v), w) => k => Left((k(()), W.append(w, v)))
-      }
-  }
+  def run[U, W, A](free: Free[Writer[W] :+: U, A])(implicit W: Monoid[W]): Free[U, (W, A)] =
+    Free.handleRelay(free, W.empty)((a, w) => Right((w, a))) {
+      case (Tell(v), w) => k => Left((k(()), W.append(w, v)))
+    }
 
   def tell[U, W](value: W)(implicit F: Member[Writer[W], U]): Free[U, Unit] = Free(F.inject(Tell(value)))
 
@@ -34,5 +30,11 @@ object Writer {
     listen(free).flatMap {
       case (w, (f, a)) => tell(f(w)).map(_ => a)
     }
+
+  def eval[W](implicit W: Monoid[W]) = new Eval {
+    type Succ[U] = Writer[W] :+: U
+    type Result[A] = (W, A)
+    def eval[U, A](free: Free[Writer[W] :+: U, A]): Free[U, (W, A)] = run(free)
+  }
 
 }

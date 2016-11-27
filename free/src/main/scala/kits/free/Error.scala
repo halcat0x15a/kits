@@ -12,14 +12,10 @@ object Error {
 
   case class Fail[E](value: E) extends Error[E]
 
-  def run[E] = new Run {
-    type Sum[U] = Error[E] :+: U
-    type F[A] = Either[E, A]
-    def run[U, A](free: Free[Error[E] :+: U, A]): Free[U, Either[E, A]] =
-      Free.handleRelay(free)(a => Right(a): Either[E, A]) {
-        case Fail(e) => _ => Right(Pure(Left(e)))
-      }
-  }
+  def run[U, E, A](free: Free[Error[E] :+: U, A]): Free[U, Either[E, A]] =
+    Free.handleRelay(free)(a => Right(a): Either[E, A]) {
+      case Fail(e) => _ => Right(Pure(Left(e)))
+    }
 
   def fail[U, E, A](value: E)(implicit F: Member[Error[E], U]): Free[U, A] = Free(F.inject(Fail(value)))
 
@@ -37,5 +33,11 @@ object Error {
       case Success(a) => Pure(a)
       case Failure(e) => fail(e)
     }
+
+  def eval[E] = new Eval {
+    type Succ[U] = Error[E] :+: U
+    type Result[A] = Either[E, A]
+    def eval[U, A](free: Free[Error[E] :+: U, A]): Free[U, Either[E, A]] = run(free)
+  }
 
 }

@@ -2,18 +2,18 @@ package kits.free
 
 trait Exec { self =>
 
-  type Sum[U]
+  type Succ[U]
 
-  type F[A]
+  type Result[A]
 
-  def exec[A](free: Free[Sum[Void], A]): F[A]
+  def exec[A](free: Free[Succ[Void], A]): Result[A]
 
-  final def apply[A](free: Free[Sum[Void], A]): F[A] = exec(free)
+  final def apply[A](free: Free[Succ[Void], A]): Result[A] = exec(free)
 
-  def compose(that: Run) = new Exec {
-    type Sum[U] = that.Sum[self.Sum[U]]
-    type F[A] = self.F[that.F[A]]
-    def exec[A](free: Free[Sum[Void], A]): F[A] = self.exec(that.run(free))
+  final def compose(that: Eval) = new Exec {
+    type Succ[U] = that.Succ[self.Succ[U]]
+    type Result[A] = self.Result[that.Result[A]]
+    def exec[A](free: Free[Succ[Void], A]): Result[A] = self.exec(that.eval(free))
   }
 
 }
