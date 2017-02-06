@@ -8,7 +8,7 @@ lazy val commonSettings = Seq(
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
   ),
-  scalacOptions ++= Seq("-feature", "-language:higherKinds", "-Ypartial-unification"),
+  scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds", "-Ypartial-unification"),
   publishMavenStyle := true,
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
@@ -69,4 +69,14 @@ lazy val lens = (project in file("lens")).
   settings(
     name := "kits-lens",
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
+  )
+
+lazy val mock = (project in file("mock")).
+  settings(commonSettings: _*).
+  settings(
+    name := "kits-lens",
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.mockito" % "mockito-core" % "1.10.19"
+    )
   )
