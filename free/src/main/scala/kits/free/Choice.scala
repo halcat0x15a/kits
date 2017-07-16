@@ -53,10 +53,10 @@ object Choice {
 
   def fromSeq[U: Choice#Member, A](seq: Seq[A]): Free[U, A] = seq.foldLeft(zero: Free[U, A])((free, a) => plus(free, Pure(a)))
 
-  def eval[M[_]](implicit M: MonadPlus[M]) = new Eval {
-    type Succ[U] = Choice :+: U
+  def handle[M[_]](implicit M: MonadPlus[M]) = new Handler {
+    type Cons[U] = Choice :+: U
     type Result[A] = M[A]
-    def eval[U, A](free: Free[Choice :+: U, A]): Free[U, M[A]] = run(free)
+    def apply[U, A](free: Free[Choice :+: U, A]): Free[U, M[A]] = Choice.run(free)
   }
 
 }

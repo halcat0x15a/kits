@@ -2,8 +2,6 @@ package kits
 
 package free
 
-import scala.annotation.tailrec
-
 sealed abstract class Free[U, A] {
 
   def map[B](f: A => B): Free[U, B]
@@ -93,11 +91,5 @@ object Free {
     }
 
   implicit def Monoid[U: Choice#Member, A]: Monoid[Free[U, A]] = MonadPlus[U].monoid
-
-  val exec = new Exec {
-    type Succ[U] = U
-    type Result[A] = A
-    def exec[A](free: Free[Void, A]): A = run(free)
-  }
 
 }

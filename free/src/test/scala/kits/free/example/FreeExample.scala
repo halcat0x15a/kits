@@ -9,10 +9,10 @@ class FreeExample extends FunSuite {
 
   test("Reader") {
     def e1[U: Reader[Int]#Member] = for (a <- Reader.ask) yield a + 1
-    val r1 = Reader.eval(10)(e1)
+    val r1 = Reader.handle(10).run(e1)
     assert(r1 == 11)
     def e2[U: Reader[Int]#Member] = Reader.local(e1)(((_: Int) + 10))
-    val r2 = Reader.eval(10)(e2)
+    val r2 = Reader.handle(10).run(e2)
     assert(r2 == 21)
   }
 
@@ -22,10 +22,10 @@ class FreeExample extends FunSuite {
         _ <- Writer.tell("foo")
         _ <- Writer.tell("bar")
       } yield ()
-    val (r1, _) = Writer.eval[String].apply(e1)
+    val (r1, _) = Writer.handle[String].run(e1)
     assert(r1 == "foobar")
     def e2[U: Writer[String]#Member] = Writer.listen(e1).flatMap { case (w, _) => Writer.tell(w) }
-    val (r2, _) = Writer.eval[String].apply(e2)
+    val (r2, _) = Writer.handle[String].run(e2)
     assert(r2 == "foobarfoobar")
     def e3[U: Reader[Int]#Member: Writer[Vector[String]]#Member] =
       for {
@@ -33,7 +33,7 @@ class FreeExample extends FunSuite {
         n <- Reader.ask
         _ <- Writer.tell(Vector("bar"))
       } yield n
-    val r3 = (Reader.eval(10) compose Writer.eval[Vector[String]])(e3)
+    val r3 = (Reader.handle(10) compose Writer.handle[Vector[String]]).run(e3)
     assert(r3 == (Vector("foo", "bar"), 10))
   }
 
@@ -43,9 +43,9 @@ class FreeExample extends FunSuite {
         Error.fail(n)
       else
         Pure(n)
-    val r1 = Error.eval[Int](e1(3))
+    val r1 = Error.handle[Int].run(e1(3))
     assert(r1 == Right(3))
-    val r2 = Error.eval[Int](e1(7))
+    val r2 = Error.handle[Int].run(e1(7))
     assert(r2 == Left(7))
     def e2[U: Error[Int]#Member: Writer[String]#Member](n: Int) =
       for {
@@ -53,9 +53,9 @@ class FreeExample extends FunSuite {
         n <- e1(n)
         _ <- Writer.tell("bar")
       } yield n
-    val r3 = (Writer.eval[String] compose Error.eval[Int])(e2(7))
+    val r3 = (Writer.handle[String] compose Error.handle[Int]).run(e2(7))
     assert(r3 == ("foo", Left(7)))
-    val r4 = (Error.eval[Int] compose Writer.eval[String])(e2(7))
+    val r4 = (Error.handle[Int] compose Writer.handle[String]).run(e2(7))
     assert(r4 == Left(7))
   }
 
@@ -66,10 +66,10 @@ class FreeExample extends FunSuite {
         _ <- State.put(20)
         y <- State.get
       } yield x + y
-    val r1 = State.eval(10)(e1)
+    val r1 = State.handle(10).run(e1)
     assert(r1 == (20, 30))
     def e2[U: State[Int]#Member] = State.modify((_: Int) * 2).flatMap(_ => e1)
-    val r2 = State.eval(10)(e2)
+    val r2 = State.handle(10).run(e2)
     assert(r2 == (20, 40))
   }
 
@@ -79,7 +79,7 @@ class FreeExample extends FunSuite {
         n <- Choice.fromSeq(1 to 10)
         if n % 2 == 0
       } yield n
-    val r1 = Choice.eval[Vector].apply(e1)
+    val r1 = Choice.handle[Vector].run(e1)
     assert(r1 == Vector(2, 4, 6, 8, 10))
   }
 
@@ -90,7 +90,7 @@ class FreeExample extends FunSuite {
         _ <- Writer.tell("foo")
         y <- Lift.wrap(Try(2))
       } yield x + y
-    val r1 = (Lift.exec[Try] compose Writer.eval[String])(e1)
+    val r1 = (Lift.handle[Try] compose Writer.handle[String]).run(e1)
     assert(r1 == Try(("foo", 3)))
   }
 
@@ -104,7 +104,7 @@ class FreeExample extends FunSuite {
           _ <- State.put(x + 1)
           _ <- e1(n - 1)
         } yield ()
-    val (r1, _) = State.eval(0)(e1(10000))
+    val (r1, _) = State.handle(0).run(e1(10000))
     assert(r1 == 10000)
     def e2[U: Reader[String]#Member: Writer[String]#Member](n: Int): Free[U, Unit] =
       if (n <= 0)
@@ -115,7 +115,7 @@ class FreeExample extends FunSuite {
           _ <- Writer.tell(x)
           _ <- e2(n - 1)
         } yield ()
-    val (r2, _) = (Reader.eval("0") compose Writer.eval[String])(e2(10000))
+    val (r2, _) = (Reader.handle("0") compose Writer.handle[String]).run(e2(10000))
     assert(r2.length == 10000)
   }
 

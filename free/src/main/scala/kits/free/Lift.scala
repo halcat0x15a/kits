@@ -21,10 +21,10 @@ object Lift {
   def wrap[U, M[_], A](ma: M[A])(implicit F: Member[Lift[M], U]): Free[U, A] =
     Free(F.inject(Wrap(ma)))
 
-  def exec[M[_]](implicit M: Monad[M]) = new Exec {
-    type Succ[U] = Lift[M] :+: U
+  def handle[M[_]](implicit M: Monad[M]) = new Handler {
+    type Cons[U] = Lift[M] :+: Void
     type Result[A] = M[A]
-    def exec[A](free: Free[Lift[M] :+: Void, A]): M[A] = run(free)
+    def apply[U, A](free: Free[Lift[M] :+: Void, A]): Free[U, M[A]] = Pure(Lift.run(free))
   }
 
 }

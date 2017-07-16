@@ -34,10 +34,10 @@ object Error {
       case Failure(e) => fail(e)
     }
 
-  def eval[E] = new Eval {
-    type Succ[U] = Error[E] :+: U
+  def handle[E] = new Handler {
+    type Cons[U] = Error[E] :+: U
     type Result[A] = Either[E, A]
-    def eval[U, A](free: Free[Error[E] :+: U, A]): Free[U, Either[E, A]] = run(free)
+    def apply[U, A](free: Free[Error[E] :+: U, A]): Free[U, Either[E, A]] = Error.run(free)
   }
 
 }

@@ -31,10 +31,10 @@ object Writer {
       case (w, (f, a)) => tell(f(w)).map(_ => a)
     }
 
-  def eval[W](implicit W: Monoid[W]) = new Eval {
-    type Succ[U] = Writer[W] :+: U
+  def handle[W](implicit W: Monoid[W]) = new Handler {
+    type Cons[U] = Writer[W] :+: U
     type Result[A] = (W, A)
-    def eval[U, A](free: Free[Writer[W] :+: U, A]): Free[U, (W, A)] = run(free)
+    def apply[U, A](free: Free[Writer[W] :+: U, A]): Free[U, (W, A)] = Writer.run(free)
   }
 
 }

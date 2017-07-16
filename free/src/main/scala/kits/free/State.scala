@@ -24,10 +24,10 @@ object State {
 
   def modify[U: State[S]#Member, S](f: S => S): Free[U, Unit] = get.flatMap(a => put(f(a)))
 
-  def eval[S](state: S) = new Eval {
-    type Succ[U] = State[S] :+: U
+  def handle[S](state: S) = new Handler {
+    type Cons[U] = State[S] :+: U
     type Result[A] = (S, A)
-    def eval[U, A](free: Free[State[S] :+: U, A]): Free[U, (S, A)] = run(free, state)
+    def apply[U, A](free: Free[State[S] :+: U, A]): Free[U, (S, A)] = State.run(free, state)
   }
 
 }

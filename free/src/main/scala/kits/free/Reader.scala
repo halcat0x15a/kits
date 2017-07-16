@@ -25,10 +25,10 @@ object Reader {
       })
     }
 
-  def eval[R](value: R) = new Eval {
-    type Succ[U] = Reader[R] :+: U
+  def handle[R](value: R) = new Handler {
+    type Cons[U] = Reader[R] :+: U
     type Result[A] = A
-    def eval[U, A](free: Free[Reader[R] :+: U, A]): Free[U, A] = run(free, value)
+    def apply[U, A](free: Free[Reader[R] :+: U, A]): Free[U, A] = Reader.run(free, value)
   }
 
 }
