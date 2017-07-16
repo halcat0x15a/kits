@@ -13,10 +13,13 @@ object State {
   case class Put[S](state: S) extends State[S]
 
   def run[U, S, A](free: Free[State[S] :+: U, A], state: S): Free[U, (S, A)] =
-    Free.handleRelay(free, state)((a, s) => Right((s, a))) {
-      case (Get(), s) => k => Left((k(s), s))
-      case (Put(s), _) => k => Left((k(()), s))
-    }
+    Free.handleRelay(free, state)(
+      (a, s) => Right((s, a)),
+      (fa, s, k) => fa match {
+        case Get() => Left((k(s), s))
+        case Put(s) => Left((k(()), s))
+      }
+    )
 
   def get[U, S](implicit F: Member[State[S], U]): Free[U, S] = Free(F.inject(Get()))
 

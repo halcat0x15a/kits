@@ -13,16 +13,22 @@ object Writer {
   case class Tell[W](value: W) extends Writer[W]
 
   def run[U, W, A](free: Free[Writer[W] :+: U, A])(implicit W: Monoid[W]): Free[U, (W, A)] =
-    Free.handleRelay(free, W.empty)((a, w) => Right((w, a))) {
-      case (Tell(v), w) => k => Left((k(()), W.append(w, v)))
-    }
+    Free.handleRelay(free, W.empty)(
+      (a, w) => Right((w, a)),
+      (fa, w, k) => fa match {
+        case Tell(v) => Left((k(()), W.append(w, v)))
+      }
+    )
 
   def tell[U, W](value: W)(implicit F: Member[Writer[W], U]): Free[U, Unit] = Free(F.inject(Tell(value)))
 
   def listen[U: Writer[W]#Member, W, A](free: Free[U, A])(implicit W: Monoid[W]): Free[U, (W, A)] =
-    Free.interpose(free, W.empty)((a, w) => Right((w, a)))((fa: Writer[W], w) => fa match {
-      case Tell(v) => k => Left((k(()), W.append(w, v)))
-    }).flatMap {
+    Free.interpose(free, W.empty)(
+      (a, w) => Right((w, a)),
+      (fa: Writer[W], w, k) => fa match {
+        case Tell(v) => Left((k(()), W.append(w, v)))
+      }
+    ).flatMap {
       case r@(w, _) => tell(w).map(_ => r)
     }
 
