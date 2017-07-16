@@ -10,16 +10,15 @@ sealed abstract class Lift[M[_]] {
 
 object Lift {
 
-  case class Wrap[M[_], A](value: M[A]) extends Lift[M] { type T = A }
+  case class Wrap[M[_], A](value: M[A]) extends Lift[M]
 
   def run[M[_], A](free: Free[Lift[M] :+: Void, A])(implicit M: Monad[M]): M[A] =
     (free: @unchecked) match {
       case Pure(a) => M.pure(a)
-      case Impure(Inl(Wrap(ma)), k) => M.flatMap(ma)(a => run(k(a)))
+      case Impure(Inl(Wrap(ma)), k) => M.flatMap(ma)(a => run(Arrows.app(k)(a)))
     }
 
-  def wrap[U, M[_], A](ma: M[A])(implicit F: Member[Lift[M], U]): Free[U, A] =
-    Free(F.inject(Wrap(ma)))
+  def wrap[U, M[_], A](ma: M[A])(implicit F: Member[Lift[M], U]): Free[U, A] = Free(F.inject(Wrap(ma)))
 
   def handle[M[_]](implicit M: Monad[M]) = new Handler {
     type Cons[U] = Lift[M] :+: Void

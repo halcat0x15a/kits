@@ -20,17 +20,17 @@ case class Pure[U, A](value: A) extends Free[U, A] {
 
 }
 
-case class Impure[U, A, B](union: U, arrows: Arrows[U, A, B]) extends Free[U, B] {
+case class Impure[U, A, B](union: U, arrs: Arrows[U, A, B]) extends Free[U, B] {
 
-  def map[C](f: B => C): Free[U, C] = Impure(union, arrows :+ (x => Pure(f(x))))
+  def map[C](f: B => C): Free[U, C] = Impure(union, Arrows.snoc(arrs)(x => Pure(f(x))))
 
-  def flatMap[C](f: B => Free[U, C]): Free[U, C] = Impure(union, arrows :+ f)
+  def flatMap[C](f: B => Free[U, C]): Free[U, C] = Impure(union, Arrows.snoc(arrs)(f))
 
 }
 
 object Free {
 
-  def apply[U, A](union: U): Free[U, A] = Impure(union, Arrows.Leaf(Pure(_: A)))
+  def apply[U, A](union: U): Free[U, A] = Impure(union, Arrows.singleton(Pure(_: A)))
 
   def run[A](free: Free[Void, A]): A =
     (free: @unchecked) match {
@@ -48,11 +48,11 @@ object Free {
           case Left((free, state)) => handleRelay(free, state)(f, g)
         }
       case Impure(Inl(fa), k) =>
-        g(fa, state, k) match {
+        g(fa, state, Arrows.app(k)) match {
           case Right(free) => free
           case Left((free, state)) => handleRelay(free, state)(f, g)
         }
-      case Impure(Inr(u), k) => Impure(u, Arrows.Leaf((x: Any) => handleRelay(k(x), state)(f, g)))
+      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => handleRelay(Arrows.app(k)(x), state)(f, g)))
     }
 
   def interpose[F, U, A, B, S](free: Free[U, A], state: S)(
@@ -68,11 +68,11 @@ object Free {
       case Impure(u, k) =>
         F.project(u) match {
           case Some(fa) =>
-            g(fa, state, k) match {
+            g(fa, state, Arrows.app(k)) match {
               case Right(free) => free
               case Left((free, state)) => interpose(free, state)(f, g)
             }
-          case None => Impure(u, Arrows.Leaf((x: Any) => interpose(k(x), state)(f, g)))
+          case None => Impure(u, Arrows.singleton((x: Any) => interpose(Arrows.app(k)(x), state)(f, g)))
         }
     }
 
