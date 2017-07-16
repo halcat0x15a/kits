@@ -22,14 +22,18 @@ trait Applicative[F[_]] extends Functor[F] { F =>
 
 }
 
-object Applicative {
-
-  def ap[F[_], A, B](fa: F[A])(f: F[A => B])(implicit F: Applicative[F]): F[B] = F.ap(fa)(f)
-
-  def map2[F[_], A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C)(implicit F: Applicative[F]): F[C] = F.map2(fa, fb)(f)
-
-  def map3[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: Applicative[F]): F[D] = F.map3(fa, fb, fc)(f)
+object Applicative extends ApplicativeFunctions[Applicative] {
 
   implicit def Either[E](implicit E: Monoid[E]): Applicative[({ type F[A] = Either[E, A] })#F] = new EitherApplicative[E] with EitherFunctor[E] { val monoid = E }
+
+}
+
+trait ApplicativeFunctions[T[F[_]] <: Applicative[F]] extends FunctorFunctions[T] {
+
+  def ap[F[_], A, B](fa: F[A])(f: F[A => B])(implicit F: T[F]): F[B] = F.ap(fa)(f)
+
+  def map2[F[_], A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C)(implicit F: T[F]): F[C] = F.map2(fa, fb)(f)
+
+  def map3[F[_], A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D)(implicit F: T[F]): F[D] = F.map3(fa, fb, fc)(f)
 
 }

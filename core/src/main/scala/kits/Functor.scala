@@ -17,9 +17,7 @@ trait Functor[F[_]] { F =>
 
 }
 
-object Functor {
-
-  def map[F[_], A, B](fa: F[A])(f: A => B)(implicit F: Functor[F]): F[B] = F.map(fa)(f)
+object Functor extends FunctorFunctions[Functor] {
 
   implicit val Identity: Monad[Identity] with Traverse[Identity] = new IdentityMonad with IdentityTraverse with IdentityFunctor {}
 
@@ -46,5 +44,11 @@ object Functor {
   implicit def Future(implicit ec: ExecutionContext): Monad[Future] = new FutureMonad { val executor = ec }
 
   implicit val TailRec: Monad[TailRec] = new TailRecMonad {}
+
+}
+
+trait FunctorFunctions[T[F[_]] <: Functor[F]] {
+
+  def map[F[_], A, B](fa: F[A])(f: A => B)(implicit F: T[F]): F[B] = F.map(fa)(f)
 
 }

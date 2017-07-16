@@ -21,6 +21,9 @@ trait TryMonad extends Monad[Try] { self: TryFunctor =>
 trait TryTraverse extends Traverse[Try] { self: TryFunctor =>
 
   override final def traverse[F[_], A, B](fa: Try[A])(f: A => F[B])(implicit F: Applicative[F]): F[Try[B]] =
-    fa.fold(e => F.pure(Failure(e)), a => F.map(f(a))(Success(_)))
+    fa match {
+      case Success(a) => F.map(f(a))(Success(_))
+      case Failure(e) => F.pure(Failure(e))
+    }
 
 }

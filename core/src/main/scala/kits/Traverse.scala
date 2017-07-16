@@ -23,14 +23,16 @@ trait Traverse[F[_]] extends Functor[F] { F =>
 
 }
 
-object Traverse {
+object Traverse extends TraverseFunctions[Traverse]
 
-  def traverse[F[_], G[_]: Applicative, A, B](fa: F[A])(f: A => G[B])(implicit F: Traverse[F]): G[F[B]] = F.traverse(fa)(f)
+trait TraverseFunctions[T[F[_]] <: Traverse[F]] extends FunctorFunctions[T] {
 
-  def sequence[F[_], G[_]: Applicative, A](fga: F[G[A]])(implicit F: Traverse[F]): G[F[A]] = F.sequence(fga)
+  def traverse[F[_], G[_]: Applicative, A, B](fa: F[A])(f: A => G[B])(implicit F: T[F]): G[F[B]] = F.traverse(fa)(f)
 
-  def foldMap[F[_], A, B: Monoid](fa: F[A])(f: A => B)(implicit F: Traverse[F]): B = F.foldMap(fa)(f)
+  def sequence[F[_], G[_]: Applicative, A](fga: F[G[A]])(implicit F: T[F]): G[F[A]] = F.sequence(fga)
 
-  def fold[F[_], A: Monoid](fa: F[A])(implicit F: Traverse[F]): A = F.fold(fa)
+  def foldMap[F[_], A, B: Monoid](fa: F[A])(f: A => B)(implicit F: T[F]): B = F.foldMap(fa)(f)
+
+  def fold[F[_], A: Monoid](fa: F[A])(implicit F: T[F]): A = F.fold(fa)
 
 }

@@ -16,10 +16,12 @@ trait MonadPlus[F[_]] extends Monad[F] { F =>
 
 }
 
-object MonadPlus {
+object MonadPlus extends MonadPlusFunctions[MonadPlus]
 
-  def plus[F[_], A](x: F[A], y: F[A])(implicit F: MonadPlus[F]): F[A] = F.plus(x, y)
+trait MonadPlusFunctions[T[F[_]] <: MonadPlus[F]] extends MonadFunctions[T] {
 
-  def filter[F[_], A](fa: F[A])(p: A => Boolean)(implicit F: MonadPlus[F]): F[A] = F.filter(fa)(p)
+  def plus[F[_], A](x: F[A], y: F[A])(implicit F: T[F]): F[A] = F.plus(x, y)
+
+  def filter[F[_], A](fa: F[A])(p: A => Boolean)(implicit F: T[F]): F[A] = F.filter(fa)(p)
 
 }

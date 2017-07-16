@@ -41,6 +41,10 @@ object Monoid {
 
   implicit def Option[A](implicit A: Monoid[A]): Monoid[Option[A]] = new OptionMonoid[A] { val monoid = A }
 
+  def First[A]: Monoid[Option[A]] = new FirstMonoid[A] {}
+
+  def Last[A]: Monoid[Option[A]] = new LastMonoid[A] {}
+
   implicit def Map[K, V](implicit V: Monoid[V]): Monoid[Map[K, V]] = new MapMonoid[K, V] { val monoid = V }
 
   implicit def Ordering[A]: Monoid[Ordering[A]] = new OrderingMonoid[A] {}

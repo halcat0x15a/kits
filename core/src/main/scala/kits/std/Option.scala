@@ -46,3 +46,19 @@ trait OptionMonoid[A] extends Monoid[Option[A]] {
     }
 
 }
+
+trait FirstMonoid[A] extends Monoid[Option[A]] {
+
+  override final def empty: Option[A] = None
+
+  override final def append(x: Option[A], y: Option[A]): Option[A] = x.orElse(y)
+
+}
+
+trait LastMonoid[A] extends Monoid[Option[A]] {
+
+  override final def empty: Option[A] = None
+
+  override final def append(x: Option[A], y: Option[A]): Option[A] = y.orElse(x)
+
+}
