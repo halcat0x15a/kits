@@ -56,7 +56,7 @@ object Choice {
       case Some((a, _)) => Pure(a)
     }
 
-  def fromSeq[U: Choice#Member, A](seq: Seq[A]): Free[U, A] = seq.foldLeft(zero[U, A])((free, a) => plus(free, Pure(a)))
+  def fromSeq[U: Choice#Member, A](seq: Seq[A]): Free[U, A] = seq.foldRight(zero[U, A])((a, free) => plus(Pure(a), free))
 
   def handle[M[_]](implicit M: MonadPlus[M]) = new Handler {
     type Cons[U] = Choice :+: U
