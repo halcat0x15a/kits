@@ -17,8 +17,8 @@ package object free {
     def asFree[U: Error[A]#Member]: Free[U, B] = Error.fromEither(either)
   }
 
-  implicit class TryAsFree[A](val t: Try[A]) extends AnyVal {
-    def asFree[U: Error[Throwable]#Member]: Free[U, A] = Error.fromTry(t)
+  implicit class TryAsFree[A](val `try`: Try[A]) extends AnyVal {
+    def asFree[U: Error[Throwable]#Member]: Free[U, A] = Error.fromTry(`try`)
   }
 
   implicit class SeqAsFree[A](val seq: Seq[A]) extends AnyVal {

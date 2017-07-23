@@ -1,6 +1,6 @@
 package kits.free
 
-sealed abstract class Union
+sealed abstract class Union extends Product with Serializable
 
 sealed abstract class Void extends Union
 

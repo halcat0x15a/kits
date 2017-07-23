@@ -15,7 +15,7 @@ object Choice {
   case object Plus extends Choice
 
   def run[U, M[_], A](free: Free[Choice :+: U, A])(implicit M: MonadPlus[M]): Free[U, M[A]] =
-    Free.handleRelay(free, (M.zero[A], List.empty[Free[Choice :+: U, A]]))(
+    Free.handleRelayS(free, (M.zero[A], List.empty[Free[Choice :+: U, A]]))(
       (a, s) => s match {
         case (ma, Nil) => Right(M.plus(ma, M.pure(a)))
         case (ma, x :: xs) => Left((x, (M.plus(ma, M.pure(a)), xs)))
@@ -32,7 +32,7 @@ object Choice {
   def plus[U, A](x: Free[U, A], y: Free[U, A])(implicit F: Member[Choice, U]): Free[U, A] = Free[U, Boolean](F.inject(Plus)).flatMap(if (_) x else y)
 
   def split[U: Choice#Member, A](free: Free[U, A]): Free[U, Option[(A, Free[U, A])]] =
-    Free.interpose(free, List.empty[Free[U, A]])(
+    Free.interposeS(free, List.empty[Free[U, A]])(
       (a, stack) => Right(Some((a, Traverse.fold(stack)))),
       (fa: Choice, stack, k) => fa match {
         case Zero =>

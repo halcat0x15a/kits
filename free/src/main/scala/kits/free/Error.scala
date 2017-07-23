@@ -13,9 +13,9 @@ object Error {
   case class Fail[E](value: E) extends Error[E]
 
   def run[U, E, A](free: Free[Error[E] :+: U, A]): Free[U, Either[E, A]] =
-    Free.handleRelay(free, ())(
-      (a, _) => Right(Right(a)),
-      (fa, _, _) => fa match {
+    Free.handleRelay(free)(
+      a => Right(Right(a)),
+      (fa, _) => fa match {
         case Fail(e) => Right(Pure(Left(e)))
       }
     )
@@ -23,9 +23,9 @@ object Error {
   def fail[U, E, A](value: E)(implicit F: Member[Error[E], U]): Free[U, A] = Free(F.inject(Fail(value)))
 
   def recover[U: Error[E]#Member, E, A](free: Free[U, A])(handle: E => Free[U, A]): Free[U, A] =
-    Free.interpose(free, ())(
-      (a, _) => Right(a),
-      (fa: Error[E], _, _) => fa match {
+    Free.interpose(free)(
+      a => Right(a),
+      (fa: Error[E], _) => fa match {
         case Fail(e) => Right(handle(e))
       }
     )
@@ -48,12 +48,13 @@ object Error {
 
 object Maybe {
 
-  def run[U, A](free: Free[Maybe :+: U, A]): Free[U, Option[A]] =
-    Error.run(free).map(_.fold(_ => None, Some(_)))
+  def run[U, A](free: Free[Maybe :+: U, A]): Free[U, Option[A]] = Error.run(free).map(_.fold(_ => None, Some(_)))
 
   def nothing[U: Maybe#Member, A]: Free[U, A] = Error.fail(())
 
   def fromOption[U: Maybe#Member, A](option: Option[A]): Free[U, A] = option.fold(nothing[U, A])(a => Pure(a))
+
+  def orElse[U: Maybe#Member, A](x: Free[U, A], y: Free[U, A]): Free[U, A] = Error.recover(x)((_: Unit) => y)
 
   def handle[E] = new Handler {
     type Cons[U] = Maybe :+: U

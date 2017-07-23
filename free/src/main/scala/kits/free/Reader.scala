@@ -11,9 +11,9 @@ object Reader {
   case class Ask[R]() extends Reader[R]
 
   def run[U, R, A](free: Free[Reader[R] :+: U, A], value: R): Free[U, A] =
-    Free.handleRelay(free, ())(
-      (a, _) => Right(a),
-      (_, _, k) => Left((k(value), ()))
+    Free.handleRelay(free)(
+      a => Right(a),
+      (_, k) => Left(k(value))
     )
 
   def ask[U, R](implicit F: Member[Reader[R], U]): Free[U, R] = Free(F.inject(Ask()))
@@ -21,9 +21,9 @@ object Reader {
   def local[U: Reader[R]#Member, R, A](free: Free[U, A])(f: R => R): Free[U, A] =
     ask.flatMap { r0 =>
       val r = f(r0)
-      Free.interpose(free, ())(
-        (a, _) => Right(a),
-        (_: Reader[R], _, k) => Left((k(r), ()))
+      Free.interpose(free)(
+        a => Right(a),
+        (_: Reader[R], k) => Left(k(r))
       )
     }
 
