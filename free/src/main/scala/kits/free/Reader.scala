@@ -16,15 +16,24 @@ object Reader {
       (_, k) => Left(k(value))
     )
 
-  def ask[U, R](implicit F: Member[Reader[R], U]): Free[U, R] = Free(F.inject(Ask()))
+  def ask[R] = new Eff[R] {
+    type Effects = EffLeaf[Reader[R]]
+    def free[U](implicit members: EffMember[Effects, U]): Free[U, R] = Free(members.get.inject(Ask()))
+  }
 
-  def local[U: Reader[R]#Member, R, A](free: Free[U, A])(f: R => R): Free[U, A] =
-    ask.flatMap { r0 =>
+  def local[Effs <: EffTree, R, A](eff: Eff[A] { type Effects = Effs })(f: R => R)(implicit get: GetMember[Effs, Reader[R]]): Eff[A] {
+    type Effects = EffLeaf[Reader[R]] :*: Effs
+  } =
+    ask[R].flatMap { r0 =>
       val r = f(r0)
-      Free.interpose(free)(
-        a => Right(a),
-        (_: Reader[R], k) => Left(k(r))
-      )
+      new Eff[A] {
+        type Effects = Effs
+        def free[U](implicit members: EffMember[Effects, U]): Free[U, A] =
+          Free.interpose(eff.free[U])(
+            a => Right(a),
+            (_: Reader[R], k) => Left(k(r))
+          )(get(members))
+      }
     }
 
   def handle[R](value: R) = new Handler {
