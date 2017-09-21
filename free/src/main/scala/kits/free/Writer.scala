@@ -28,22 +28,15 @@ object Writer {
       }
     )
 
-  def tell[W](value: W) = new Eff[Unit] {
-    type Effects = EffLeaf[Writer[W]]
-    def free[U](implicit members: EffMember[Effects, U]): Free[U, Unit] = Free(members.get.inject(Tell(value)))
-  }
+  def tell[U, W](value: W)(implicit F: Member[Writer[W], U]): Free[U, Unit] = Free(F.inject(Tell(value)))
 
-  def listen[Effs <: EffTree, W, A](eff: Eff[A] { type Effects = Effs })(implicit W: Monoid[W], get: GetMember[Effs, Writer[W]]) =
-    new Eff[(W, A)] {
-      type Effects = Effs
-      def free[U](implicit members: EffMember[Effects, U]): Free[U, (W, A)] =
-        Free.interposeS(eff.free[U], W.empty)(
-          (a, w) => Right((w, a)),
-          (fa: Writer[W], w, k) => fa match {
-            case Tell(v) => Left((k(()), W.append(w, v)))
-          }
-        )(get(members))
-    }.flatMap {
+  def listen[U: Writer[W]#Member, W, A](free: Free[U, A])(implicit W: Monoid[W]): Free[U, (W, A)] =
+    Free.interposeS(free, W.empty)(
+      (a, w) => Right((w, a)),
+      (fa: Writer[W], w, k) => fa match {
+        case Tell(v) => Left((k(()), W.append(w, v)))
+      }
+    ).flatMap {
       case r@(w, _) => tell(w).map(_ => r)
     }
 
