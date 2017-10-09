@@ -14,3 +14,4 @@ libraryDependencies += "org.halcat" %% "kits-free" % "0.8.0"
 
 * [ScalaDoc](http://halcat.org/kits/latest/api/index.html)
 * [Tutorial](https://github.com/halcat0x15a/kits/blob/master/TUTORIAL.md)
+* [Extensible Effects](http://halcat.org/scala/extensible/index.html)
