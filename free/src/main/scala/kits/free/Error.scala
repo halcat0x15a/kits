@@ -2,7 +2,7 @@ package kits.free
 
 import scala.util.{Failure, Success, Try}
 
-sealed abstract class Error[E] {
+sealed abstract class Error[E] extends Product with Serializable {
 
   type Member[U] = kits.free.Member[Error[E], U]
 

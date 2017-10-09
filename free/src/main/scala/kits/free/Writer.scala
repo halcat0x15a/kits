@@ -2,7 +2,7 @@ package kits
 
 package free
 
-sealed abstract class Writer[W] {
+sealed abstract class Writer[W] extends Product with Serializable {
 
   type Member[U] = kits.free.Member[Writer[W], U]
 

@@ -2,7 +2,7 @@ package kits
 
 package free
 
-sealed abstract class Choice {
+sealed abstract class Choice extends Product with Serializable {
 
   type Member[U] = kits.free.Member[Choice, U]
 

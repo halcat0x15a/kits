@@ -1,6 +1,6 @@
 package kits.free
 
-sealed abstract class State[S] {
+sealed abstract class State[S] extends Product with Serializable {
 
   type Member[U] = kits.free.Member[State[S], U]
 

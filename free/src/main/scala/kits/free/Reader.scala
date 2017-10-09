@@ -1,6 +1,6 @@
 package kits.free
 
-sealed abstract class Reader[R] {
+sealed abstract class Reader[R] extends Product with Serializable {
 
   type Member[U] = kits.free.Member[Reader[R], U]
 

@@ -23,9 +23,9 @@ case class Pure[U, A](value: A) extends Free[U, A] {
 
 case class Impure[U, A, B](union: U, arrs: Arrows[U, A, B]) extends Free[U, B] {
 
-  def map[C](f: B => C): Free[U, C] = Impure(union, Arrows.snoc(arrs)(x => Pure(f(x))))
+  def map[C](f: B => C): Free[U, C] = Impure(union, arrs :+ (x => Pure(f(x))))
 
-  def flatMap[C](f: B => Free[U, C]): Free[U, C] = Impure(union, Arrows.snoc(arrs)(f))
+  def flatMap[C](f: B => Free[U, C]): Free[U, C] = Impure(union, arrs :+ f)
 
 }
 
@@ -49,11 +49,11 @@ object Free {
           case Left(free) => handleRelay(free)(f, g)
         }
       case Impure(Inl(fa), k) =>
-        g(fa, Arrows.app(k)) match {
+        g(fa, k.apply) match {
           case Right(free) => free
           case Left(free) => handleRelay(free)(f, g)
         }
-      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => handleRelay(Arrows.app(k)(x))(f, g)))
+      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => handleRelay(k(x))(f, g)))
     }
 
   def handleRelayS[F, U, A, B, S](free: Free[F :+: U, A], state: S)(
@@ -67,11 +67,11 @@ object Free {
           case Left((free, state)) => handleRelayS(free, state)(f, g)
         }
       case Impure(Inl(fa), k) =>
-        g(fa, state, Arrows.app(k)) match {
+        g(fa, state, k.apply) match {
           case Right(free) => free
           case Left((free, state)) => handleRelayS(free, state)(f, g)
         }
-      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => handleRelayS(Arrows.app(k)(x), state)(f, g)))
+      case Impure(Inr(u), k) => Impure(u, Arrows.singleton((x: Any) => handleRelayS(k(x), state)(f, g)))
     }
 
   def interpose[F, U, A, B](free: Free[U, A])(
@@ -87,11 +87,11 @@ object Free {
       case Impure(u, k) =>
         F.project(u) match {
           case Some(fa) =>
-            g(fa, Arrows.app(k)) match {
+            g(fa, k.apply) match {
               case Right(free) => free
               case Left(free) => interpose(free)(f, g)
             }
-          case None => Impure(u, Arrows.singleton((x: Any) => interpose(Arrows.app(k)(x))(f, g)))
+          case None => Impure(u, Arrows.singleton((x: Any) => interpose(k(x))(f, g)))
         }
     }
 
@@ -108,11 +108,11 @@ object Free {
       case Impure(u, k) =>
         F.project(u) match {
           case Some(fa) =>
-            g(fa, state, Arrows.app(k)) match {
+            g(fa, state, k.apply) match {
               case Right(free) => free
               case Left((free, state)) => interposeS(free, state)(f, g)
             }
-          case None => Impure(u, Arrows.singleton((x: Any) => interposeS(Arrows.app(k)(x), state)(f, g)))
+          case None => Impure(u, Arrows.singleton((x: Any) => interposeS(k(x), state)(f, g)))
         }
     }
 
