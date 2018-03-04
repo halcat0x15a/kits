@@ -65,6 +65,10 @@ lazy val free = (project in file("free")).
   settings(name := "kits-free").
   dependsOn(core)
 
+lazy val eff = (project in file("eff")).
+  settings(commonSettings: _*).
+  settings(name := "kits-eff")
+
 lazy val lens = (project in file("lens")).
   settings(commonSettings: _*).
   settings(
