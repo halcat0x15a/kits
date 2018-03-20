@@ -1,7 +1,5 @@
 package kits.eff
 
-import scala.reflect.Manifest
-
 sealed abstract class Reader[I] extends Product with Serializable
 
 object Reader {
@@ -12,5 +10,11 @@ object Reader {
       case Ask() => k => k(i)
     }
 
-  case class Ask[I] private () extends Reader[I]
+  def local[R <: ~[Reader[I]], I: Manifest, A](f: I => I)(eff: Eff[R, A]): Eff[R, A] =
+    ask[I].flatMap { r0 =>
+      val r = f(r0)
+      run[R, I, A](r)(eff)
+    }
+
+  case class Ask[I]() extends Reader[I]
 }

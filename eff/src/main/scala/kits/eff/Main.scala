@@ -1,10 +1,11 @@
 package kits.eff
 
 object Main extends App {
-  val foo: Eff[~[Reader[Int]] with ~[Writer[String]], Int] = for {
+  val foo: Eff[~[Reader[Int]] with ~[Error[String]] with ~[Writer[String]], Int] = for {
     x <- Reader.ask[Int]
     _ <- Writer.tell(x.toString)
-  } yield x
+    y <- Either.cond(x > 0, x, "hoge").lift
+  } yield x + y
 
-  println(Eff.run(Writer.run(Reader.run(0)(foo))))
+  println(Eff.run(Error.runEither(Writer.runList(Reader.run(1)(foo)))))
 }
