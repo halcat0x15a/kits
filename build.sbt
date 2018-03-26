@@ -54,7 +54,7 @@ lazy val root = (project in file(".")).
     addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), siteSubdirName in ScalaUnidoc),
     gitRemoteRepo := "git@github.com:halcat0x15a/kits.git"
   ).
-  aggregate(core, free, lens)
+  aggregate(core, free, eff)
 
 lazy val core = (project in file("core")).
   settings(commonSettings: _*).
@@ -68,10 +68,3 @@ lazy val free = (project in file("free")).
 lazy val eff = (project in file("eff")).
   settings(commonSettings: _*).
   settings(name := "kits-eff")
-
-lazy val lens = (project in file("lens")).
-  settings(commonSettings: _*).
-  settings(
-    name := "kits-lens",
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
-  )
