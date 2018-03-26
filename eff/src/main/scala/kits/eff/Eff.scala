@@ -29,7 +29,7 @@ object Eff {
     go(eff)
   }
 
-  def handleRelayS[F, R, S, A, B](s: S, eff: Eff[~[F] with R, A])(pure: (S, A) => Eff[R, B])(bind: F => (S, ((S, Any) => Eff[R, B])) => Eff[R, B])(implicit F: Manifest[F]): Eff[R, B] = {
+  def handleRelayS[F, R, S, A, B](s: S, eff: Eff[~[F] with R, A])(pure: (S, A) => Eff[R, B])(bind: F => (S, (S, Any) => Eff[R, B]) => Eff[R, B])(implicit F: Manifest[F]): Eff[R, B] = {
     def go(s: S, eff: Eff[~[F] with R, A]): Eff[R, B] =
       eff match {
         case Pure(a) => pure(s, a)
