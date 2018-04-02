@@ -1,5 +1,6 @@
 package kits.eff
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -15,13 +16,17 @@ object Task {
       lift(Future(a))
     }
 
-  def run[A](eff: Eff[~[Task], A])(implicit ec: ExecutionContext): Future[A] =
-    eff match {
-      case Eff.Pure(a) => Future.successful(a)
-      case Eff.Impure(Union.Tagless(a), k) => run(k(a))
-      case Eff.Impure(Union.Tagged(_, Context()), k) => run(k(ec))
-      case Eff.Impure(Union.Tagged(_, Lift(f)), k) => f.flatMap(a => run(k(a)))
-    }
+  def run[A](eff: Eff[~[Task], A])(implicit ec: ExecutionContext): Future[A] = {
+    @tailrec
+    def loop(eff: Eff[~[Task], A]): Future[A] =
+      eff match {
+        case Eff.Pure(a) => Future.successful(a)
+        case Eff.Impure(Union(_, Context()), k) => loop(k(ec))
+        case Eff.Impure(Union(_, Lift(f)), k) => f.flatMap(a => go(k(a)))
+      }
+    def go(eff: Eff[~[Task], A]): Future[A] = loop(eff)
+    loop(eff)
+  }
 
   case class Context() extends Task
 

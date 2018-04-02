@@ -9,16 +9,16 @@ class Arrs[-R, A, B](val vec: Vector[Any]) extends AnyVal {
 
   def apply(value: A): Eff[R, B] = {
     @tailrec
-    def go(vec: Vector[Any => Eff[R, B]], value: Any): Eff[R, B] = {
+    def loop(vec: Vector[Any => Eff[R, B]], value: Any): Eff[R, B] = {
       val f = vec.head
       val v = vec.tail
       f(value) match {
         case eff if v.isEmpty => eff
-        case Eff.Pure(value) => go(v, value)
+        case Eff.Pure(value) => loop(v, value)
         case Eff.Impure(union, arrs) => Eff.Impure(union, new Arrs(arrs.vec ++ v))
       }
     }
-    go(vec.asInstanceOf[Vector[Any => Eff[R, B]]], value)
+    loop(vec.asInstanceOf[Vector[Any => Eff[R, B]]], value)
   }
 }
 

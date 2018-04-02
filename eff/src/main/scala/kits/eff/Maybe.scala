@@ -5,12 +5,21 @@ sealed abstract class Maybe extends Product with Serializable
 object Maybe {
   def nothing: Eff[~[Maybe], Nothing] = Eff(Nothing: Maybe)
 
-  def lift[A](option: Option[A]): Eff[~[Maybe], A] = option.map(Eff.Pure(_)).getOrElse(nothing)
-
-  def run[R, A](eff: Eff[~[Maybe] with R, A]): Eff[R, Option[A]] =
-    Eff.handleRelay[Maybe, R, A, Option[A]](eff)(a => Eff.Pure(Some(a))) {
-      case Nothing => _ => Eff.Pure(None)
+  def lift[A](option: Option[A]): Eff[~[Maybe], A] =
+    option match {
+      case None => nothing
+      case Some(a) => Eff.Pure(a)
     }
+
+  def run[R, A](eff: Eff[~[Maybe] with R, A]): Eff[R, Option[A]] = {
+    def go(eff: Eff[~[Maybe] with R, A]): Eff[R, Option[A]] =
+      eff match {
+        case Eff.Pure(a) => Eff.Pure(Some(a))
+        case Eff.Impure(Union(_, Nothing), _) => Eff.Pure(None)
+        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(k(a))))
+      }
+    go(eff)
+  }
 
   case object Nothing extends Maybe
 }
