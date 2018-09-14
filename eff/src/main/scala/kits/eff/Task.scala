@@ -7,24 +7,24 @@ import scala.concurrent.Future
 sealed abstract class Task extends Product with Serializable
 
 object Task {
-  def context: Eff[~[Task], ExecutionContext] = Eff(Context(): Task)
+  def context: Eff[Task, ExecutionContext] = Eff(Context())
 
-  def lift[A](future: Future[A]): Eff[~[Task], A] = Eff(Lift(future): Task)
+  def lift[A](future: Future[A]): Eff[Task, A] = Eff(Lift(future))
 
-  def async[A](a: => A): Eff[~[Task], A] =
+  def async[A](a: => A): Eff[Task, A] =
     context.flatMap { implicit ec =>
       lift(Future(a))
     }
 
-  def run[A](eff: Eff[~[Task], A])(implicit ec: ExecutionContext): Future[A] = {
+  def run[A](eff: Eff[Task, A])(implicit ec: ExecutionContext): Future[A] = {
+    def go(eff: Eff[Task, A]): Future[A] = loop(eff)
     @tailrec
-    def loop(eff: Eff[~[Task], A]): Future[A] =
+    def loop(eff: Eff[Task, A]): Future[A] =
       eff match {
         case Eff.Pure(a) => Future.successful(a)
-        case Eff.Impure(Union(_, Context()), k) => loop(k(ec))
-        case Eff.Impure(Union(_, Lift(f)), k) => f.flatMap(a => go(k(a)))
+        case Eff.Impure(Union(Context()), k) => loop(k(ec))
+        case Eff.Impure(Union(Lift(f)), k) => f.flatMap(a => go(k(a)))
       }
-    def go(eff: Eff[~[Task], A]): Future[A] = loop(eff)
     loop(eff)
   }
 

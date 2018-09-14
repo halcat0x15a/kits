@@ -8,7 +8,7 @@ class ErrorSpec extends FlatSpec {
       _ <- Error.fail(42)
       _ <- Error.fail("hoge")
     } yield ()
-    def runErrorString[R, A](eff: Eff[~[Error[String]] with R, A]): Eff[R, Either[String, A]] = Error.run[String, R, A](eff)
+    def runErrorString[R, A](eff: Eff[Error[String] with R, A]): Eff[R, Either[String, A]] = Error.run[String, R, A](eff)
     Eff.run(Error.run(runErrorString(e)))
   }
 

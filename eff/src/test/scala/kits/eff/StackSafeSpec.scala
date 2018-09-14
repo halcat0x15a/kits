@@ -5,7 +5,7 @@ import org.scalatest.FlatSpec
 class StackSafeSpec extends FlatSpec {
   "Eff" should "count up to 1,000,000 with State" in {
     val N = 1000000
-    def loop: Eff[~[Reader[Int]] with ~[State[Int]], Unit] =
+    def loop: Eff[Reader[Int] with State[Int], Unit] =
       for {
         s <- State.get[Int]
         _ <- if (s >= N) {
