@@ -8,6 +8,7 @@ object Reader {
   def ask[I](implicit I: Manifest[I]): Eff[Reader[I], I] = Eff(Ask(I))
 
   def run[I, R, A](i: I)(eff: Eff[Reader[I] with R, A])(implicit I: Manifest[I]): Eff[R, A] = {
+    def go(eff: Eff[Reader[I] with R, A]): Eff[R, A] = loop(eff)
     @tailrec
     def loop(eff: Eff[Reader[I] with R, A]): Eff[R, A] =
       eff match {
@@ -15,7 +16,6 @@ object Reader {
         case Eff.Impure(Union(Ask(I)), k) => loop(k(i))
         case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(k(a))))
       }
-    def go(eff: Eff[Reader[I] with R, A]): Eff[R, A] = loop(eff)
     loop(eff)
   }
 

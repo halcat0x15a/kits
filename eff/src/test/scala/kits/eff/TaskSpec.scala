@@ -9,7 +9,7 @@ class TaskSpec extends AsyncFlatSpec {
       _ <- Writer.tell(n)
       m <- Task.async(n * n)
     } yield m
-    Task.run(Reader.run(2)(Writer.runVector(e))).map { result =>
+    Task.run(Reader.run(2)(Writer.run(e))).map { result =>
       assert(result == (Vector(2), 4))
     }
   }

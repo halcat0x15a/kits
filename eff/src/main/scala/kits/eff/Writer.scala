@@ -5,31 +5,28 @@ import scala.annotation.tailrec
 sealed abstract class Writer[W] extends Product with Serializable
 
 object Writer {
+  def apply[W](implicit W: Manifest[W]): Ops[W] = new Ops(W)
+
   def tell[W](w: W)(implicit W: Manifest[W]): Eff[Writer[W], Unit] = Eff(Tell(W, w))
 
-  def run[W, R, A](w: W)(eff: Eff[Writer[W] with R, A])(f: (W, W) => W)(implicit W: Manifest[W]): Eff[R, (W, A)] = {
-    def go(w: W, eff: Eff[Writer[W] with R, A]): Eff[R, (W, A)] = loop(w, eff)
+  def fold[W, R, A, B](eff: Eff[Writer[W] with R, A])(z: B)(f: (B, W) => B)(implicit W: Manifest[W]): Eff[R, (B, A)] = {
+    def go(eff: Eff[Writer[W] with R, A], acc: B): Eff[R, (B, A)] = loop(eff, acc)
     @tailrec
-    def loop(w: W, eff: Eff[Writer[W] with R, A]): Eff[R, (W, A)] =
+    def loop(eff: Eff[Writer[W] with R, A], acc: B): Eff[R, (B, A)] =
       eff match {
-        case Eff.Pure(a) => Eff.Pure((w, a))
-        case Eff.Impure(Union(Tell(W, v: W)), k) => loop(f(w, v), k(()))
-        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(w, k(a))))
+        case Eff.Pure(a) => Eff.Pure((acc, a))
+        case Eff.Impure(Union(Tell(W, w: W)), k) => loop(k(()), f(acc, w))
+        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(k(a), acc)))
       }
-    loop(w, eff)
+    loop(eff, z)
   }
 
-  def runVector[W, R, A](eff: Eff[Writer[W] with R, A])(implicit W: Manifest[W]): Eff[R, (Vector[W], A)] = {
-    def go(ws: Vector[W], eff: Eff[Writer[W] with R, A]): Eff[R, (Vector[W], A)] = loop(ws, eff)
-    @tailrec
-    def loop(ws: Vector[W], eff: Eff[Writer[W] with R, A]): Eff[R, (Vector[W], A)] =
-      eff match {
-        case Eff.Pure(a) => Eff.Pure((ws, a))
-        case Eff.Impure(Union(Tell(W, w: W)), k) => loop(ws :+ w, k(()))
-        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(ws, k(a))))
-      }
-    loop(Vector.empty, eff)
-  }
+  def run[W: Manifest, R, A](eff: Eff[Writer[W] with R, A]): Eff[R, (Vector[W], A)] =
+    fold[W, R, A, Vector[W]](eff)(Vector.empty[W])(_ :+ _)
 
   case class Tell[W](manifest: Manifest[_], value: W) extends Writer[W]
+
+  class Ops[W](val manifest: Manifest[W]) extends AnyVal {
+    def run[R, A](eff: Eff[Writer[W] with R, A]): Eff[R, (Vector[W], A)] = Writer.run[W, R, A](eff)(manifest)
+  }
 }

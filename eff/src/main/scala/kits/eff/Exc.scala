@@ -3,6 +3,8 @@ package kits.eff
 sealed abstract class Exc[E] extends Product with Serializable
 
 object Exc {
+  def apply[E](implicit E: Manifest[E]): Ops[E] = new Ops(E)
+
   def fail[E](e: E)(implicit E: Manifest[E]): Eff[Exc[E], Nothing] = Eff(Fail(E, e))
 
   def lift[E: Manifest, A](either: Either[E, A]): Eff[Exc[E], A] = either.fold(fail(_), Eff.Pure(_))
@@ -28,4 +30,9 @@ object Exc {
   }
 
   case class Fail[E](manifest: Manifest[_], value: E) extends Exc[E]
+
+  class Ops[E](val manifest: Manifest[E]) extends AnyVal {
+    def run[R, A](eff: Eff[Exc[E] with R, A]): Eff[R, Either[E, A]] = Exc.run[E, R, A](eff)(manifest)
+    def recover[R, A](eff: Eff[Exc[E] with R, A])(f: E => Eff[R, A]): Eff[R, A] = Exc.recover[E, R, A](eff)(f)(manifest)
+  }
 }
