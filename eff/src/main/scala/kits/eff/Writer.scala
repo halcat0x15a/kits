@@ -15,8 +15,8 @@ object Writer {
     def loop(eff: Eff[Writer[W] with R, A], acc: B): Eff[R, (B, A)] =
       eff match {
         case Eff.Pure(a) => Eff.Pure((acc, a))
-        case Eff.Impure(Union(Tell(W, w: W)), k) => loop(k(()), f(acc, w))
-        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(k(a), acc)))
+        case Eff.Impure(Tell(W, w: W), k) => loop(k(()), f(acc, w))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a), acc)))
       }
     loop(eff, z)
   }

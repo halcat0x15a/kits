@@ -18,9 +18,9 @@ object State {
     def loop(s: S, eff: Eff[State[S] with R, A]): Eff[R, (S, A)] =
       eff match {
         case Eff.Pure(a) => Eff.Pure((s, a))
-        case Eff.Impure(Union(Get(S)), k) => loop(s, k(s))
-        case Eff.Impure(Union(Put(S, s: S)), k) => loop(s, k(()))
-        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(s, k(a))))
+        case Eff.Impure(Get(S), k) => loop(s, k(s))
+        case Eff.Impure(Put(S, s: S), k) => loop(s, k(()))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(s, k(a))))
       }
     loop(s, eff)
   }

@@ -22,8 +22,8 @@ object Task {
     def loop(eff: Eff[Task, A]): Future[A] =
       (eff: @unchecked) match {
         case Eff.Pure(a) => Future.successful(a)
-        case Eff.Impure(Union(Context()), k) => loop(k(ec))
-        case Eff.Impure(Union(Lift(f)), k) => f.flatMap(a => go(k(a)))
+        case Eff.Impure(Context(), k) => loop(k(ec))
+        case Eff.Impure(Lift(f), k) => f.flatMap(a => go(k(a)))
       }
     loop(eff)
   }

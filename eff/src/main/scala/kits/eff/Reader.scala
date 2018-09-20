@@ -13,8 +13,8 @@ object Reader {
     def loop(eff: Eff[Reader[I] with R, A]): Eff[R, A] =
       eff match {
         case Eff.Pure(a) => Eff.Pure(a)
-        case Eff.Impure(Union(Ask(I)), k) => loop(k(i))
-        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(k(a))))
+        case Eff.Impure(Ask(I), k) => loop(k(i))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a))))
       }
     loop(eff)
   }

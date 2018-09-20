@@ -13,8 +13,8 @@ object Exc {
     def go(eff: Eff[Exc[E] with R, A]): Eff[R, Either[E, A]] =
       eff match {
         case Eff.Pure(a) => Eff.Pure(Right(a))
-        case Eff.Impure(Union(Fail(E, e: E)), _) => Eff.Pure(Left(e))
-        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(k(a))))
+        case Eff.Impure(Fail(E, e: E), _) => Eff.Pure(Left(e))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a))))
       }
     go(eff)
   }
@@ -23,8 +23,8 @@ object Exc {
     def go(eff: Eff[Exc[E] with R, A]): Eff[R, A] =
       eff match {
         case Eff.Pure(a) => Eff.Pure(a)
-        case Eff.Impure(Union(Fail(E, e: E)), _) => f(e)
-        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(k(a))))
+        case Eff.Impure(Fail(E, e: E), _) => f(e)
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a))))
       }
     go(eff)
   }

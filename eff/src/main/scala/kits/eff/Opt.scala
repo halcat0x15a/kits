@@ -15,8 +15,8 @@ object Opt {
     def go(eff: Eff[Opt with R, A]): Eff[R, Option[A]] =
       eff match {
         case Eff.Pure(a) => Eff.Pure(Some(a))
-        case Eff.Impure(Union(Empty), _) => Eff.Pure(None)
-        case Eff.Impure(r: Union[R], k) => Eff.Impure(r, Arrs((a: Any) => go(k(a))))
+        case Eff.Impure(Empty, _) => Eff.Pure(None)
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a))))
       }
     go(eff)
   }
