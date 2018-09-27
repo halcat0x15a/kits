@@ -4,6 +4,8 @@ sealed abstract class Eff[-R, +A] extends Product with Serializable {
   def map[B](f: A => B): Eff[R, B]
 
   def flatMap[S, B](f: A => Eff[S, B]): Eff[R with S, B]
+
+  def withFilter(p: A => Boolean): Eff[Opt with R, A] = flatMap(a => if (p(a)) Eff.Pure(a) else Opt.empty)
 }
 
 object Eff {
