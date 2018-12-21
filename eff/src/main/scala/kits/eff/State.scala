@@ -5,6 +5,8 @@ import scala.annotation.tailrec
 sealed abstract class State[S] extends Product with Serializable
 
 object State {
+  def apply[S](implicit S: Manifest[S]) = new Ops(S)
+
   def get[S](implicit S: Manifest[S]): Eff[State[S], S] = Eff(Get(S))
 
   def put[S](s: S)(implicit S: Manifest[S]): Eff[State[S], Unit] = Eff(Put(S, s))
@@ -25,7 +27,18 @@ object State {
     loop(s, eff)
   }
 
+  def transaction[S, R <: State[S], A](eff: Eff[R, A])(implicit S: Manifest[S]): Eff[R, A] =
+    for {
+      s <- get
+      r <- run[S, R, A](s)(eff)
+      _ <- put(r._1)
+    } yield r._2
+
   case class Get[S](manifest: Manifest[_]) extends State[S]
 
   case class Put[S](manifest: Manifest[_], value: S) extends State[S]
+
+  class Ops[S](val manifest: Manifest[S]) extends AnyVal {
+    def transaction[R <: State[S], A](eff: Eff[R, A]): Eff[R, A] = State.transaction[S, R, A](eff)(manifest)
+  }
 }
