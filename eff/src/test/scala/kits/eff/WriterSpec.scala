@@ -11,7 +11,7 @@ class WriterSpec extends FlatSpec {
     assert(Eff.run(Writer.run(e)) == (Vector("hoge", "fuga"), ()))
   }
 
-  it should "fold outout" in {
+  it should "fold output" in {
     val e = for {
       _ <- Writer.tell("hoge")
       _ <- Writer.tell("fuga")

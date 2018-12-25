@@ -15,7 +15,7 @@ class TaskSpec extends AsyncFlatSpec {
     }
   }
 
-  it should "set and get context" in {
+  it should "set and get the context" in {
     val e = for {
       _ <- Task.context = ExecutionContext.global
       ec <- Task.context

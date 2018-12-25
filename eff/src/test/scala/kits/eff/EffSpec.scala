@@ -3,7 +3,7 @@ package kits.eff
 import org.scalatest.FlatSpec
 
 class EffSpec extends FlatSpec {
-  "Eff" should "count up to 1,000,000 with Reader and State" in {
+  "Eff" should "not stack overflow even if it counts up to 1,000,000 in Reader and State" in {
     val N = 1000000
     def loop: Eff[Reader[Int] with State[Int], Unit] =
       for {
@@ -18,7 +18,7 @@ class EffSpec extends FlatSpec {
     assert(Eff.run(State.run(0)(Reader.run(N)(loop))) == (N, ()))
   }
 
-  it should "filter values with Opt" in {
+  it should "filter the value with Opt" in {
     val e = for {
       n <- Reader.ask[Int]
       if n > 0

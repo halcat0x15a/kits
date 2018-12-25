@@ -3,7 +3,7 @@ package kits.eff
 import org.scalatest.FlatSpec
 
 class ExcSpec extends FlatSpec {
-  "Exc" should "handle multiple errors" in {
+  "Exc" should "handle multiple failures" in {
     val e = for {
       _ <- Exc.fail(42)
       _ <- Exc.fail("hoge")
@@ -12,7 +12,7 @@ class ExcSpec extends FlatSpec {
     assert(Eff.run(Exc[String].run(Exc[Int].run(e))) == Right(Left(42)))
   }
 
-  it should "recover from failures" in {
+  it should "recover from the failure" in {
     val e = for {
       _ <- Exc.fail(new IllegalArgumentException("hoge"))
     } yield "fuga"
