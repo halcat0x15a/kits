@@ -22,7 +22,7 @@ object State {
         case Eff.Pure(a) => Eff.Pure((s, a))
         case Eff.Impure(Get(S), k) => loop(s, k(s))
         case Eff.Impure(Put(S, s: S), k) => loop(s, k(()))
-        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(s, k(a))))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs.Leaf((a: Any) => go(s, k(a))))
       }
     loop(s, eff)
   }

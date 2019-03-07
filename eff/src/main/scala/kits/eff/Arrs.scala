@@ -2,26 +2,33 @@ package kits.eff
 
 import scala.annotation.tailrec
 
-class Arrs[-R, A, B](val vec: Vector[Any]) extends AnyVal {
-  def :+[S, C](f: B => Eff[S, C]): Arrs[R with S, A, C] = new Arrs(vec :+ f)
+sealed abstract class Arrs[-R, A, B] extends Product with Serializable {
+  def :+[S, C](f: B => Eff[S, C]): Arrs[R with S, A, C] = Arrs.Node(this, Arrs.Leaf(f))
 
-  def ++[S, C](arrs: Arrs[S, B, C]): Arrs[R with S, A, C] = new Arrs(vec ++ arrs.vec)
+  def ++[S, C](that: Arrs[S, B, C]): Arrs[R with S, A, C] = Arrs.Node(this, that)
 
   def apply(value: A): Eff[R, B] = {
     @tailrec
-    def loop(vec: Vector[Any => Eff[R, B]], value: Any): Eff[R, B] = {
-      val f = vec.head
-      val v = vec.tail
-      f(value) match {
-        case eff if v.isEmpty => eff
-        case Eff.Pure(value) => loop(v, value)
-        case Eff.Impure(union, arrs) => Eff.Impure(union, new Arrs(arrs.vec ++ v))
+    def loop[A](value: A, arrs: Arrs[R, A, B]): Eff[R, B] =
+      arrs match {
+        case Arrs.Leaf(f) => f(value)
+        case Arrs.Node(l, r) =>
+          l match {
+            case Arrs.Leaf(f) =>
+              f(value) match {
+                case Eff.Pure(v) => loop(v, r)
+                case Eff.Impure(u, k) => Eff.Impure(u.asInstanceOf[R], k ++ r)
+              }
+            case Arrs.Node(ll, lr) =>
+              loop(value, Arrs.Node(ll, Arrs.Node(lr, r)))
+          }
       }
-    }
-    loop(vec.asInstanceOf[Vector[Any => Eff[R, B]]], value)
+    loop(value, this)
   }
 }
 
 object Arrs {
-  def apply[R, A, B](f: A => Eff[R, B]): Arrs[R, A, B] = new Arrs(Vector(f))
+  case class Leaf[R, A, B](value: A => Eff[R, B]) extends Arrs[R, A, B]
+
+  case class Node[R, A, B, C](left: Arrs[R, A, B], right: Arrs[R, B, C]) extends Arrs[R, A, C]
 }

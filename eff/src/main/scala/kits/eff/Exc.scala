@@ -14,7 +14,7 @@ object Exc {
       eff match {
         case Eff.Pure(a) => Eff.Pure(Right(a))
         case Eff.Impure(Fail(E, e: E), _) => Eff.Pure(Left(e))
-        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a))))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs.Leaf((a: Any) => go(k(a))))
       }
     go(eff)
   }
@@ -24,7 +24,7 @@ object Exc {
       eff match {
         case Eff.Pure(a) => Eff.Pure(a)
         case Eff.Impure(Fail(E, e: E), _) => f(e)
-        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a))))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs.Leaf((a: Any) => go(k(a))))
       }
     go(eff)
   }

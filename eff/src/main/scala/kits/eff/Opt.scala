@@ -16,7 +16,7 @@ object Opt {
       eff match {
         case Eff.Pure(a) => Eff.Pure(Some(a))
         case Eff.Impure(Empty, _) => Eff.Pure(None)
-        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a))))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs.Leaf((a: Any) => go(k(a))))
       }
     go(eff)
   }

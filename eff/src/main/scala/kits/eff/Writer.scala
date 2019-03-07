@@ -16,7 +16,7 @@ object Writer {
       eff match {
         case Eff.Pure(a) => Eff.Pure((acc, a))
         case Eff.Impure(Tell(W, w: W), k) => loop(k(()), f(acc, w))
-        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a), acc)))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs.Leaf((a: Any) => go(k(a), acc)))
       }
     loop(eff, z)
   }

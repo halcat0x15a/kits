@@ -14,7 +14,7 @@ object Reader {
       eff match {
         case Eff.Pure(a) => Eff.Pure(a)
         case Eff.Impure(Ask(I), k) => loop(k(i))
-        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs((a: Any) => go(k(a))))
+        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs.Leaf((a: Any) => go(k(a))))
       }
     loop(eff)
   }

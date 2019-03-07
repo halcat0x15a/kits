@@ -9,7 +9,7 @@ sealed abstract class Eff[-R, +A] extends Product with Serializable {
 }
 
 object Eff {
-  def apply[F, A](fa: F): Eff[F, A] = Impure(fa, Arrs((a: A) => Pure(a)))
+  def apply[F, A](fa: F): Eff[F, A] = Impure(fa, Arrs.Leaf((a: A) => Pure(a)))
 
   def run[A](eff: Eff[Any, A]): A =
     (eff: @unchecked) match {
