@@ -1,44 +1,45 @@
 package kits.eff
 
 import scala.annotation.tailrec
+import scala.reflect.runtime.universe.TypeTag
 
 sealed abstract class State[S] extends Product with Serializable
 
 object State {
-  def apply[S](implicit S: Manifest[S]) = new Ops(S)
+  def apply[S](implicit S: TypeTag[S]) = new Ops(S)
 
-  def get[S](implicit S: Manifest[S]): Eff[State[S], S] = Eff(Get(S))
+  def get[S: TypeTag]: Eff[State[S], S] = Eff(Get[S])
 
-  def put[S](s: S)(implicit S: Manifest[S]): Eff[State[S], Unit] = Eff(Put(S, s))
+  def put[S: TypeTag](s: S): Eff[State[S], Unit] = Eff(Put(s))
 
-  def modify[S: Manifest](f: S => S): Eff[State[S], Unit] =
+  def modify[S: TypeTag](f: S => S): Eff[State[S], Unit] =
     get[S].flatMap(s => put(f(s)))
 
-  def run[S, R, A](s: S)(eff: Eff[State[S] with R, A])(implicit S: Manifest[S]): Eff[R, (S, A)] = {
-    def go(s: S, eff: Eff[State[S] with R, A]): Eff[R, (S, A)] = loop(s, eff)
-    @tailrec
-    def loop(s: S, eff: Eff[State[S] with R, A]): Eff[R, (S, A)] =
-      eff match {
-        case Eff.Pure(a) => Eff.Pure((s, a))
-        case Eff.Impure(Get(S), k) => loop(s, k(s))
-        case Eff.Impure(Put(S, s: S), k) => loop(s, k(()))
-        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs.Leaf((a: Any) => go(s, k(a))))
-      }
-    loop(s, eff)
+  def run[S: TypeTag, R, A](s: S)(eff: Eff[State[S] with R, A]): Eff[R, (S, A)] = {
+    val handle = new Recurser[State[S], R, A, (S, A)] {
+      type M[A] = (S, A)
+      def pure(a: (S, A)) = Eff.Pure(a)
+      def impure[T](ft: (S, State[S] with Fx[T])) =
+        ft match {
+          case (s, _: Get[S]) => Left((s, s))
+          case (_, Put(s)) => Left((s, ()))
+        }
+    }
+    handle(s, eff)
   }
 
-  def transaction[S, R <: State[S], A](eff: Eff[R, A])(implicit S: Manifest[S]): Eff[R, A] =
+  def transaction[S: TypeTag, R <: State[S], A](eff: Eff[R, A]): Eff[R, A] =
     for {
       s <- get
       r <- run[S, R, A](s)(eff)
       _ <- put(r._1)
     } yield r._2
 
-  case class Get[S](manifest: Manifest[_]) extends State[S]
+  case class Get[S]() extends State[S] with Fx[S]
 
-  case class Put[S](manifest: Manifest[_], value: S) extends State[S]
+  case class Put[S](value: S) extends State[S] with Fx[Unit]
 
-  class Ops[S](val manifest: Manifest[S]) extends AnyVal {
+  class Ops[S](val manifest: TypeTag[S]) extends AnyVal {
     def transaction[R <: State[S], A](eff: Eff[R, A]): Eff[R, A] = State.transaction[S, R, A](eff)(manifest)
   }
 }

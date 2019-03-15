@@ -14,14 +14,4 @@ class TaskSpec extends AsyncFlatSpec {
       assert(result == (Vector(2), 4))
     }
   }
-
-  it should "set and get the context" in {
-    val e = for {
-      _ <- Task.context = ExecutionContext.global
-      ec <- Task.context
-    } yield ec
-    Task.run(e).map { result =>
-      assert(result == ExecutionContext.global)
-    }
-  }
 }

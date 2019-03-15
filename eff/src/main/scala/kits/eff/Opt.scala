@@ -12,14 +12,16 @@ object Opt {
     }
 
   def run[R, A](eff: Eff[Opt with R, A]): Eff[R, Option[A]] = {
-    def go(eff: Eff[Opt with R, A]): Eff[R, Option[A]] =
-      eff match {
-        case Eff.Pure(a) => Eff.Pure(Some(a))
-        case Eff.Impure(Empty, _) => Eff.Pure(None)
-        case Eff.Impure(r, k) => Eff.Impure(r.asInstanceOf[R], Arrs.Leaf((a: Any) => go(k(a))))
-      }
-    go(eff)
+    val handle = new Interpreter[Opt, R, A, Option[A]] {
+      type M[A] = A
+      def pure(a: A) = Eff.Pure(Some(a))
+      def impure[T](ft: Opt with Fx[T])(k: T => Eff[R, Option[A]]) =
+        ft match {
+          case Empty => Eff.Pure(None)
+        }
+    }
+    handle(eff)
   }
 
-  case object Empty extends Opt
+  case object Empty extends Opt with Fx[Nothing]
 }

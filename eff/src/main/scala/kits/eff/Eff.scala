@@ -1,5 +1,11 @@
 package kits.eff
 
+import scala.reflect.runtime.universe.TypeTag
+
+trait Fx[+A] extends Any
+
+case class Union[R, A](tag: TypeTag[_], value: R with Fx[A])
+
 sealed abstract class Eff[-R, +A] extends Product with Serializable {
   def map[B](f: A => B): Eff[R, B]
 
@@ -9,7 +15,7 @@ sealed abstract class Eff[-R, +A] extends Product with Serializable {
 }
 
 object Eff {
-  def apply[F, A](fa: F): Eff[F, A] = Impure(fa, Arrs.Leaf((a: A) => Pure(a)))
+  def apply[F, A](fa: F with Fx[A])(implicit F: TypeTag[F]): Eff[F, A] = Impure(Union[F, A](F, fa), Arrs.Leaf((a: A) => Pure(a)))
 
   def run[A](eff: Eff[Any, A]): A =
     (eff: @unchecked) match {
@@ -21,8 +27,8 @@ object Eff {
     def flatMap[S, B](f: A => Eff[S, B]): Eff[S, B] = f(value)
   }
 
-  case class Impure[R, A, B](union: R, arrs: Arrs[R, A, B]) extends Eff[R, B] {
+  case class Impure[R, A, B](union: Union[R, A], arrs: Arrs[R, A, B]) extends Eff[R, B] {
     def map[C](f: B => C): Eff[R, C] = Impure(union, arrs :+ (x => Pure(f(x))))
-    def flatMap[S, C](f: B => Eff[S, C]): Eff[R with S, C] = Impure(union.asInstanceOf[R with S], arrs :+ f)
+    def flatMap[S, C](f: B => Eff[S, C]): Eff[R with S, C] = Impure(union.asInstanceOf[Union[R with S, A]], arrs :+ f)
   }
 }
