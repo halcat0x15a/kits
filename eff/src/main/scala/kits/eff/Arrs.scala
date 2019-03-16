@@ -17,7 +17,8 @@ sealed abstract class Arrs[-R, A, B] extends Product with Serializable {
             case Arrs.Leaf(f) =>
               f(value) match {
                 case Eff.Pure(v) => loop(v, r)
-                case Eff.Impure(u, k) => Eff.Impure(u.asInstanceOf[Union[R, Any]], k ++ r)
+                case Eff.Impure(u, k) =>
+                  Eff.Impure(u.asInstanceOf[Union[R, Any]], k ++ r)
               }
             case Arrs.Node(ll, lr) =>
               loop(value, Arrs.Node(ll, Arrs.Node(lr, r)))

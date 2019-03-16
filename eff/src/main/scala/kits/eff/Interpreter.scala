@@ -1,37 +1,33 @@
 package kits.eff
 
-import scala.reflect.runtime.universe.TypeTag
-
 trait Interpreter[F, R, A, B] {
-  type M[_]
+  def pure(a: A): Eff[R, B]
 
-  def pure(a: M[A]): Eff[R, B]
+  def flatMap[T](fa: F with Fx[T])(f: T => Eff[R, B]): Eff[R, B]
 
-  def impure[T](fa: M[F with Fx[T]])(f: M[T] => Eff[R, B]): Eff[R, B]
+  final def apply(eff: Eff[F with R, A])(implicit F: Manifest[F]): Eff[R, B] =
+    eff match {
+      case Eff.Pure(a) =>
+        pure(a)
+      case Eff.Impure(Union(tag, fa), k) if tag <:< F =>
+        flatMap(fa.asInstanceOf[F with Fx[Any]])(a => apply(k(a)))
+      case Eff.Impure(r, k) =>
+        Eff.Impure(r.asInstanceOf[Union[R, Any]], Arrs.Leaf((a: Any) => apply(k(a))))
+    }
 }
 
-object Interpreter {
-  implicit class IdentityInterpreter[F, R, A, B](val interpreter: Interpreter[F, R, A, B] { type M[A] = A }) extends AnyVal {
-    final def apply(eff: Eff[F with R, A])(implicit F: TypeTag[F]): Eff[R, B] =
-      eff match {
-        case Eff.Pure(a) =>
-          interpreter.pure(a)
-        case Eff.Impure(Union(tag, fa: F with Fx[Any]), k) if tag.tpe <:< F.tpe =>
-          interpreter.impure(fa)(a => apply(k(a)))
-        case Eff.Impure(r, k) =>
-          Eff.Impure(r.asInstanceOf[Union[R, Any]], Arrs.Leaf((a: Any) => apply(k(a))))
-      }
-  }
+trait StateInterpreter[F, R, S, A, B] {
+  def pure(s: S, a: A): Eff[R, B]
 
-  implicit class StateInterpreter[F, R, S, A, B](val interpreter: Interpreter[F, R, A, B] { type M[A] = (S, A) }) extends AnyVal {
-    final def apply(s: S, eff: Eff[F with R, A])(implicit F: TypeTag[F]): Eff[R, B] =
-      eff match {
-        case Eff.Pure(a) =>
-          interpreter.pure((s, a))
-        case Eff.Impure(Union(tag, fa: F with Fx[Any]), k) if tag.tpe <:< F.tpe =>
-          interpreter.impure((s, fa)) { case (s, a) => apply(s, k(a)) }
-        case Eff.Impure(r, k) =>
-          Eff.Impure(r.asInstanceOf[Union[R, Any]], Arrs.Leaf((a: Any) => apply(s, k(a))))
-      }
-  }
+  def flatMap[T](s: S, fa: F with Fx[T])(f: (S, T) => Eff[R, B]): Eff[R, B]
+
+  final def apply(s: S, eff: Eff[F with R, A])(implicit F: Manifest[F]): Eff[R, B] =
+    eff match {
+      case Eff.Pure(a) =>
+        pure(s, a)
+      case Eff.Impure(Union(tag, fa), k) if tag <:< F =>
+        flatMap(s, fa.asInstanceOf[F with Fx[Any]])((s, a) => apply(s, k(a)))
+      case Eff.Impure(r, k) =>
+        Eff.Impure(r.asInstanceOf[Union[R, Any]], Arrs.Leaf((a: Any) => apply(s, k(a))))
+    }
 }

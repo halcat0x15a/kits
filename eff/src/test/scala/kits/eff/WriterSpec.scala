@@ -3,7 +3,7 @@ package kits.eff
 import org.scalatest.FlatSpec
 
 class WriterSpec extends FlatSpec {
-  "Writer" should "produce output" in {
+  "Writer" should "tell output" in {
     val e = for {
       _ <- Writer.tell("hoge")
       _ <- Writer.tell("fuga")
@@ -17,6 +17,14 @@ class WriterSpec extends FlatSpec {
       _ <- Writer.tell("fuga")
     } yield ()
     assert(Eff.run(Writer.fold(e)("")(_ + _)) == ("hogefuga", ()))
+  }
+
+  it should "listen output" in {
+    val e = for {
+      _ <- Writer.tell("hoge")
+      _ <- Writer.tell("fuga")
+    } yield ()
+    assert(Eff.run(Writer.run(Writer[String].listen(e).map(_._1.size))) == (Vector("hoge", "fuga"), 2))
   }
 
   it should "handle multiple output" in {

@@ -67,6 +67,5 @@ lazy val free = (project in file("free")).
 lazy val eff = (project in file("eff")).
   settings(commonSettings: _*).
   settings(
-    name := "kits-eff",
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
+    name := "kits-eff"
   )

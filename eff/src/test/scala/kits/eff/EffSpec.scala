@@ -15,17 +15,6 @@ class EffSpec extends FlatSpec {
           Eff.Pure(s)
         }
       } yield ()
-    val s = System.nanoTime
     assert(Eff.run(State.run(0)(Reader.run(N)(loop))) == (N, ()))
-    println((System.nanoTime - s) / 1000000000.0)
-  }
-
-  it should "filter the value with Opt" in {
-    val e = for {
-      n <- Reader.ask[Int]
-      if n > 0
-    } yield n
-    assert(Eff.run(Opt.run(Reader.run(1)(e))) == Some(1))
-    assert(Eff.run(Opt.run(Reader.run(0)(e))) == None)
   }
 }

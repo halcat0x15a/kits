@@ -1,21 +1,17 @@
 package kits.eff
 
-import scala.reflect.runtime.universe.TypeTag
+trait Fx[A] extends Any
 
-trait Fx[+A] extends Any
-
-case class Union[R, A](tag: TypeTag[_], value: R with Fx[A])
+case class Union[R, A](tag: Manifest[_], value: R with Fx[A])
 
 sealed abstract class Eff[-R, +A] extends Product with Serializable {
   def map[B](f: A => B): Eff[R, B]
 
   def flatMap[S, B](f: A => Eff[S, B]): Eff[R with S, B]
-
-  def withFilter(p: A => Boolean): Eff[Opt with R, A] = flatMap(a => if (p(a)) Eff.Pure(a) else Opt.empty)
 }
 
 object Eff {
-  def apply[F, A](fa: F with Fx[A])(implicit F: TypeTag[F]): Eff[F, A] = Impure(Union[F, A](F, fa), Arrs.Leaf((a: A) => Pure(a)))
+  def apply[F, A](fa: F with Fx[A])(implicit F: Manifest[F]): Eff[F, A] = Impure(Union[F, A](F, fa), Arrs.Leaf((a: A) => Pure(a)))
 
   def run[A](eff: Eff[Any, A]): A =
     (eff: @unchecked) match {

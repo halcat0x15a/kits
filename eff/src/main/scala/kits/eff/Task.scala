@@ -1,6 +1,5 @@
 package kits.eff
 
-import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -18,9 +17,8 @@ object Task {
 
   def run[A](eff: Eff[Task, A])(implicit ec: ExecutionContext): Future[A] = {
     val handle = new Interpreter[Task, Any, A, Future[A]] {
-      type M[A] = A
       def pure(a: A) = Eff.Pure(Future.successful(a))
-      def impure[T](ft: Task with Fx[T])(k: T => Eff[Any, Future[A]]) =
+      def flatMap[T](ft: Task with Fx[T])(k: T => Eff[Any, Future[A]]) =
         ft match {
           case Context => k(ec)
           case Lift(f) => Eff.Pure(f().flatMap(a => Eff.run(k(a))))
