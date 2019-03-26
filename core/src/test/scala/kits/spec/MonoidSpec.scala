@@ -4,7 +4,7 @@ package spec
 
 import org.scalacheck.Arbitrary
 import org.scalatest.FunSpec
-import org.scalatest.prop.Checkers
+import org.scalatestplus.scalacheck.Checkers
 import scala.collection.immutable.IndexedSeq
 
 class MonoidSpec extends FunSpec with Checkers {
