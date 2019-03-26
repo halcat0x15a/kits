@@ -4,7 +4,7 @@ package std
 
 trait MapTraverse[K] extends Traverse[({ type F[A] = Map[K, A] })#F] {
 
-  override final def map[A, B](fa: Map[K, A])(f: A => B): Map[K, B] = fa.mapValues(f)
+  override final def map[A, B](fa: Map[K, A])(f: A => B): Map[K, B] = fa.map{ case (k, v) => k -> f(v) }
 
   override final def traverse[F[_], A, B](fa: Map[K, A])(f: A => F[B])(implicit F: Applicative[F]): F[Map[K, B]] =
     fa.foldLeft(F.pure(scala.collection.immutable.Map.empty[K, B])) { case (ga, (k, a)) => F.map2(ga, f(a))((a, b) => a + (k -> b)) }

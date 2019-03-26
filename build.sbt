@@ -1,14 +1,25 @@
 import com.typesafe.sbt.SbtGit.GitKeys._
 
+val Scala212 = "2.12.8"
+
 lazy val commonSettings = Seq(
   organization := "org.halcat",
   version := "0.9.0-SNAPSHOT",
-  scalaVersion := "2.12.8",
+  scalaVersion := Scala212,
+  crossScalaVersions := Seq(Scala212, "2.13.0-M5"),
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "3.0.7" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   ),
-  scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds", "-Ypartial-unification"),
+  scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds"),
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, v)) if v <= 12 =>
+        Seq("-Ypartial-unification")
+      case _ =>
+        Nil
+    }
+  },
   autoAPIMappings := true,
   publishMavenStyle := true,
   publishTo := Some(
