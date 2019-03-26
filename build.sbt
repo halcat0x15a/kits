@@ -5,8 +5,8 @@ lazy val commonSettings = Seq(
   version := "0.9.0-SNAPSHOT",
   scalaVersion := "2.12.8",
   libraryDependencies ++= Seq(
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.7" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   ),
   scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds", "-Ypartial-unification"),
   autoAPIMappings := true,
