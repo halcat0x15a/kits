@@ -6,9 +6,9 @@ lazy val commonSettings = Seq(
   organization := "org.halcat",
   version := "0.9.0-SNAPSHOT",
   scalaVersion := Scala212,
-  crossScalaVersions := Seq(Scala212, "2.13.0-M5"),
+  crossScalaVersions := Seq(Scala212, "2.13.0"),
   libraryDependencies ++= Seq(
-    "org.scalatest" %% "scalatest" % "3.0.7" % "test",
+    "org.scalatest" %% "scalatest" % "3.0.8" % "test",
     "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
   ),
   scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds"),
